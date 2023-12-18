@@ -1,0 +1,13 @@
+datasources:
+  enabled: false
+  sources:
+    db1:
+      url: jdbc:mysql://localhost:3306/db1?useUnicode=true&characterEncoding=utf8&useSSL=false
+      username: test
+      password: test
+      driver-class-name: com.mysql.jdbc.Driver
+    db2:
+      url: jdbc:mysql://localhost:3306/db2?useUnicode=true&characterEncoding=utf8&useSSL=false
+      username: test
+      password: test
+      driver-class-name: com.mysql.jdbc.Driver
