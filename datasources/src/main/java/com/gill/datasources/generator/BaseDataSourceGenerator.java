@@ -2,9 +2,11 @@ package com.gill.datasources.generator;
 
 import com.gill.datasources.DataSourceProperties;
 import com.google.common.io.Files;
-import java.io.File;
 import java.io.IOException;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 
 /**
  * DataSourceGenerator
@@ -12,7 +14,9 @@ import javax.sql.DataSource;
  * @author gill
  * @version 2023/12/18
  **/
- abstract class BaseDataSourceGenerator {
+abstract class BaseDataSourceGenerator {
+
+    private static final Logger log = LoggerFactory.getLogger(BaseDataSourceGenerator.class);
 
     /**
      * 是否支持
@@ -42,8 +46,9 @@ import javax.sql.DataSource;
             return defaultStr;
         }
         try {
-            return new String(Files.toByteArray(new File(strFile)));
+            return new String(Files.toByteArray(ResourceUtils.getFile(strFile)));
         } catch (IOException e) {
+            log.error("get str from file failed, e: {}", e.getMessage());
             return defaultStr;
         }
     }

@@ -14,7 +14,7 @@ datasources:
       is-primary: true
       url: jdbc:h2:mem:test1
       username: sa
-      password:
+      pwdFile: classpath:pwdTest
       driver-class-name: org.h2.Driver
     db-druid:
       url: jdbc:h2:mem:test2
