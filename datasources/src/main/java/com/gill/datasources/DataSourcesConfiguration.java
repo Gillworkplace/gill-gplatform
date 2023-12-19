@@ -54,7 +54,7 @@ public class DataSourcesConfiguration {
             if (!properties.enabled()) {
                 continue;
             }
-            DataSource dataSource = DataSourceGenerator.chainsGenerate(properties);
+            DataSource dataSource = DataSourceGenerator.chainsGenerate(datasources, properties);
             dataSources.put(name, dataSource);
             factory.registerSingleton(name, dataSource);
             if (first == null) {

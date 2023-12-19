@@ -9,12 +9,14 @@ mybatis:
 
 datasources:
   enabled: true
+  decryption-name: mock
   sources:
     db:
       is-primary: true
       url: jdbc:h2:mem:test1
       username: sa
       pwdFile: classpath:pwdTest
+      decryption-name: mock
       driver-class-name: org.h2.Driver
     db-druid:
       url: jdbc:h2:mem:test2

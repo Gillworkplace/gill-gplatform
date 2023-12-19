@@ -2,7 +2,7 @@ package com.gill.datasources.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.gill.datasources.DataSourceProperties;
-import com.gill.datasources.decryption.DecryptionFactory;
+import com.gill.datasources.DataSources;
 import com.gill.datasources.decryption.DecryptionStrategy;
 import javax.sql.DataSource;
 
@@ -28,12 +28,14 @@ class DruidDataSourceGenerator extends BaseDataSourceGenerator {
     /**
      * 生成Datasource
      *
-     * @param properties 属性
+     * @param datasources datasources
+     * @param properties  属性
      * @return 数据源
      */
     @Override
-    DataSource generate(DataSourceProperties properties) {
-        DecryptionStrategy decryption = DecryptionFactory.getStrategy(properties.decryptionName());
+    DataSource generate(DataSources datasources, DataSourceProperties properties) {
+        DecryptionStrategy decryption = getDecryptionStrategy(properties,
+            datasources.getDecryptionName());
         String pwd = getStrFromFile(properties.pwdFile(), properties.password());
         DruidDataSource datasource = properties.druid();
         datasource.setUrl(properties.url());

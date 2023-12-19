@@ -101,18 +101,18 @@ datasources:
 
 ##### datasources.sources
 
-| 属性            | 说明                                                         |
-| --------------- | ------------------------------------------------------------ |
-| is-primary      | 是否为主数据源（多个以第一个isPrimary为主，没有配置以第一个数据源为主） |
-| enabled         | 是否启用该数据源                                             |
-| driverClassName | 数据库连接驱动                                               |
-| url             | 连接url                                                      |
-| username        | 用户名                                                       |
-| password        | 密码                                                         |
-| pwdFile         | 密码文件(当设置了pwdFile优先从pwdFile中读取密码)             |
-| decryptionName  | 密码解密算法名                                               |
-| druid           | druid连接池相关配置                                          |
-| hikari          | hikari连接池相关配置                                         |
+| 属性                 | 说明                                                         |
+| -------------------- | ------------------------------------------------------------ |
+| is-primary           | 是否为主数据源（多个以第一个isPrimary为主，没有配置以第一个数据源为主） |
+| enabled              | 是否启用该数据源                                             |
+| driver-class-nameame | 数据库连接驱动                                               |
+| url                  | 连接url                                                      |
+| username             | 用户名                                                       |
+| password             | 密码                                                         |
+| pwdFile              | 密码文件(当设置了pwdFile优先从pwdFile中读取密码)             |
+| decryption-name      | 密码解密算法名                                               |
+| druid                | druid连接池相关配置                                          |
+| hikari               | hikari连接池相关配置                                         |
 
 ### 代码
 

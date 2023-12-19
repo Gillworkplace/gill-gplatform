@@ -1,6 +1,9 @@
 package com.gill.datasources.generator;
 
 import com.gill.datasources.DataSourceProperties;
+import com.gill.datasources.DataSources;
+import com.gill.datasources.decryption.DecryptionFactory;
+import com.gill.datasources.decryption.DecryptionStrategy;
 import com.google.common.io.Files;
 import java.io.IOException;
 import javax.sql.DataSource;
@@ -29,10 +32,27 @@ abstract class BaseDataSourceGenerator {
     /**
      * 生成Datasource
      *
-     * @param properties 属性
+     * @param datasources datasources
+     * @param properties  属性
      * @return 数据源
      */
-    abstract DataSource generate(DataSourceProperties properties);
+    abstract DataSource generate(DataSources datasources, DataSourceProperties properties);
+
+    /**
+     * 获取解密策略
+     *
+     * @param properties            数据源属性
+     * @param defaultDecryptionName 默认解密名称
+     * @return 解密策略
+     */
+    protected DecryptionStrategy getDecryptionStrategy(DataSourceProperties properties,
+        String defaultDecryptionName) {
+        String decryptionName = properties.decryptionName();
+        if (decryptionName == null) {
+            return DecryptionFactory.getStrategy(defaultDecryptionName);
+        }
+        return DecryptionFactory.getStrategy(decryptionName);
+    }
 
     /**
      * 从文件中获取字符串

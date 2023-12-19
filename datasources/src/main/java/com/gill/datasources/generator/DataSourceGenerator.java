@@ -1,6 +1,7 @@
 package com.gill.datasources.generator;
 
 import com.gill.datasources.DataSourceProperties;
+import com.gill.datasources.DataSources;
 import javax.sql.DataSource;
 
 /**
@@ -35,13 +36,15 @@ public enum DataSourceGenerator {
     /**
      * 生成dataSource
      *
-     * @param properties 属性配置
+     * @param datasources 数据源
+     * @param properties  属性配置
      * @return datasource
      */
-    public static DataSource chainsGenerate(DataSourceProperties properties) {
+    public static DataSource chainsGenerate(DataSources datasources,
+        DataSourceProperties properties) {
         for (DataSourceGenerator generator : DataSourceGenerator.values()) {
             if (generator.internal.canHandle(properties)) {
-                return generator.internal.generate(properties);
+                return generator.internal.generate(datasources, properties);
             }
         }
         throw new IllegalArgumentException("can not find datasource generator");
