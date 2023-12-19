@@ -1,7 +1,7 @@
 package com.gill.datasources.generator;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.gill.datasources.config.DataSourceProperties;
+import com.gill.datasources.DataSourceProperties;
 import com.gill.datasources.decryption.DecryptionFactory;
 import com.gill.datasources.decryption.DecryptionStrategy;
 import javax.sql.DataSource;

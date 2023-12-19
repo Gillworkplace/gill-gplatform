@@ -1,5 +1,7 @@
 package com.gill.datasources;
 
+import com.alibaba.druid.pool.DruidDataSource;
+import com.gill.datasources.dynamic.DynamicDataSource;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
@@ -18,6 +20,6 @@ class DataSourcesMultiPrimaryConfigTests {
 
     @Test
     public void testConfig() {
-        Assertions.assertInstanceOf(HikariDataSource.class, context.getBean(DataSource.class));
+        Assertions.assertInstanceOf(DynamicDataSource.class, context.getBean(DataSource.class));
     }
 }

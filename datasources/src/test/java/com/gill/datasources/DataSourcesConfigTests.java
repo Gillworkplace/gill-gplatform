@@ -1,7 +1,5 @@
 package com.gill.datasources;
 
-import com.gill.datasources.config.DataSources;
-import com.gill.datasources.config.DataSourceProperties;
 import com.gill.datasources.decryption.DecryptionFactory;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -10,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.TestPropertySource;
 import others.SpringbootApplication;
 
 @SpringBootTest(classes = SpringbootApplication.class, properties = "spring.config.location=classpath:application.yaml")

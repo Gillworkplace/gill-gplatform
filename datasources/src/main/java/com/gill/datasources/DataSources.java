@@ -1,4 +1,4 @@
-package com.gill.datasources.config;
+package com.gill.datasources;
 
 import java.util.Map;
 

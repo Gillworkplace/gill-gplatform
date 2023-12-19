@@ -1,6 +1,6 @@
 package com.gill.datasources.generator;
 
-import com.gill.datasources.config.DataSourceProperties;
+import com.gill.datasources.DataSourceProperties;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;

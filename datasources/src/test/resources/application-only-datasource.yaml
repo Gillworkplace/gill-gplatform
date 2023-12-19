@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test0
+    username: sa
+    password:
+
+logging:
+  level:
+    others.mapper: debug
+    org.mybatis: debug
+    root: info
+
+mybatis:
+  mapper-locations: classpath:mappers/*.xml

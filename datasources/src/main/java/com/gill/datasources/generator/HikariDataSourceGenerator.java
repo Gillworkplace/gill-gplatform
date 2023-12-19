@@ -1,6 +1,6 @@
 package com.gill.datasources.generator;
 
-import com.gill.datasources.config.DataSourceProperties;
+import com.gill.datasources.DataSourceProperties;
 import com.gill.datasources.decryption.DecryptionFactory;
 import com.gill.datasources.decryption.DecryptionStrategy;
 import com.zaxxer.hikari.HikariConfig;
