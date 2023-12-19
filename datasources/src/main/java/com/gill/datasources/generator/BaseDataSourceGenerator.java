@@ -12,7 +12,7 @@ import javax.sql.DataSource;
  * @author gill
  * @version 2023/12/18
  **/
-public abstract class BaseDataSourceGenerator {
+ abstract class BaseDataSourceGenerator {
 
     /**
      * 是否支持
@@ -20,7 +20,7 @@ public abstract class BaseDataSourceGenerator {
      * @param properties 属性
      * @return 是否支持
      */
-    public abstract boolean canHandle(DataSourceProperties properties);
+    abstract boolean canHandle(DataSourceProperties properties);
 
     /**
      * 生成Datasource
@@ -28,7 +28,7 @@ public abstract class BaseDataSourceGenerator {
      * @param properties 属性
      * @return 数据源
      */
-    public abstract DataSource generate(DataSourceProperties properties);
+    abstract DataSource generate(DataSourceProperties properties);
 
     /**
      * 从文件中获取字符串

@@ -13,7 +13,7 @@ import javax.sql.DataSource;
  * @author gill
  * @version 2023/12/18
  **/
-public class HikariDataSourceGenerator extends BaseDataSourceGenerator {
+class HikariDataSourceGenerator extends BaseDataSourceGenerator {
 
     /**
      * 是否支持
@@ -22,7 +22,7 @@ public class HikariDataSourceGenerator extends BaseDataSourceGenerator {
      * @return 是否支持
      */
     @Override
-    public boolean canHandle(DataSourceProperties properties) {
+    boolean canHandle(DataSourceProperties properties) {
         return properties.hikari() != null;
     }
 
@@ -33,7 +33,7 @@ public class HikariDataSourceGenerator extends BaseDataSourceGenerator {
      * @return 数据源
      */
     @Override
-    public DataSource generate(DataSourceProperties properties) {
+    DataSource generate(DataSourceProperties properties) {
         DecryptionStrategy decryption = DecryptionFactory.getStrategy(properties.decryptionName());
         String pwd = getStrFromFile(properties.pwdFile(), properties.password());
         HikariConfig config = properties.hikari();

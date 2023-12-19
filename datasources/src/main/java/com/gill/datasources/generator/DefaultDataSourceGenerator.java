@@ -14,7 +14,7 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
  * @version 2023/12/18
  **/
 
-public class DefaultDataSourceGenerator extends BaseDataSourceGenerator {
+class DefaultDataSourceGenerator extends BaseDataSourceGenerator {
 
     /**
      * 是否支持
@@ -23,7 +23,7 @@ public class DefaultDataSourceGenerator extends BaseDataSourceGenerator {
      * @return 是否支持
      */
     @Override
-    public boolean canHandle(DataSourceProperties properties) {
+    boolean canHandle(DataSourceProperties properties) {
         return true;
     }
 
@@ -34,7 +34,7 @@ public class DefaultDataSourceGenerator extends BaseDataSourceGenerator {
      * @return 数据源
      */
     @Override
-    public DataSource generate(DataSourceProperties properties) {
+    DataSource generate(DataSourceProperties properties) {
         DecryptionStrategy decryption = DecryptionFactory.getStrategy(properties.decryptionName());
         String pwd = getStrFromFile(properties.pwdFile(), properties.password());
         return DataSourceBuilder.create().url(properties.url())
