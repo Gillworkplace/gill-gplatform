@@ -6,17 +6,27 @@
   <parent>
     <groupId>com.gill</groupId>
     <artifactId>gill-gplatform</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
 
   <artifactId>gill-common</artifactId>
-  <version>${commone.version}</version>
+  <version>${module.version}</version>
   <name>gill-common</name>
   <description>common</description>
-  <properties>
-    <java.version>17</java.version>
-  </properties>
+
   <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.hutool</groupId>
+      <artifactId>hutool-all</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

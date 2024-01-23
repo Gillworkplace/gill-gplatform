@@ -12,7 +12,7 @@
 
   <groupId>com.gill</groupId>
   <artifactId>gill-gplatform</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>gill-gplatform</name>
   <description>gill-gplatform</description>
   <packaging>pom</packaging>
@@ -20,52 +20,39 @@
   <modules>
     <module>common</module>
     <module>datasources</module>
+    <module>web-starter</module>
     <module>gill-user</module>
     <module>gill-oauth2-thirdpart</module>
   </modules>
 
   <properties>
     <java.version>17</java.version>
-    <spring-cloud.version>2023.0.0</spring-cloud.version>
+    <module.version>1.0.0</module.version>
     <spring.version>3.2.0</spring.version>
     <mybatis.version>3.0.3</mybatis.version>
     <druid.version>1.2.20</druid.version>
-    <hikari.version>5.1.0</hikari.version>
     <guava.version>32.1.3-jre</guava.version>
-    <h2.version>2.2.224</h2.version>
-    <commone.version>1.0.0</commone.version>
     <zxing.version>3.4.0</zxing.version>
+    <springfox-swagger.version>3.0.0</springfox-swagger.version>
+    <hutool-all.version>5.8.10</hutool-all.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-dependencies</artifactId>
-        <version>${spring-cloud.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
@@ -109,6 +96,16 @@
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-log4j2</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-aop</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
 
       <!--   common   -->
       <dependency>
@@ -119,6 +116,7 @@
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -136,7 +134,7 @@
       <dependency>
         <groupId>com.mysql</groupId>
         <artifactId>mysql-connector-j</artifactId>
-        <version>8.2.0</version>
+        <version>${mysql.version}</version>
         <scope>runtime</scope>
       </dependency>
       <dependency>
@@ -147,7 +145,22 @@
       <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
-        <version>${hikari.version}</version>
+        <version>${hikaricp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${okhttp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-boot-starter</artifactId>
+        <version>${springfox-swagger.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.hutool</groupId>
+        <artifactId>hutool-all</artifactId>
+        <version>${hutool-all.version}</version>
       </dependency>
 
       <!--   test   -->
