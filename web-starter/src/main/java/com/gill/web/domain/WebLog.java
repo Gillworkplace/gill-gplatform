@@ -15,6 +15,11 @@ import lombok.Setter;
 public class WebLog {
 
     /**
+     * 处理是否成功
+     */
+    private boolean success;
+
+    /**
      * 操作用户
      */
     private String username;
@@ -37,7 +42,7 @@ public class WebLog {
     /**
      * 根路径
      */
-    private String basePath;
+    private String hostPath;
 
     /**
      * URI

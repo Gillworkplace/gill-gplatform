@@ -7,14 +7,12 @@ import com.gill.common.api.Pair;
 import com.gill.common.exception.ExceptionUtil;
 import com.gill.web.domain.WebLog;
 import com.gill.web.util.RequestUtil;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.Getter;
@@ -61,15 +59,17 @@ public class WebLogAspect {
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         Object res = "";
+        boolean success = false;
         try {
             res = joinPoint.proceed();
+            success = true;
             return res;
         } catch (Throwable ex) {
             res = ExceptionUtil.getAllMessage(ex);
             throw ex;
         } finally {
             WebLogBuilderContext context = new WebLogBuilderContext(joinPoint, startTime, res);
-            WebLog webLog = WebLogBuilderChain.build(context);
+            WebLog webLog = WebLogBuilderChain.build(context, success);
             log.info("{}", JSONUtil.parse(webLog));
         }
 //        Map<String, Object> logMap = new HashMap<>();
@@ -155,10 +155,12 @@ public class WebLogAspect {
          * 构建weblog
          *
          * @param context 上下文
+         * @param success 是否处理成功
          * @return weblog
          */
-        public static WebLog build(WebLogBuilderContext context) {
+        public static WebLog build(WebLogBuilderContext context, boolean success) {
             WebLog webLog = new WebLog();
+            webLog.setSuccess(success);
             for (WebLogBuilderEnum builder : WebLogBuilderEnum.values()) {
                 builder.getBuilder().build(webLog, context);
             }
@@ -344,9 +346,9 @@ public class WebLogAspect {
             Signature signature = context.getJoinPoint().getSignature();
             MethodSignature methodSignature = (MethodSignature) signature;
             Method method = methodSignature.getMethod();
-            if (method.isAnnotationPresent(ApiOperation.class)) {
-                ApiOperation log = method.getAnnotation(ApiOperation.class);
-                webLog.setDescription(log.value());
+            if (method.isAnnotationPresent(Operation.class)) {
+                Operation operation = method.getAnnotation(Operation.class);
+                webLog.setDescription(operation.summary());
             }
 
         }
@@ -364,7 +366,7 @@ public class WebLogAspect {
             webLog.setUrl(url);
             webLog.setUsername(request.map(HttpServletRequest::getRemoteUser).orElse(""));
             webLog.setIp(RequestUtil.getRequestIp(request.orElse(null)));
-            webLog.setBasePath(StrUtil.removeSuffix(url, URLUtil.url(url).getPath()));
+            webLog.setHostPath(StrUtil.removeSuffix(url, URLUtil.url(url).getPath()));
         }
     }
 

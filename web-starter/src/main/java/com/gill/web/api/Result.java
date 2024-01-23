@@ -1,6 +1,7 @@
 package com.gill.web.api;
 
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
  * @version 2024/01/22
  **/
 @Getter
+@ToString
 public class Result<T> {
 
     /**
@@ -29,6 +31,10 @@ public class Result<T> {
         this.code = code;
         this.message = message;
         this.data = data;
+    }
+
+    public static Result<String> success() {
+        return new Result<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "");
     }
 
     /**
@@ -116,5 +122,4 @@ public class Result<T> {
         return new Result<>(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase(),
             data);
     }
-
 }

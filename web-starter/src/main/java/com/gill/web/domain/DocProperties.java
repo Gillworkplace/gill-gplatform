@@ -2,8 +2,6 @@ package com.gill.web.domain;
 
 import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 /**
  * SwaggerProperties
@@ -11,14 +9,14 @@ import org.springframework.stereotype.Component;
  * @author gill
  * @version 2024/01/22
  **/
-@ConfigurationProperties(prefix = "swagger2")
+@ConfigurationProperties(prefix = "doc")
 @Getter
-public class SwaggerProperties {
+public class DocProperties {
 
     /**
      * API文档生成基础路径
      */
-    private String apiBasePackage;
+    private String apiPathsToMatch;
 
     /**
      * 是否要启用登录认证
