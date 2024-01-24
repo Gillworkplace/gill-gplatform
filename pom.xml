@@ -23,6 +23,7 @@
     <module>web-starter</module>
     <module>gill-user</module>
     <module>gill-oauth2-thirdpart</module>
+    <module>gill-api</module>
   </modules>
 
   <properties>

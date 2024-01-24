@@ -10,7 +10,6 @@ import org.springframework.context.annotation.ComponentScan;
  * @author gill
  * @version 2024/01/23
  **/
-@ComponentScan("com.gill")
 @SpringBootApplication
 public class TestApplication {
 

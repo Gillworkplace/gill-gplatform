@@ -8,10 +8,10 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>web-starter</artifactId>
+  <artifactId>gill-web-starter</artifactId>
   <packaging>jar</packaging>
 
-  <name>web-starter</name>
+  <name>gill-web-starter</name>
 
   <dependencies>
     <dependency>
