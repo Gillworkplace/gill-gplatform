@@ -1,1 +1,18 @@
+server:
+  port: 9000
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: '%t %h %a -> %A %S %H "%r" len: %b resp: %s cost: %D thread: %I'
+    basedir: ./
+  servlet:
+    context-path: /user
 
+spring:
+  application:
+    name: guser
+
+
+logging:
+  level:
+    com.gill.user: debug
