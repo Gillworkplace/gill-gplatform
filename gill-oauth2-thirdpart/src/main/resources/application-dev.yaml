@@ -1,0 +1,16 @@
+logging:
+  level:
+    com.gill.oauth.thirdpart: debug
+
+# oauth2配置
+oauth:
+  domain: 8.147.106.47
+  wechat:
+    enabled: true
+    appId: wxf39bb950ef2f967b
+    appSecret: 69f315f74e773364c843f8113199e206
+    redirectUri: "http://${oauth.domain}/oauth2/wechat/auth/callback"
+    authUrl: "https://open.weixin.qq.com/connect/oauth2/authorize?forcePopup=true&response_type=code&scope=snsapi_userinfo&appid=${oauth.wechat.appId}&redirect_uri={}&state={}#wechat_redirect"
+    accessTokenUrl: "https://api.weixin.qq.com/sns/oauth2/access_token?grant_type=authorization_code&appid=${oauth.wechat.appId}&secret=${oauth.wechat.appSecret}&code={}"
+    refreshTokenUrl: "https://api.weixin.qq.com/sns/oauth2/refresh_token?grant_type=refresh_token$appid=${oauth.wechat.appId}$refresh_token={}"
+    userInfoUrl: "https://api.weixin.qq.com/sns/userinfo?lang=zh_CN&access_token={}&openid={}"
