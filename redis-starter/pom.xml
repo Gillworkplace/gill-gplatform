@@ -8,7 +8,7 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>redis-starter</artifactId>
+  <artifactId>gill-redis-starter</artifactId>
   <packaging>jar</packaging>
   <version>${module.version}</version>
 
