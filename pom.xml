@@ -37,7 +37,6 @@
     <druid.version>1.2.20</druid.version>
     <guava.version>32.1.3-jre</guava.version>
     <zxing.version>3.4.0</zxing.version>
-    <springfox-swagger.version>3.0.0</springfox-swagger.version>
     <hutool-all.version>5.8.10</hutool-all.version>
     <springdoc.version>2.1.0</springdoc.version>
     <dubbo.version>3.1.10</dubbo.version>
@@ -187,6 +186,18 @@
       </dependency>
 
       <!--   test   -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <version>${spring.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+          </exclusion>
+        </exclusions>
+        <scope>test</scope>
+      </dependency>
       <dependency>
         <groupId>org.mybatis.spring.boot</groupId>
         <artifactId>mybatis-spring-boot-starter-test</artifactId>
