@@ -51,9 +51,9 @@ public class DecryptionTest {
 
     @Test
     public void testDecryptionFactoryGetStrategyWithName() {
-        DecryptionStrategy strategy = DecryptionFactory.getStrategy("default");
-        final String raw = "1234";
-        Assertions.assertEquals(raw, strategy.decrypt(raw));
+        DecryptionStrategy strategy = DecryptionFactory.getStrategy("DES");
+        final String raw = "3579a554be5768c1";
+        Assertions.assertEquals("123456", strategy.decrypt(raw));
     }
 
     @Test

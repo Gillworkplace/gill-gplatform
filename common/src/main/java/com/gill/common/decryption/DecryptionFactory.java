@@ -20,12 +20,16 @@ public class DecryptionFactory {
     }
 
     private static void loadStrategy() {
-        DecryptionStrategy defaultStrategy = new DefaultDecryptionStrategy();
-        STRATEGIES.put(defaultStrategy.getName(), defaultStrategy);
+        loadLocalStrategy();
         ServiceLoader<DecryptionStrategy> loader = ServiceLoader.load(DecryptionStrategy.class);
         for (DecryptionStrategy strategy : loader) {
             register(strategy);
         }
+    }
+
+    private static void loadLocalStrategy() {
+        register(new DefaultDecryptionStrategy());
+        register(new DESDecryptionStrategy());
     }
 
     /**
