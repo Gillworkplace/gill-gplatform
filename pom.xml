@@ -19,13 +19,14 @@
 
   <modules>
     <module>common</module>
-    <module>datasources</module>
+    <module>datasource-starter</module>
     <module>web-starter</module>
     <module>gill-user</module>
     <module>gill-oauth2-thirdpart</module>
     <module>gill-api</module>
     <module>gill-notification</module>
     <module>gill-notification-worker</module>
+    <module>redis-starter</module>
   </modules>
 
   <properties>
@@ -40,6 +41,7 @@
     <hutool-all.version>5.8.10</hutool-all.version>
     <springdoc.version>2.1.0</springdoc.version>
     <dubbo.version>3.1.10</dubbo.version>
+    <embedded-redis.version>1.3.0</embedded-redis.version>
   </properties>
 
   <dependencies>
@@ -200,6 +202,18 @@
         <groupId>com.h2database</groupId>
         <artifactId>h2</artifactId>
         <version>${h2.version}</version>
+        <scope>test</scope>
+      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>com.github.kstyrc</groupId>-->
+<!--        <artifactId>embedded-redis</artifactId>-->
+<!--        <version>${embedded-redis.version}</version>-->
+<!--        <scope>test</scope>-->
+<!--      </dependency>-->
+      <dependency>
+        <groupId>com.github.codemonstur</groupId>
+        <artifactId>embedded-redis</artifactId>
+        <version>${embedded-redis.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

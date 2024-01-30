@@ -1,0 +1,10 @@
+redis:
+  nodes:
+    - 127.0.0.1:22222
+  database: 0
+  password: 3579a554be5768c1
+  decryption-name: DES
+  max-active: 16
+  max-idle: 16
+  min-idle: 0
+  max-wait: 1000

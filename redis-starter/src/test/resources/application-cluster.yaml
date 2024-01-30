@@ -1,0 +1,10 @@
+redis:
+  nodes:
+    - 127.0.0.1:11111
+    - 127.0.0.1:11112
+    - 127.0.0.1:11113
+  database: 0
+  max-active: 16
+  max-idle: 16
+  min-idle: 0
+  max-wait: 1000
