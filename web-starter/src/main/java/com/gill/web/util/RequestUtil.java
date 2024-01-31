@@ -1,9 +1,17 @@
 package com.gill.web.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.gill.common.exception.ExceptionUtil;
+import com.gill.web.util.http.CookiesResolver;
+import com.gill.web.util.http.HeaderResolver;
+import com.gill.web.util.http.HttpRequestResolver;
+import com.gill.web.util.http.ParameterResolver;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -22,6 +30,14 @@ public class RequestUtil {
     private static final String LOCAL_HOST = "127.0.0.1";
 
     private static final String IPV6_HOST = "0:0:0:0:0:0:0:1";
+
+    private static final List<HttpRequestResolver> RESOLVERS = new ArrayList<>();
+
+    static {
+        RESOLVERS.add(new CookiesResolver());
+        RESOLVERS.add(new HeaderResolver());
+        RESOLVERS.add(new ParameterResolver());
+    }
 
     /**
      * 获取请求真实IP地址
@@ -60,5 +76,23 @@ public class RequestUtil {
             }
         }
         return ipAddress;
+    }
+
+    /**
+     * 获取请求参数
+     *
+     * @param request 请求
+     * @param name    参数名
+     * @return 参数值
+     */
+    @Nonnull
+    public static String resolveName(HttpServletRequest request, String name) {
+        for (HttpRequestResolver resolver : RESOLVERS) {
+            String value = resolver.get(request, name);
+            if (StrUtil.isNotBlank(value)) {
+                return value;
+            }
+        }
+        return "";
     }
 }
