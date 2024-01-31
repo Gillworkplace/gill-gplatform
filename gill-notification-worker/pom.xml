@@ -12,13 +12,17 @@
   <packaging>jar</packaging>
 
   <name>gill-notification-worker</name>
-  <url>http://maven.apache.org</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.gill</groupId>
+      <artifactId>gill-redis-starter</artifactId>
+      <version>${module.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.gill</groupId>
       <artifactId>gill-web-starter</artifactId>
@@ -28,6 +32,22 @@
       <groupId>com.gill</groupId>
       <artifactId>gill-api</artifactId>
       <version>${module.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.codemonstur</groupId>
+      <artifactId>embedded-redis</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

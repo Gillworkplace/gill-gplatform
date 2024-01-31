@@ -1,0 +1,24 @@
+server:
+  port: 10001
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: '%t %h %a -> %A %S %H "%r" len: %b resp: %s cost: %D thread: %I'
+    basedir: ./
+  servlet:
+    context-path: /notification/worker
+
+spring:
+  application:
+    name: gnotification-worker
+  profiles:
+    active: self
+
+logging:
+  level:
+    com.gill.notification.worker: debug
+
+redis:
+  nodes:
+    - 127.0.0.1:10009
+  database: 0
