@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(5)
 @Slf4j
-public class DefaultWebSocketChildHandler implements WebSocketChildHandler {
+public class RegisterSessionWebSocketChildHandler implements WebSocketChildHandler {
 
     @Autowired
     private Redis redis;
@@ -30,7 +30,7 @@ public class DefaultWebSocketChildHandler implements WebSocketChildHandler {
      */
     @Override
     public String name() {
-        return "defaultWebSocketHandler";
+        return "registerSessionWebSocketHandler";
     }
 
     /**
