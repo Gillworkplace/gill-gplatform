@@ -1,7 +1,10 @@
 package com.gill.redis.core;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 /**
  * Redis
@@ -17,7 +20,7 @@ public interface Redis {
      * @param key   key
      * @param value value
      */
-    void set(String key, Object value);
+    void set(@NonNull String key, Object value);
 
     /**
      * get
@@ -25,7 +28,8 @@ public interface Redis {
      * @param key key
      * @return value
      */
-    String get(String key);
+    @NonNull
+    String get(@NonNull String key);
 
     /**
      * get
@@ -35,7 +39,8 @@ public interface Redis {
      * @param <T>   type
      * @return value
      */
-    <T> T get(String key, Class<T> clazz);
+    @Nullable
+    <T> T get(@NonNull String key, Class<T> clazz);
 
     /**
      * 设置map
@@ -43,7 +48,7 @@ public interface Redis {
      * @param key key
      * @param map map
      */
-    void setMap(String key, Map<String, Object> map);
+    void setMap(@NonNull String key, Map<String, Object> map);
 
     /**
      * 设置map
@@ -52,7 +57,7 @@ public interface Redis {
      * @param k   k
      * @param v   v
      */
-    void setMap(String key, String k, Object v);
+    void setMap(@NonNull String key, String k, Object v);
 
     /**
      * 获取map
@@ -60,7 +65,8 @@ public interface Redis {
      * @param key key
      * @return map
      */
-    Map<String, Object> getMap(String key);
+    @NonNull
+    Map<String, Object> getMap(@NonNull String key);
 
     /**
      * 获取map
@@ -70,7 +76,8 @@ public interface Redis {
      * @param <T>   type
      * @return map
      */
-    <T> Map<String, T> getMap(String key, Class<T> clazz);
+    @NonNull
+    <T> Map<String, T> getMap(@NonNull String key, Class<T> clazz);
 
     /**
      * 获取map
@@ -79,7 +86,8 @@ public interface Redis {
      * @param k   k
      * @return v
      */
-    String getMap(String key, String k);
+    @NonNull
+    String getMap(@NonNull String key, String k);
 
     /**
      * 获取map
@@ -90,7 +98,8 @@ public interface Redis {
      * @param <T>   type
      * @return v
      */
-    <T> T getMap(String key, String k, Class<T> clazz);
+    @Nullable
+    <T> T getMap(@NonNull String key, String k, Class<T> clazz);
 
     /**
      * 获取map
@@ -101,7 +110,8 @@ public interface Redis {
      * @param <T>   type
      * @return vs
      */
-    <T> Map<String, T> getMap(String key, Set<String> ks, Class<T> clazz);
+    @NonNull
+    <T> Map<String, T> getMap(@NonNull String key, Set<String> ks, Class<T> clazz);
 
     /**
      * 获取map
@@ -110,5 +120,67 @@ public interface Redis {
      * @param ks  ks
      * @return vs
      */
-    Map<String, String> getMap(String key, Set<String> ks);
+    @NonNull
+    Map<String, String> getMap(@NonNull String key, Set<String> ks);
+
+    /**
+     * 获取set
+     *
+     * @param key key
+     * @return vals
+     */
+    @NonNull
+    Set<String> getSet(@NonNull String key);
+
+    /**
+     * set添加values
+     *
+     * @param key  key
+     * @param vals values
+     * @return cnt
+     */
+    long addSet(@NonNull String key, String... vals);
+
+    /**
+     * set添加values
+     *
+     * @param key  key
+     * @param vals values
+     * @return cnt
+     */
+    long addSet(@NonNull String key, Collection<String> vals);
+
+    /**
+     * set 删除values
+     *
+     * @param key  key
+     * @param vals vals
+     * @return cnt
+     */
+    long removeSet(@NonNull String key, String... vals);
+
+    /**
+     * set 删除values
+     *
+     * @param key  key
+     * @param vals vals
+     * @return cnt
+     */
+    long removeSet(@NonNull String key, Collection<String> vals);
+
+    /**
+     * set 清空
+     *
+     * @param key key
+     */
+    void clearSet(@NonNull String key);
+
+    /**
+     * set 是否存在
+     *
+     * @param key key
+     * @param val val
+     * @return tf
+     */
+    boolean contains(@NonNull String key, String val);
 }

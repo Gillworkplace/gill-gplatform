@@ -2,6 +2,7 @@ package com.gill.others;
 
 import com.gill.redis.core.Redis;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -136,5 +137,68 @@ public class RedisSingletonTest {
         redis.setMap("map9", "k1", bean1);
         redis.setMap("map9", "k2", bean2);
         Assertions.assertEquals(2, redis.getMap("map8", Set.of("k1", "k2"), Bean.class).size());
+    }
+
+    @Test
+    public void testGetSet() {
+        redis.addSet("set1", "1");
+        Set<String> set = redis.getSet("set1");
+        Assertions.assertEquals(1, set.size());
+    }
+
+    @Test
+    public void testAddSet1() {
+        long cnt1 = redis.addSet("set2", "1", "2");
+        long cnt2 = redis.addSet("set2", "1", "3");
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(1, cnt2);
+    }
+
+    @Test
+    public void testAddSet2() {
+        long cnt1 = redis.addSet("set3", Arrays.asList("1", "2"));
+        long cnt2 = redis.addSet("set3", Arrays.asList("1", "3"));
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(1, cnt2);
+    }
+
+    @Test
+    public void testRemoveSet1() {
+        redis.addSet("set4", "1", "2");
+        long cnt1 = redis.removeSet("set4", "1", "2");
+        long cnt2 = redis.removeSet("set4", "1", "3");
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(0, cnt2);
+    }
+
+    @Test
+    public void testRemoveSet2() {
+        redis.addSet("set5", "1", "2");
+        long cnt1 = redis.removeSet("set5", Arrays.asList("1", "2"));
+        long cnt2 = redis.removeSet("set5", Arrays.asList("1", "3"));
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(0, cnt2);
+    }
+
+    @Test
+    public void testClearSet() {
+        redis.addSet("set6", "1", "2");
+        redis.clearSet("set6");
+        Set<String> set = redis.getSet("set6");
+        Assertions.assertEquals(0, set.size());
+    }
+
+    @Test
+    public void testContains1() {
+        redis.addSet("set7", "1", "2");
+        Assertions.assertTrue(redis.contains("set7", "1"));
+        Assertions.assertFalse(redis.contains("set7", "3"));
+    }
+
+    @Test
+    public void testContains2() {
+        redis.addSet("set8", Arrays.asList("1", "2"));
+        Assertions.assertTrue(redis.contains("set8", "1"));
+        Assertions.assertFalse(redis.contains("set8", "3"));
     }
 }
