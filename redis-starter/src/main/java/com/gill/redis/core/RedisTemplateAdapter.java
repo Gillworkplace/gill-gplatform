@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
@@ -25,11 +24,11 @@ import org.springframework.lang.NonNull;
  * @version 2024/01/29
  **/
 @Slf4j
-public class RedisTemplateOperator implements Redis {
+public class RedisTemplateAdapter implements Redis {
 
     private final StringRedisTemplate redisTemplate;
 
-    public RedisTemplateOperator(StringRedisTemplate redisTemplate) {
+    public RedisTemplateAdapter(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
@@ -89,7 +88,7 @@ public class RedisTemplateOperator implements Redis {
      * @param map map
      */
     @Override
-    public void setMap(@NonNull String key, Map<String, Object> map) {
+    public void mset(@NonNull String key, Map<String, Object> map) {
         if (CollectionUtil.isEmpty(map)) {
             return;
         }
@@ -113,7 +112,7 @@ public class RedisTemplateOperator implements Redis {
      * @param v   v
      */
     @Override
-    public void setMap(@NonNull String key, String k, Object v) {
+    public void mset(@NonNull String key, String k, Object v) {
         if (v == null) {
             redisTemplate.opsForHash().delete(key, k);
         }
@@ -134,7 +133,7 @@ public class RedisTemplateOperator implements Redis {
      */
     @NonNull
     @Override
-    public Map<String, Object> getMap(@NonNull String key) {
+    public Map<String, Object> mget(@NonNull String key) {
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         if (CollectionUtil.isEmpty(entries)) {
             return Collections.emptyMap();
@@ -156,7 +155,7 @@ public class RedisTemplateOperator implements Redis {
      */
     @NonNull
     @Override
-    public <T> Map<String, T> getMap(@NonNull String key, Class<T> clazz) {
+    public <T> Map<String, T> mget(@NonNull String key, Class<T> clazz) {
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         if (CollectionUtil.isEmpty(entries)) {
             return Collections.emptyMap();
@@ -185,7 +184,7 @@ public class RedisTemplateOperator implements Redis {
      */
     @NonNull
     @Override
-    public String getMap(@NonNull String key, String k) {
+    public String mget(@NonNull String key, String k) {
         return Optional.ofNullable(redisTemplate.opsForHash().get(key, k))
             .map(String::valueOf)
             .orElse("");
@@ -200,7 +199,7 @@ public class RedisTemplateOperator implements Redis {
      * @return v
      */
     @Override
-    public <T> T getMap(@NonNull String key, String k, Class<T> clazz) {
+    public <T> T mget(@NonNull String key, String k, Class<T> clazz) {
         Object val = redisTemplate.opsForHash().get(key, k);
         if (val == null) {
             return null;
@@ -217,7 +216,7 @@ public class RedisTemplateOperator implements Redis {
      */
     @NonNull
     @Override
-    public <T> Map<String, T> getMap(@NonNull String key, Set<String> ks, Class<T> clazz) {
+    public <T> Map<String, T> mget(@NonNull String key, Set<String> ks, Class<T> clazz) {
         List<Object> ksList = new ArrayList<>(ks);
         List<Object> values = redisTemplate.opsForHash().multiGet(key, ksList);
         Map<String, T> map = new HashMap<>(ksList.size());
@@ -244,7 +243,7 @@ public class RedisTemplateOperator implements Redis {
      */
     @NonNull
     @Override
-    public Map<String, String> getMap(@NonNull String key, Set<String> ks) {
+    public Map<String, String> mget(@NonNull String key, Set<String> ks) {
         List<Object> ksList = new ArrayList<>(ks);
         List<Object> values = redisTemplate.opsForHash().multiGet(key, ksList);
         Map<String, String> map = new HashMap<>(ksList.size());
@@ -262,7 +261,7 @@ public class RedisTemplateOperator implements Redis {
      */
     @NonNull
     @Override
-    public Set<String> getSet(@NonNull String key) {
+    public Set<String> sget(@NonNull String key) {
         if (StrUtil.isBlank(key)) {
             return Collections.emptySet();
         }
@@ -278,7 +277,7 @@ public class RedisTemplateOperator implements Redis {
      * @return cnt
      */
     @Override
-    public long addSet(@NonNull String key, String... vals) {
+    public long sadd(@NonNull String key, String... vals) {
         if (vals == null || vals.length == 0) {
             return 0;
         }
@@ -294,7 +293,7 @@ public class RedisTemplateOperator implements Redis {
      * @return cnt
      */
     @Override
-    public long addSet(@NonNull String key, Collection<String> vals) {
+    public long sadd(@NonNull String key, Collection<String> vals) {
         if (CollectionUtil.isEmpty(vals)) {
             return 0;
         }
@@ -310,7 +309,7 @@ public class RedisTemplateOperator implements Redis {
      * @return cnt
      */
     @Override
-    public long removeSet(@NonNull String key, String... vals) {
+    public long sremove(@NonNull String key, String... vals) {
         if (vals == null || vals.length == 0) {
             return 0;
         }
@@ -326,7 +325,7 @@ public class RedisTemplateOperator implements Redis {
      * @return cnt
      */
     @Override
-    public long removeSet(@NonNull String key, Collection<String> vals) {
+    public long sremove(@NonNull String key, Collection<String> vals) {
         if (CollectionUtil.isEmpty(vals)) {
             return 0;
         }
@@ -340,7 +339,7 @@ public class RedisTemplateOperator implements Redis {
      * @param key key
      */
     @Override
-    public void clearSet(@NonNull String key) {
+    public void sclear(@NonNull String key) {
         redisTemplate.delete(key);
     }
 
@@ -352,7 +351,18 @@ public class RedisTemplateOperator implements Redis {
      * @return tf
      */
     @Override
-    public boolean contains(@NonNull String key, String val) {
+    public boolean scontains(@NonNull String key, String val) {
         return Optional.ofNullable(redisTemplate.opsForSet().isMember(key, val)).orElse(false);
+    }
+
+    /**
+     * set 元素个数
+     *
+     * @param key key
+     * @return 元素个数
+     */
+    @Override
+    public long scount(@NonNull String key) {
+        return Optional.ofNullable(redisTemplate.opsForSet().size(key)).orElse(0L);
     }
 }

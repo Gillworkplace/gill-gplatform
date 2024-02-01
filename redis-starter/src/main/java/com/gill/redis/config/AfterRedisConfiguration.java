@@ -2,7 +2,7 @@ package com.gill.redis.config;
 
 
 import com.gill.redis.core.Redis;
-import com.gill.redis.core.RedisTemplateOperator;
+import com.gill.redis.core.RedisTemplateAdapter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,6 +18,6 @@ public class AfterRedisConfiguration {
     @Bean
     @ConditionalOnBean(name = {"stringRedisTemplate"})
     public Redis redis(StringRedisTemplate stringRedisTemplate) {
-        return new RedisTemplateOperator(stringRedisTemplate);
+        return new RedisTemplateAdapter(stringRedisTemplate);
     }
 }

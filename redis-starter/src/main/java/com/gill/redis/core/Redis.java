@@ -48,7 +48,7 @@ public interface Redis {
      * @param key key
      * @param map map
      */
-    void setMap(@NonNull String key, Map<String, Object> map);
+    void mset(@NonNull String key, Map<String, Object> map);
 
     /**
      * 设置map
@@ -57,7 +57,7 @@ public interface Redis {
      * @param k   k
      * @param v   v
      */
-    void setMap(@NonNull String key, String k, Object v);
+    void mset(@NonNull String key, String k, Object v);
 
     /**
      * 获取map
@@ -66,7 +66,7 @@ public interface Redis {
      * @return map
      */
     @NonNull
-    Map<String, Object> getMap(@NonNull String key);
+    Map<String, Object> mget(@NonNull String key);
 
     /**
      * 获取map
@@ -77,7 +77,7 @@ public interface Redis {
      * @return map
      */
     @NonNull
-    <T> Map<String, T> getMap(@NonNull String key, Class<T> clazz);
+    <T> Map<String, T> mget(@NonNull String key, Class<T> clazz);
 
     /**
      * 获取map
@@ -87,7 +87,7 @@ public interface Redis {
      * @return v
      */
     @NonNull
-    String getMap(@NonNull String key, String k);
+    String mget(@NonNull String key, String k);
 
     /**
      * 获取map
@@ -99,7 +99,7 @@ public interface Redis {
      * @return v
      */
     @Nullable
-    <T> T getMap(@NonNull String key, String k, Class<T> clazz);
+    <T> T mget(@NonNull String key, String k, Class<T> clazz);
 
     /**
      * 获取map
@@ -111,7 +111,7 @@ public interface Redis {
      * @return vs
      */
     @NonNull
-    <T> Map<String, T> getMap(@NonNull String key, Set<String> ks, Class<T> clazz);
+    <T> Map<String, T> mget(@NonNull String key, Set<String> ks, Class<T> clazz);
 
     /**
      * 获取map
@@ -121,7 +121,7 @@ public interface Redis {
      * @return vs
      */
     @NonNull
-    Map<String, String> getMap(@NonNull String key, Set<String> ks);
+    Map<String, String> mget(@NonNull String key, Set<String> ks);
 
     /**
      * 获取set
@@ -130,7 +130,7 @@ public interface Redis {
      * @return vals
      */
     @NonNull
-    Set<String> getSet(@NonNull String key);
+    Set<String> sget(@NonNull String key);
 
     /**
      * set添加values
@@ -139,7 +139,7 @@ public interface Redis {
      * @param vals values
      * @return cnt
      */
-    long addSet(@NonNull String key, String... vals);
+    long sadd(@NonNull String key, String... vals);
 
     /**
      * set添加values
@@ -148,7 +148,7 @@ public interface Redis {
      * @param vals values
      * @return cnt
      */
-    long addSet(@NonNull String key, Collection<String> vals);
+    long sadd(@NonNull String key, Collection<String> vals);
 
     /**
      * set 删除values
@@ -157,7 +157,7 @@ public interface Redis {
      * @param vals vals
      * @return cnt
      */
-    long removeSet(@NonNull String key, String... vals);
+    long sremove(@NonNull String key, String... vals);
 
     /**
      * set 删除values
@@ -166,14 +166,14 @@ public interface Redis {
      * @param vals vals
      * @return cnt
      */
-    long removeSet(@NonNull String key, Collection<String> vals);
+    long sremove(@NonNull String key, Collection<String> vals);
 
     /**
      * set 清空
      *
      * @param key key
      */
-    void clearSet(@NonNull String key);
+    void sclear(@NonNull String key);
 
     /**
      * set 是否存在
@@ -182,5 +182,13 @@ public interface Redis {
      * @param val val
      * @return tf
      */
-    boolean contains(@NonNull String key, String val);
+    boolean scontains(@NonNull String key, String val);
+
+    /**
+     * set 元素个数
+     *
+     * @param key key
+     * @return 元素个数
+     */
+    long scount(@NonNull String key);
 }

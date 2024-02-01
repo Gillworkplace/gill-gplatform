@@ -70,7 +70,7 @@ public class RedisClusterTest {
 
     @Test
     public void testSetMap1() {
-        Assertions.assertDoesNotThrow(() -> redis.setMap("map1", "key", "value"));
+        Assertions.assertDoesNotThrow(() -> redis.mset("map1", "key", "value"));
     }
 
     @Test
@@ -81,18 +81,18 @@ public class RedisClusterTest {
         Map<String, Object> map = new HashMap<>();
         map.put("k1", "v1");
         map.put("k2", bean);
-        Assertions.assertDoesNotThrow(() -> redis.setMap("map2", map));
+        Assertions.assertDoesNotThrow(() -> redis.mset("map2", map));
     }
 
     @Test
     public void testSetMap3() {
-        Assertions.assertDoesNotThrow(() -> redis.setMap("map3", new HashMap<>()));
+        Assertions.assertDoesNotThrow(() -> redis.mset("map3", new HashMap<>()));
     }
 
     @Test
     public void testGetMap1() {
-        redis.setMap("map4", "key", "value");
-        Assertions.assertEquals("value", redis.getMap("map4", "key"));
+        redis.mset("map4", "key", "value");
+        Assertions.assertEquals("value", redis.mget("map4", "key"));
     }
 
     @Test
@@ -100,14 +100,14 @@ public class RedisClusterTest {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
-        redis.setMap("map5", "key", bean);
-        Assertions.assertEquals(bean, redis.getMap("map5", "key", Bean.class));
+        redis.mset("map5", "key", bean);
+        Assertions.assertEquals(bean, redis.mget("map5", "key", Bean.class));
     }
 
     @Test
     public void testGetMap3() {
-        redis.setMap("map6", "key", "value");
-        Assertions.assertEquals(1, redis.getMap("map6").size());
+        redis.mset("map6", "key", "value");
+        Assertions.assertEquals(1, redis.mget("map6").size());
     }
 
     @Test
@@ -115,15 +115,15 @@ public class RedisClusterTest {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
-        redis.setMap("map7", "key", bean);
-        Assertions.assertEquals(1, redis.getMap("map7", Bean.class).size());
+        redis.mset("map7", "key", bean);
+        Assertions.assertEquals(1, redis.mget("map7", Bean.class).size());
     }
 
     @Test
     public void testGetMap5() {
-        redis.setMap("map8", "k1", "v1");
-        redis.setMap("map8", "k2", "v2");
-        Assertions.assertEquals(2, redis.getMap("map8", Set.of("k1", "k2")).size());
+        redis.mset("map8", "k1", "v1");
+        redis.mset("map8", "k2", "v2");
+        Assertions.assertEquals(2, redis.mget("map8", Set.of("k1", "k2")).size());
     }
 
     @Test
@@ -134,8 +134,8 @@ public class RedisClusterTest {
         Bean bean2 = new Bean();
         bean2.setName("zzzy");
         bean2.setAge(19);
-        redis.setMap("map9", "k1", bean1);
-        redis.setMap("map9", "k2", bean2);
-        Assertions.assertEquals(2, redis.getMap("map8", Set.of("k1", "k2"), Bean.class).size());
+        redis.mset("map9", "k1", bean1);
+        redis.mset("map9", "k2", bean2);
+        Assertions.assertEquals(2, redis.mget("map8", Set.of("k1", "k2"), Bean.class).size());
     }
 }
