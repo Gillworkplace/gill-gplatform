@@ -11,8 +11,6 @@ server:
 spring:
   application:
     name: gnotification-worker
-  profiles:
-    active: self
 
 logging:
   level:

@@ -35,6 +35,9 @@ public class MockUserService implements UserService {
      */
     @Override
     public boolean checkToken(String uid, String token) {
-        return "user-id".equals(uid) && "token-id".equals(token);
+        if (uid == null || token == null) {
+            return false;
+        }
+        return uid.startsWith("user-id") && token.startsWith("token-id");
     }
 }

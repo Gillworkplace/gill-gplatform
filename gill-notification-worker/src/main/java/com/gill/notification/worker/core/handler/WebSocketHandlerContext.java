@@ -26,7 +26,7 @@ public class WebSocketHandlerContext {
         this.webSocketSession = webSocketSession;
         this.id = webSocketSession.getId();
         this.uid = String.valueOf(
-            webSocketSession.getAttributes().get(UserProperties.USER_ID.getValue()));
+            webSocketSession.getAttributes().get(UserProperties.USER_ID));
         this.connectTime = System.nanoTime();
     }
 

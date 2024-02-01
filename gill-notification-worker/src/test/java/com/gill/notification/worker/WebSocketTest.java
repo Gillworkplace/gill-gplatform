@@ -1,6 +1,9 @@
 package com.gill.notification.worker;
 
-import com.gill.api.domain.AuthParamProperties;
+import com.gill.api.domain.NotificationProperties;
+import com.gill.api.domain.UserProperties;
+import com.gill.notification.worker.service.WebSocketService;
+import com.gill.redis.core.Redis;
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
@@ -13,6 +16,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.web.socket.TextMessage;
@@ -46,6 +50,12 @@ public class WebSocketTest {
     private Integer port;
 
     private static RedisServer redisServer;
+
+    @Autowired
+    private WebSocketService service;
+
+    @Autowired
+    private Redis redis;
 
     /**
      * 构造方法之后执行.
@@ -94,8 +104,8 @@ public class WebSocketTest {
         WebSocketHandler webSocketHandler = new LoggingWebSocketHandlerDecorator(
             new MockClientWebSocketHandler(future));
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-        headers.add(AuthParamProperties.USER_ID.getValue(), USER_ID);
-        headers.add(AuthParamProperties.TOKEN_ID.getValue(), USER_TOKEN);
+        headers.add(UserProperties.USER_ID, USER_ID);
+        headers.add(UserProperties.TOKEN_ID, USER_TOKEN);
         CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, headers,
             new URI("ws://localhost:" + port + "/notification/worker/ws"));
         WebSocketSession session = Assertions.assertDoesNotThrow(
@@ -114,8 +124,9 @@ public class WebSocketTest {
         CompletableFuture<String> future = new CompletableFuture<>();
         WebSocketHandler webSocketHandler = new LoggingWebSocketHandlerDecorator(
             new MockClientWebSocketHandler(future));
-        String queryString = "?" + AuthParamProperties.USER_ID.getValue() + "=" + USER_ID + "&"
-            + AuthParamProperties.TOKEN_ID.getValue() + "=" + USER_TOKEN;
+        String queryString =
+            "?" + UserProperties.USER_ID + "=" + USER_ID + "&" + UserProperties.TOKEN_ID + "="
+                + USER_TOKEN;
         CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, null,
             new URI("ws://localhost:" + port + "/notification/worker/ws" + queryString));
         WebSocketSession session = Assertions.assertDoesNotThrow(
@@ -138,5 +149,41 @@ public class WebSocketTest {
             new URI("ws://localhost:" + port + "/notification/worker/ws"));
         Assertions.assertThrows(TimeoutException.class,
             () -> sessionCf.get(100L, TimeUnit.MILLISECONDS), "connect to server timeout");
+    }
+
+    @Test
+    public void testRedisUserSet() throws Exception {
+        final int cnt = 10;
+        List<WebSocketSession> sessions = new ArrayList<>(cnt);
+        for (int i = 0; i < cnt; i++) {
+            sessions.add(connectToServer(USER_ID + i, USER_TOKEN + i));
+        }
+        Assertions.assertEquals(cnt, service.onlineCount());
+        for (int i = 0; i < cnt; i++) {
+            Assertions.assertEquals(1,
+                redis.scount(NotificationProperties.REDIS_USER_LOCATION_PREFIX + USER_ID + i));
+        }
+        for (WebSocketSession session : sessions) {
+            session.close();
+        }
+        Thread.sleep(1000L);
+        Assertions.assertEquals(0, service.onlineCount());
+        for (int i = 0; i < cnt; i++) {
+            Assertions.assertEquals(0,
+                redis.scount(NotificationProperties.REDIS_USER_LOCATION_PREFIX + USER_ID + i));
+        }
+    }
+
+    private WebSocketSession connectToServer(String uid, String tid) throws Exception {
+        WebSocketClient client = getWebSocketClient();
+        CompletableFuture<String> future = new CompletableFuture<>();
+        WebSocketHandler webSocketHandler = new LoggingWebSocketHandlerDecorator(
+            new MockClientWebSocketHandler(future));
+        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+        headers.add(UserProperties.USER_ID, uid);
+        headers.add(UserProperties.TOKEN_ID, tid);
+        CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, headers,
+            new URI("ws://localhost:" + port + "/notification/worker/ws"));
+        return sessionCf.get(10000L, TimeUnit.MILLISECONDS);
     }
 }

@@ -1,6 +1,5 @@
 package com.gill.notification.worker.core.interceptor;
 
-import com.gill.api.domain.AuthParamProperties;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.user.UserService;
 import com.gill.web.util.RequestUtil;
@@ -37,13 +36,13 @@ public class UidTidCheckInterceptor implements WebSocketInterceptor {
             // 校验请求参数中的uid是否与token匹配
             HttpServletRequest servletRequest = httpRequest.getServletRequest();
             String uid = RequestUtil.resolveName(servletRequest,
-                AuthParamProperties.USER_ID.getValue());
+                UserProperties.USER_ID);
             String tid = RequestUtil.resolveName(servletRequest,
-                AuthParamProperties.TOKEN_ID.getValue());
+                UserProperties.TOKEN_ID);
             if (userService == null) {
                 return false;
             }
-            attributes.put(UserProperties.USER_ID.getValue(), uid);
+            attributes.put(UserProperties.USER_ID, uid);
             return userService.checkToken(uid, tid);
         }
         return false;
