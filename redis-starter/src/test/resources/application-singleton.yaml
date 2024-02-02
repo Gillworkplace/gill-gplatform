@@ -6,5 +6,5 @@ redis:
   decryption-name: DES
   max-active: 16
   max-idle: 16
-  min-idle: 0
+  min-idle: 4
   max-wait: 1000

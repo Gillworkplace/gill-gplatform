@@ -1,11 +1,14 @@
 package com.gill.others;
 
+import com.gill.common.api.DLock;
 import com.gill.redis.core.Redis;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,6 +28,9 @@ public class RedisSingletonTest {
 
     @Autowired
     private Redis redis;
+
+    @Autowired
+    private DLock lock;
 
     private static RedisServer redisServer;
 
@@ -47,6 +53,41 @@ public class RedisSingletonTest {
         redisServer.stop();
     }
 
+    @Test
+    public void test_lock_unlock_success() {
+        Assertions.assertTrue(lock.lock("lock1"));
+        lock.unlock("lock1");
+    }
+
+    @Test
+    public void test_lock_failed() throws Exception {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        Thread async = new Thread(() -> {
+            lock.lock("lock2");
+            future.complete(null);
+        });
+        async.start();
+        future.get(1000L, TimeUnit.MILLISECONDS);
+        Assertions.assertFalse(lock.lock("lock2", 1000L));
+    }
+
+    @Test
+    public void test_tryLock_unlock_success() {
+        Assertions.assertTrue(lock.tryLock("lock3"));
+        lock.unlock("lock3");
+    }
+
+    @Test
+    public void test_tryLock_failed() throws Exception {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        Thread async = new Thread(() -> {
+            lock.lock("lock4");
+            future.complete(null);
+        });
+        async.start();
+        future.get(1000L, TimeUnit.MILLISECONDS);
+        Assertions.assertFalse(lock.tryLock("lock4"));
+    }
 
     @Test
     public void test_set() {
