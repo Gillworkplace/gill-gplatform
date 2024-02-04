@@ -2,7 +2,6 @@ package com.gill.others;
 
 import com.gill.common.api.DLock;
 import com.gill.redis.core.Redis;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,8 +12,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.redis.core.RedisConnectionUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import redis.embedded.RedisServer;
 
 /**
@@ -38,7 +42,7 @@ public class RedisSingletonTest {
      * 构造方法之后执行.
      */
     @BeforeAll
-    public static void startRedis() throws IOException {
+    public static void startRedis() throws Exception {
         redisServer = RedisServer.newRedisServer()
             .port(22222)
             .setting("bind 127.0.0.1")
@@ -49,7 +53,7 @@ public class RedisSingletonTest {
     }
 
     @AfterAll
-    public static void stopRedis() throws IOException {
+    public static void stopRedis() throws Exception {
         redisServer.stop();
     }
 
@@ -177,7 +181,7 @@ public class RedisSingletonTest {
         bean2.setAge(19);
         redis.mset("map9", "k1", bean1);
         redis.mset("map9", "k2", bean2);
-        Assertions.assertEquals(2, redis.mget("map8", Set.of("k1", "k2"), Bean.class).size());
+        Assertions.assertEquals(2, redis.mget("map9", Set.of("k1", "k2"), Bean.class).size());
     }
 
     @Test

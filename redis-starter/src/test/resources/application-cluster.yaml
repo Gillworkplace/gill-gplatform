@@ -8,3 +8,4 @@ redis:
   max-idle: 16
   min-idle: 0
   max-wait: 1000
+  test: true

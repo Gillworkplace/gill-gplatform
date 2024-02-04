@@ -49,9 +49,7 @@ public class RedisTemplateAdapter implements Redis {
         if (CollectionUtil.isEmpty(strings)) {
             return Collections.emptyList();
         }
-        return strings.stream()
-            .map(jsonStr -> cast(jsonStr, clazz))
-            .collect(ArrayList::new, List::add, List::addAll);
+        return strings.stream().map(str -> cast(str, clazz)).toList();
     }
 
     /**
