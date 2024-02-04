@@ -32,6 +32,28 @@ public class RedisTemplateAdapter implements Redis {
         this.redisTemplate = redisTemplate;
     }
 
+    private <T> T cast(String jsonStr, Class<T> clazz) {
+        if (StrUtil.isBlank(jsonStr)) {
+            return null;
+        }
+        try {
+            return JSONUtil.toBean(jsonStr, clazz);
+        } catch (Exception e) {
+            log.error("redis parse obj to {}, failed, element: {}", clazz.getCanonicalName(),
+                jsonStr);
+        }
+        return null;
+    }
+
+    private <T> List<T> cast(List<String> strings, Class<T> clazz) {
+        if (CollectionUtil.isEmpty(strings)) {
+            return Collections.emptyList();
+        }
+        return strings.stream()
+            .map(jsonStr -> cast(jsonStr, clazz))
+            .collect(ArrayList::new, List::add, List::addAll);
+    }
+
     /**
      * set
      *
@@ -78,7 +100,7 @@ public class RedisTemplateAdapter implements Redis {
         if (StrUtil.isBlank(value)) {
             return null;
         }
-        return JSONUtil.toBean(value, clazz);
+        return cast(value, clazz);
     }
 
     /**
@@ -164,13 +186,7 @@ public class RedisTemplateAdapter implements Redis {
         for (Entry<Object, Object> entry : entries.entrySet()) {
             String val = String.valueOf(entry.getValue());
             String k = String.valueOf(entry.getKey());
-            try {
-                map.put(k, JSONUtil.toBean(val, clazz));
-            } catch (Exception e) {
-                map.put(k, null);
-                log.error("redis.getMap(String, Class) parse obj to {}, failed, k: {}, v: {}",
-                    clazz.getCanonicalName(), k, val);
-            }
+            map.put(k, cast(val, clazz));
         }
         return map;
     }
@@ -204,7 +220,7 @@ public class RedisTemplateAdapter implements Redis {
         if (val == null) {
             return null;
         }
-        return JSONUtil.toBean(String.valueOf(val), clazz);
+        return cast(String.valueOf(val), clazz);
     }
 
     /**
@@ -223,13 +239,7 @@ public class RedisTemplateAdapter implements Redis {
         for (int i = 0; i < ksList.size(); i++) {
             String k = String.valueOf(ksList.get(i));
             String v = String.valueOf(values.get(i));
-            try {
-                map.put(k, JSONUtil.toBean(v, clazz));
-            } catch (Exception e) {
-                map.put(k, null);
-                log.error("redis.getMap(String, Set, Class) parse obj to {}, failed, k: {}, v: {}",
-                    clazz.getCanonicalName(), k, v);
-            }
+            map.put(k, cast(v, clazz));
         }
         return map;
     }
@@ -364,5 +374,217 @@ public class RedisTemplateAdapter implements Redis {
     @Override
     public long scount(@NonNull String key) {
         return Optional.ofNullable(redisTemplate.opsForSet().size(key)).orElse(0L);
+    }
+
+    /**
+     * list 元素个数
+     *
+     * @param key key
+     * @return 元素个数
+     */
+    @Override
+    public int llen(@NonNull String key) {
+        return Optional.ofNullable(redisTemplate.opsForList().size(key))
+            .map(Long::intValue)
+            .orElse(0);
+    }
+
+    /**
+     * list 返回元素的索引值
+     *
+     * @param key     key
+     * @param element 元素
+     * @return 索引值
+     */
+    @Override
+    public int lindex(@NonNull String key, String element) {
+        return Optional.ofNullable(redisTemplate.opsForList().indexOf(key, element))
+            .map(Long::intValue)
+            .orElse(-1);
+    }
+
+    /**
+     * list head pop
+     *
+     * @param key   key
+     * @param count count
+     * @return els
+     */
+    @NonNull
+    @Override
+    public List<String> lpop(@NonNull String key, int count) {
+        return Optional.ofNullable(redisTemplate.opsForList().leftPop(key, count))
+            .orElse(Collections.emptyList());
+    }
+
+    /**
+     * list head pop
+     *
+     * @param key   key
+     * @param clazz type
+     * @param count count
+     * @return els
+     */
+    @NonNull
+    @Override
+    public <T> List<T> lpop(@NonNull String key, Class<T> clazz, int count) {
+        List<String> elements = lpop(key, count);
+        return cast(elements, clazz);
+    }
+
+    /**
+     * list tail pop
+     *
+     * @param key   key
+     * @param count count
+     * @return els
+     */
+    @NonNull
+    @Override
+    public List<String> lrpop(@NonNull String key, int count) {
+        return Optional.ofNullable(redisTemplate.opsForList().rightPop(key, count))
+            .orElse(Collections.emptyList());
+    }
+
+    /**
+     * list tail pop
+     *
+     * @param key   key
+     * @param clazz type
+     * @param count count
+     * @return els
+     */
+    @NonNull
+    @Override
+    public <T> List<T> lrpop(@NonNull String key, Class<T> clazz, int count) {
+        List<String> elements = lrpop(key, count);
+        return cast(elements, clazz);
+    }
+
+    /**
+     * list head push
+     *
+     * @param key      key
+     * @param elements els
+     */
+    @Override
+    public void lpush(@NonNull String key, String... elements) {
+        redisTemplate.opsForList().leftPushAll(key, elements);
+    }
+
+    /**
+     * list head push
+     *
+     * @param key      key
+     * @param elements els
+     */
+    @Override
+    public void lpush(@NonNull String key, Collection<String> elements) {
+        redisTemplate.opsForList().leftPushAll(key, elements);
+    }
+
+    /**
+     * list head push
+     *
+     * @param key      key
+     * @param clazz    clazz
+     * @param elements els
+     */
+    @Override
+    public <T> void lpush(@NonNull String key, Class<T> clazz, Collection<T> elements) {
+        List<String> els = elements.stream().map(JSONUtil::toJsonStr).toList();
+        lpush(key, els);
+    }
+
+    /**
+     * list tail push
+     *
+     * @param key      key
+     * @param elements els
+     */
+    @Override
+    public void lrpush(@NonNull String key, String... elements) {
+        redisTemplate.opsForList().rightPushAll(key, elements);
+    }
+
+    /**
+     * list tail push
+     *
+     * @param key      key
+     * @param elements els
+     */
+    @Override
+    public void lrpush(@NonNull String key, Collection<String> elements) {
+        redisTemplate.opsForList().rightPushAll(key, elements);
+    }
+
+    /**
+     * list tail push
+     *
+     * @param key      key
+     * @param clazz    clazz
+     * @param elements els
+     */
+    @Override
+    public <T> void lrpush(@NonNull String key, Class<T> clazz, Collection<T> elements) {
+        List<String> els = elements.stream().map(JSONUtil::toJsonStr).toList();
+        lrpush(key, els);
+    }
+
+    /**
+     * list range
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return els
+     */
+    @NonNull
+    @Override
+    public List<String> lrange(@NonNull String key, int start, int end) {
+        return Optional.ofNullable(redisTemplate.opsForList().range(key, start, end))
+            .orElse(Collections.emptyList());
+    }
+
+    /**
+     * list range
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @param clazz type
+     * @return els
+     */
+    @NonNull
+    @Override
+    public <T> List<T> lrange(@NonNull String key, int start, int end, Class<T> clazz) {
+        List<String> els = lrange(key, start, end);
+        return cast(els, clazz);
+    }
+
+    /**
+     * list set
+     *
+     * @param key     key
+     * @param index   index
+     * @param element el
+     */
+    @Override
+    public void lset(@NonNull String key, int index, String element) {
+        redisTemplate.opsForList().set(key, index, element);
+    }
+
+    /**
+     * list set
+     *
+     * @param key     key
+     * @param index   index
+     * @param element el
+     * @param clazz   type
+     */
+    @Override
+    public <T> void lset(@NonNull String key, int index, T element, Class<T> clazz) {
+        String str = JSONUtil.toJsonStr(element);
+        lset(key, index, str);
     }
 }

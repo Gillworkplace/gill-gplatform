@@ -45,7 +45,7 @@ public class AliasRedisProperties {
     /**
      * 最小连接数
      */
-    private int minIdle = 0;
+    private int minIdle = 2;
 
     /**
      * 最大等待时间 ms
