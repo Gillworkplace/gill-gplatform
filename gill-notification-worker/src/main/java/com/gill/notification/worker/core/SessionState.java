@@ -1,8 +1,6 @@
 package com.gill.notification.worker.core;
 
 import com.gill.common.util.ServerUtil;
-import com.gill.notification.worker.core.handler.WebSocketHandlerContext;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author gill
  * @version 2024/01/30
  **/
-public class WebSocketState {
+public class SessionState {
 
     /**
      * 服务器ID
@@ -28,5 +26,10 @@ public class WebSocketState {
     /**
      * 每个用户对应的连接数
      */
-    public static final Map<String, List<WebSocketHandlerContext>> USER_SESSIONS = new ConcurrentHashMap<>();
+    public static final Map<String, Map<String, Session>> USER_SESSIONS = new ConcurrentHashMap<>();
+
+    /**
+     * 长轮询会话ID分配器
+     */
+    public static final AtomicInteger EPHEMERAL_SESSION_ID_ALLOCATOR = new AtomicInteger(0);
 }

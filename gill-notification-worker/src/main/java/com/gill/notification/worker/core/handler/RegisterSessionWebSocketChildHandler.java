@@ -1,17 +1,13 @@
 package com.gill.notification.worker.core.handler;
 
-import cn.hutool.core.collection.CollectionUtil;
-import com.gill.api.domain.NotificationProperties;
-import com.gill.api.domain.RedisConstant;
-import com.gill.notification.worker.core.WebSocketState;
-import com.gill.redis.core.Redis;
-import java.util.ArrayList;
-import java.util.List;
+import com.gill.notification.worker.core.WebsocketSession;
+import com.gill.notification.worker.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketSession;
 
 /**
  * DefaultWebSocketHandler
@@ -25,7 +21,7 @@ import org.springframework.web.socket.CloseStatus;
 public class RegisterSessionWebSocketChildHandler implements WebSocketChildHandler {
 
     @Autowired
-    private Redis redis;
+    private SessionService sessionService;
 
     /**
      * 处理器名字
@@ -45,16 +41,8 @@ public class RegisterSessionWebSocketChildHandler implements WebSocketChildHandl
     @Override
     public void onOpen(WebSocketHandlerContext context) {
         String uid = context.getUid();
-        String redisKey = getRedisKey(uid);
-        synchronized (uid.intern()) {
-            List<WebSocketHandlerContext> sessions = WebSocketState.USER_SESSIONS.computeIfAbsent(
-                uid, key -> new ArrayList<>());
-
-            sessions.add(context);
-
-            // 将该服务器的连接添加至该用户下（用于用户广播数据）
-            redis.sadd(redisKey, WebSocketState.SERVER_ID);
-        }
+        WebsocketSession session = new WebsocketSession(uid, context.getWebSocketSession());
+        sessionService.saveSession(uid, session);
     }
 
     /**
@@ -66,20 +54,7 @@ public class RegisterSessionWebSocketChildHandler implements WebSocketChildHandl
     @Override
     public void onClose(WebSocketHandlerContext context, CloseStatus closeStatus) {
         String uid = context.getUid();
-        synchronized (uid.intern()) {
-            List<WebSocketHandlerContext> sessions = WebSocketState.USER_SESSIONS.get(uid);
-            if (sessions != null) {
-                sessions.remove(context);
-            }
-            if (CollectionUtil.isEmpty(sessions)) {
-                String redisKey = getRedisKey(uid);
-                WebSocketState.USER_SESSIONS.remove(uid);
-                redis.sremove(redisKey, WebSocketState.SERVER_ID);
-            }
-        }
-    }
-
-    private static String getRedisKey(String uid) {
-        return NotificationProperties.REDIS_USER_LOCATION_PREFIX + uid;
+        WebSocketSession session = context.getWebSocketSession();
+        sessionService.removeSession(uid, session.getId());
     }
 }

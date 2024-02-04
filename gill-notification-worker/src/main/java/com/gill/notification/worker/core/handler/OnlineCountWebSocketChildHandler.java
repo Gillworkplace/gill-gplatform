@@ -1,6 +1,6 @@
 package com.gill.notification.worker.core.handler;
 
-import com.gill.notification.worker.core.WebSocketState;
+import com.gill.notification.worker.core.SessionState;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -32,7 +32,7 @@ public class OnlineCountWebSocketChildHandler implements WebSocketChildHandler {
      */
     @Override
     public void onOpen(WebSocketHandlerContext context) {
-        WebSocketState.ONLINE_SESSION_COUNT.incrementAndGet();
+        SessionState.ONLINE_SESSION_COUNT.incrementAndGet();
     }
 
     /**
@@ -43,6 +43,6 @@ public class OnlineCountWebSocketChildHandler implements WebSocketChildHandler {
      */
     @Override
     public void onClose(WebSocketHandlerContext context, CloseStatus closeStatus) {
-        WebSocketState.ONLINE_SESSION_COUNT.decrementAndGet();
+        SessionState.ONLINE_SESSION_COUNT.decrementAndGet();
     }
 }
