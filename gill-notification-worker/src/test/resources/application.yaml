@@ -14,9 +14,10 @@ spring:
 
 logging:
   level:
-    com.gill.notification.worker: debug
+    com.gill: debug
 
 redis:
   nodes:
     - 127.0.0.1:10009
   database: 0
+  test: true

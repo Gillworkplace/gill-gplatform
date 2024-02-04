@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 @Slf4j
-public class WebSocketService implements IMetricsService, INotificationWorkerService {
+public class NotificationService implements IMetricsService, INotificationWorkerService {
 
     private static final int BATCH = 100;
 
@@ -48,19 +48,19 @@ public class WebSocketService implements IMetricsService, INotificationWorkerSer
     /**
      * 通知获取用户的未读消息
      *
-     * @param uid 用户id
+     * @param gid 会话组id
      * @return 是否通知成功
      */
     @Override
-    public boolean notify(String uid) {
-        Map<String, Session> sessions = SessionState.USER_SESSIONS.get(uid);
+    public boolean notify(String gid) {
+        Map<String, Session> sessions = SessionState.GROUP_SESSIONS.get(gid);
         if (CollectionUtil.isEmpty(sessions)) {
             return false;
         }
-        String lockKey = NotificationProperties.REDIS_USER_MSG_LOCK_PREFIX + uid;
+        String lockKey = NotificationProperties.REDIS_USER_MSG_LOCK_PREFIX + gid;
         lock.lock(lockKey);
         try {
-            String msgKey = NotificationProperties.REDIS_USER_MESSAGES_PREFIX + uid;
+            String msgKey = NotificationProperties.REDIS_USER_MESSAGES_PREFIX + gid;
             List<NotificationMessage> msgs;
 
             // 分批发送
@@ -76,7 +76,7 @@ public class WebSocketService implements IMetricsService, INotificationWorkerSer
             }
             return true;
         } catch (Exception e) {
-            log.error("notify uid {} failed, e: {}", uid, ExceptionUtil.getAllMessage(e));
+            log.error("notify gid {} failed, e: {}", gid, ExceptionUtil.getAllMessage(e));
             return false;
         } finally {
             lock.unlock(lockKey);

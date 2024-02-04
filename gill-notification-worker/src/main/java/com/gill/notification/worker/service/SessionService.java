@@ -34,7 +34,7 @@ public class SessionService {
     public void saveSession(String gid, Session session) {
         String redisKey = CommonUtil.getRedisKey(gid);
         synchronized (gid.intern()) {
-            Map<String, Session> sessions = SessionState.USER_SESSIONS.computeIfAbsent(gid,
+            Map<String, Session> sessions = SessionState.GROUP_SESSIONS.computeIfAbsent(gid,
                 key -> new HashMap<>(PRE_ALLOCATED_CAPACITY));
             sessions.put(session.getId(), session);
 
@@ -53,7 +53,7 @@ public class SessionService {
     public void removeSession(String gid, String sid) {
         String redisKey = CommonUtil.getRedisKey(gid);
         synchronized (gid.intern()) {
-            Map<String, Session> sessions = SessionState.USER_SESSIONS.get(gid);
+            Map<String, Session> sessions = SessionState.GROUP_SESSIONS.get(gid);
             if (sessions != null) {
                 sessions.remove(sid);
             }

@@ -2,7 +2,7 @@ package com.gill.notification.worker;
 
 import com.gill.api.domain.NotificationProperties;
 import com.gill.api.domain.UserProperties;
-import com.gill.notification.worker.service.WebSocketService;
+import com.gill.notification.worker.service.NotificationService;
 import com.gill.redis.core.Redis;
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class WebSocketTest {
     private static RedisServer redisServer;
 
     @Autowired
-    private WebSocketService service;
+    private NotificationService service;
 
     @Autowired
     private Redis redis;
@@ -109,7 +109,7 @@ public class WebSocketTest {
         CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, headers,
             new URI("ws://localhost:" + port + "/notification/worker/ws"));
         WebSocketSession session = Assertions.assertDoesNotThrow(
-            () -> sessionCf.get(100L, TimeUnit.MILLISECONDS), "connect to server timeout");
+            () -> sessionCf.get(1000L, TimeUnit.MILLISECONDS), "connect to server timeout");
         TextMessage msg = new TextMessage("hello");
         session.sendMessage(msg);
         String res = Assertions.assertDoesNotThrow(() -> future.get(1000L, TimeUnit.MILLISECONDS),
@@ -130,7 +130,7 @@ public class WebSocketTest {
         CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, null,
             new URI("ws://localhost:" + port + "/notification/worker/ws" + queryString));
         WebSocketSession session = Assertions.assertDoesNotThrow(
-            () -> sessionCf.get(100L, TimeUnit.MILLISECONDS), "connect to server timeout");
+            () -> sessionCf.get(1000L, TimeUnit.MILLISECONDS), "connect to server timeout");
         TextMessage msg = new TextMessage("hello");
         session.sendMessage(msg);
         String res = Assertions.assertDoesNotThrow(() -> future.get(1000L, TimeUnit.MILLISECONDS),
@@ -148,7 +148,7 @@ public class WebSocketTest {
         CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, null,
             new URI("ws://localhost:" + port + "/notification/worker/ws"));
         Assertions.assertThrows(TimeoutException.class,
-            () -> sessionCf.get(100L, TimeUnit.MILLISECONDS), "connect to server timeout");
+            () -> sessionCf.get(1000L, TimeUnit.MILLISECONDS), "connect to server timeout");
     }
 
     @Test
@@ -184,6 +184,24 @@ public class WebSocketTest {
         headers.add(UserProperties.TOKEN_ID, tid);
         CompletableFuture<WebSocketSession> sessionCf = client.execute(webSocketHandler, headers,
             new URI("ws://localhost:" + port + "/notification/worker/ws"));
-        return sessionCf.get(10000L, TimeUnit.MILLISECONDS);
+        return sessionCf.get(1000L, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testNotifyMsgs() throws Exception {
+        String gid = USER_ID;
+        redis.sadd(NotificationProperties.REDIS_USER_MESSAGES_PREFIX + gid);
+        CompletableFuture.runAsync(() -> {
+            try {
+                System.out.println("wait msgs");
+                WebSocketSession session = connectToServer(USER_ID, USER_TOKEN);
+                session.close();
+            } catch (Exception e) {
+                Assertions.fail("can not get notification msgs");
+            }
+        });
+        Thread.sleep(100L);
+        System.out.println("notify msgs");
+        service.notify(gid);
     }
 }

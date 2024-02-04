@@ -42,7 +42,7 @@ public class LongPollingSession extends Session {
     public List<NotificationMessage> awaitMsgs() throws Exception {
         try {
             return future.get(15, TimeUnit.SECONDS);
-        } catch (TimeoutException ignored) {
+        } catch (InterruptedException | TimeoutException ignored) {
         }
         return Collections.emptyList();
     }
