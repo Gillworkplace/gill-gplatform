@@ -6,7 +6,7 @@ package com.gill.api.notification;
  * @author gill
  * @version 2024/01/29
  **/
-public interface MetricsService {
+public interface IMetricsService {
 
     /**
      * 在线人数统计

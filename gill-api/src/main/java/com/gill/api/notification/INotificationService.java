@@ -8,7 +8,7 @@ import java.util.List;
  * @author gill
  * @version 2024/01/29
  **/
-public interface NotificationService {
+public interface INotificationService {
 
     /**
      * 给某一个连接发送消息

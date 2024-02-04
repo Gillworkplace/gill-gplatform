@@ -8,17 +8,15 @@ import lombok.Getter;
  * @author gill
  * @version 2024/01/30
  **/
-@Getter
-public enum UserProperties {
+public class UserProperties {
 
     /**
      * 用户ID
      */
-    USER_ID("uid");
+    public static final String USER_ID = "uid";
 
-    private final String value;
-
-    UserProperties(String value) {
-        this.value = value;
-    }
+    /**
+     * tokenID
+     */
+    public static final String TOKEN_ID = "tid";
 }
