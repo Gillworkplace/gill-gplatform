@@ -202,13 +202,24 @@ public interface Redis {
     int llen(@NonNull String key);
 
     /**
-     * list 返回元素的索引值
+     * list 返回索引的元素
      *
-     * @param key     key
-     * @param element 元素
-     * @return 索引值
+     * @param key   key
+     * @param index 索引位置
+     * @return element
      */
-    int lindex(@NonNull String key, String element);
+    String lindex(@NonNull String key, int index);
+
+    /**
+     * list 返回索引的元素
+     *
+     * @param key   key
+     * @param index 索引位置
+     * @param clazz 类型
+     * @param <T>   类型
+     * @return element
+     */
+    <T> T lindex(@NonNull String key, int index, Class<T> clazz);
 
     /**
      * list head pop

@@ -388,17 +388,31 @@ public class RedisTemplateAdapter implements Redis {
     }
 
     /**
-     * list 返回元素的索引值
+     * list 返回索引的元素
      *
-     * @param key     key
-     * @param element 元素
+     * @param key   key
+     * @param index 元素
      * @return 索引值
      */
     @Override
-    public int lindex(@NonNull String key, String element) {
-        return Optional.ofNullable(redisTemplate.opsForList().indexOf(key, element))
-            .map(Long::intValue)
-            .orElse(-1);
+    public String lindex(@NonNull String key, int index) {
+        return redisTemplate.opsForList().index(key, index);
+    }
+
+    /**
+     * list 返回索引的元素
+     *
+     * @param key   key
+     * @param index 索引位置
+     * @param clazz 类型
+     * @param <T>   类型
+     * @return element
+     */
+    @Override
+    public <T> T lindex(@NonNull String key, int index, Class<T> clazz) {
+        return Optional.ofNullable(redisTemplate.opsForList().index(key, index))
+            .map(el -> cast(el, clazz))
+            .orElse(null);
     }
 
     /**
