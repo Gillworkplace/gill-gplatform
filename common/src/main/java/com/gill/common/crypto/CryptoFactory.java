@@ -30,6 +30,9 @@ public class CryptoFactory {
     private static void loadLocalStrategy() {
         register(new DefaultCryptoStrategy());
         register(new DESCryptoStrategy());
+        register(new Md5DigestStrategy());
+        register(new Sha256DigestStrategy());
+        register(new Sha512DigestStrategy());
     }
 
     /**
