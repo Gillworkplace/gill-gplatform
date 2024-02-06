@@ -1,7 +1,7 @@
 package com.gill.others.controller;
 
 import com.gill.others.bean.Body;
-import com.gill.web.api.Result;
+import com.gill.web.api.Response;
 import com.gill.web.exception.WebException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -24,32 +24,32 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RestController {
 
     @GetMapping("/str/{key}")
-    public String str(@PathVariable("key") String key, @RequestParam("value") String value) {
-        return key + "=" + value;
+    public Body str(@PathVariable("key") String key, @RequestParam("value") String value) {
+        return new Body(key, value);
     }
 
     @PostMapping("/res")
-    public Result<Body> res(@RequestBody Body body) {
-        return Result.success(body);
+    public Response<Body> res(@RequestBody Body body) {
+        return Response.success(body);
     }
 
     @GetMapping("/noParam")
-    public Result<String> noParam() {
-        return Result.success();
+    public Response<String> noParam() {
+        return Response.success();
     }
 
     @GetMapping("/webEx")
-    public Result<Object> webEx() {
-        throw new WebException(HttpStatus.BAD_REQUEST);
+    public Response<Object> webEx() {
+        throw new WebException(HttpStatus.BAD_REQUEST, "failed");
     }
 
     @GetMapping("/ex")
-    public Result<Object> ex() throws Exception {
+    public Response<Object> ex() throws Exception {
         throw new Exception("error");
     }
 
     @GetMapping("/validEx")
-    public Result<String> validEx(@Valid @Min(0) @RequestParam("number") Integer number) {
-        return Result.success();
+    public Response<String> validEx(@Valid @Min(0) @RequestParam("number") Integer number) {
+        return Response.success();
     }
 }

@@ -1,4 +1,4 @@
-package com.gill.api.user;
+package com.gill.api.service.user;
 
 import com.gill.api.domain.UserProperties;
 

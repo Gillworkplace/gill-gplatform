@@ -1,8 +1,10 @@
 package com.gill.web.aspect;
 
-import com.gill.web.api.Result;
+import com.gill.common.exception.ExceptionUtil;
+import com.gill.web.api.Response;
 import com.gill.web.exception.WebException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -20,21 +22,22 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
  * @version 2024/01/22
  **/
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionAspect {
 
     @ExceptionHandler(value = WebException.class)
-    public Result<String> handleWebEx(WebException ex) {
+    public Response<String> handleWebEx(WebException ex) {
         if (ex.isInternalException()) {
-            return Result.failed();
+            return Response.failed();
         }
-        return Result.failed(ex.getStatus(), ex.getMessage());
+        return Response.failed(ex.getStatus(), ex.getMessage());
     }
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class, BindException.class})
-    public Result<String> handleValidException(BindException ex) {
+    public Response<String> handleValidException(BindException ex) {
         BindingResult bindingResult = ex.getBindingResult();
         if (!bindingResult.hasErrors()) {
-            return Result.validateFailed();
+            return Response.validateFailed();
         }
         StringBuilder error = new StringBuilder();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -44,11 +47,11 @@ public class GlobalExceptionAspect {
                 .append(fieldError.getDefaultMessage())
                 .append("; ");
         }
-        return Result.validateFailed(error.toString());
+        return Response.validateFailed(error.toString());
     }
 
     @ExceptionHandler(value = {HandlerMethodValidationException.class})
-    public Result<String> handleValidException2(HandlerMethodValidationException ex) {
+    public Response<String> handleValidException2(HandlerMethodValidationException ex) {
         List<ParameterValidationResult> validateResults = ex.getAllValidationResults();
         StringBuilder error = new StringBuilder();
         for (ParameterValidationResult validate : validateResults) {
@@ -56,11 +59,12 @@ public class GlobalExceptionAspect {
                 error.append(resolvableError.getDefaultMessage()).append(";");
             }
         }
-        return Result.validateFailed(error.toString());
+        return Response.validateFailed(error.toString());
     }
 
     @ExceptionHandler(value = Exception.class)
-    public Result<String> handleEx(Exception ex) {
-        return Result.failed();
+    public Response<String> handleEx(Exception ex) {
+        log.error("web occur exception, e: {}", ExceptionUtil.getAllMessage(ex));
+        return Response.failed();
     }
 }

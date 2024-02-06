@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+  <!--<properties resource="db.properties"/>-->
+
+  <context id="springmvc" targetRuntime="MyBatis3"  >
+    <plugin type="org.mybatis.generator.plugins.CaseInsensitiveLikePlugin"></plugin>
+    <plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>
+    <!-- Pagination -->
+
+    <commentGenerator>
+      <!-- 是否去除自动生成的注释 -->
+      <property name="suppressAllComments" value="true"/>
+      <!--是否生成注释代时间戳-->
+      <property name="suppressDate" value="true"/>
+    </commentGenerator>
+
+    <!-- 数据库连接url、用户名、密码 -->
+    <!--MySQL 5版本使用jdbc5驱动，驱动类使用：com.mysql.jdbc.Driver
+    MySQL 8版本使用jdbc8驱动，驱动类使用：com.mysql.cj.jdbc.Driver-->
+    <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+      connectionURL="jdbc:mysql://localhost:3306/mybtistest" userId="root" password="000000">
+    </jdbcConnection>
+
+    <!--
+    默认false，把JDBC DECIMAL 和 NUMERIC 类型解析为 Integer
+        true，把JDBC DECIMAL 和 NUMERIC 类型解析为java.math.BigDecimal
+    -->
+    <javaTypeResolver>
+      <property name="forceBigDecimals" value="false" />
+    </javaTypeResolver>
+
+    <!-- 生成模型的包名和位置 -->
+    <!--
+    生成model模型，对应的包路径，以及文件存放路径(targetProject)，targetProject可以指定具体的路径,如./src/main/java，
+    也可以使用“MAVEN”来自动生成，这样生成的代码会在target/generatord-source目录下
+    -->
+    <javaModelGenerator targetPackage="com.mybatis.entity" targetProject="src\main\java">
+      <!--是否在当前路径下增加一层schema,eg:false路径com.mybatis.entity,true路径com.mybatis.entity.[schema]-->
+      <property name="enableSubPackages" value="true" />
+      <!-- 从数据库返回的值被清理前后的空格  -->
+      <property name="trimStrings" value="true" />
+    </javaModelGenerator>
+
+    <!-- 生成映射文件的包名和位置 -->
+    <!--对应的mapper.xml文件  -->
+    <sqlMapGenerator targetPackage="com.mybatis.mapper" targetProject="src\main\resources">
+      <property name="enableSubPackages" value="true" />
+    </sqlMapGenerator>
+
+    <!-- 生成DAO的包名和位置 -->
+    <!-- 对应的Mapper接口类文件 -->
+    <javaClientGenerator type="XMLMAPPER" targetPackage="com.mybatis.mapper" targetProject="src\main\java">
+      <property name="enableSubPackages" value="true" />
+    </javaClientGenerator>
+
+    <!-- 要生成的表 tableName对应数据库中的表名、domainObjectName对应实体类名 -->
+    <!--schema即为数据库名 tableName为对应的数据库表名 domainObjectName要生成的实体类 enableSelectByExample是否生成Example类-->
+    <table tableName="t_user" domainObjectName="User">
+      <!--是否使用列名作为实体类的属性名-->
+      <!--<property name="useActualColumnNames" value="true"/>-->
+      <!--在有自增ID的时候，在generatorConfig.xml中对表的配置，都要加上一行generatedKey,否则无法从
+      当前这个Entity中获取到插入之后的Id-->
+      <generatedKey column="id" sqlStatement="mysql" identity="true" />
+    </table>
+
+    <!--        <table tableName="student" domainObjectName="StudentEntity"></table>-->
+
+  </context>
+</generatorConfiguration>

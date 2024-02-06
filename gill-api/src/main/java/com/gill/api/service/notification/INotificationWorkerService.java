@@ -1,4 +1,4 @@
-package com.gill.api.notification;
+package com.gill.api.service.notification;
 
 /**
  * NotificationService

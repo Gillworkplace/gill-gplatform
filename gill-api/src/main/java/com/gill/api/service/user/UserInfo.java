@@ -1,4 +1,4 @@
-package com.gill.api.user;
+package com.gill.api.service.user;
 
 import lombok.Getter;
 import lombok.Setter;
