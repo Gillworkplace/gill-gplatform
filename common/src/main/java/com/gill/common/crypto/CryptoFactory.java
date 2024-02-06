@@ -1,4 +1,4 @@
-package com.gill.common.decryption;
+package com.gill.common.crypto;
 
 import com.google.common.base.Strings;
 import java.util.Map;
@@ -11,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author gill
  * @version 2023/12/18
  **/
-public class DecryptionFactory {
+public class CryptoFactory {
 
-    private static final Map<String, DecryptionStrategy> STRATEGIES = new ConcurrentHashMap<>(16);
+    private static final Map<String, CryptoStrategy> STRATEGIES = new ConcurrentHashMap<>(16);
 
     static {
         loadStrategy();
@@ -21,15 +21,15 @@ public class DecryptionFactory {
 
     private static void loadStrategy() {
         loadLocalStrategy();
-        ServiceLoader<DecryptionStrategy> loader = ServiceLoader.load(DecryptionStrategy.class);
-        for (DecryptionStrategy strategy : loader) {
+        ServiceLoader<CryptoStrategy> loader = ServiceLoader.load(CryptoStrategy.class);
+        for (CryptoStrategy strategy : loader) {
             register(strategy);
         }
     }
 
     private static void loadLocalStrategy() {
-        register(new DefaultDecryptionStrategy());
-        register(new DESDecryptionStrategy());
+        register(new DefaultCryptoStrategy());
+        register(new DESCryptoStrategy());
     }
 
     /**
@@ -37,7 +37,7 @@ public class DecryptionFactory {
      *
      * @param strategy 策略
      */
-    public static void register(DecryptionStrategy strategy) {
+    public static void register(CryptoStrategy strategy) {
         STRATEGIES.put(strategy.getName(), strategy);
     }
 
@@ -46,8 +46,8 @@ public class DecryptionFactory {
      *
      * @return 策略
      */
-    public static DecryptionStrategy getStrategy() {
-        DecryptionStrategy strategy = STRATEGIES.get("default");
+    public static CryptoStrategy getStrategy() {
+        CryptoStrategy strategy = STRATEGIES.get("default");
         if (strategy == null) {
             throw new IllegalArgumentException("No such decryption strategy: default");
         }
@@ -60,9 +60,9 @@ public class DecryptionFactory {
      * @param name name
      * @return 策略
      */
-    public static DecryptionStrategy getStrategy(String name) {
+    public static CryptoStrategy getStrategy(String name) {
         name = Strings.isNullOrEmpty(name) ? "default" : name;
-        DecryptionStrategy strategy = STRATEGIES.get(name);
+        CryptoStrategy strategy = STRATEGIES.get(name);
         if (strategy == null) {
             throw new IllegalArgumentException("No such decryption strategy: " + name);
         }
@@ -76,9 +76,9 @@ public class DecryptionFactory {
      * @param defaultStrategyName 默认解密策略
      * @return 策略
      */
-    public static DecryptionStrategy getStrategy(String name, String defaultStrategyName) {
+    public static CryptoStrategy getStrategy(String name, String defaultStrategyName) {
         name = Strings.isNullOrEmpty(name) ? "default" : name;
-        DecryptionStrategy strategy = STRATEGIES.get(name);
+        CryptoStrategy strategy = STRATEGIES.get(name);
         if (strategy == null) {
             strategy = STRATEGIES.get(defaultStrategyName);
         }

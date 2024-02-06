@@ -1,7 +1,7 @@
 package com.gill.datasource.generator;
 
-import com.gill.common.decryption.DecryptionFactory;
-import com.gill.common.decryption.DecryptionStrategy;
+import com.gill.common.crypto.CryptoFactory;
+import com.gill.common.crypto.CryptoStrategy;
 import com.gill.datasource.DataSourceProperties;
 import com.gill.datasource.DataSources;
 import com.google.common.io.Files;
@@ -45,13 +45,13 @@ abstract class BaseDataSourceGenerator {
      * @param defaultDecryptionName 默认解密名称
      * @return 解密策略
      */
-    protected DecryptionStrategy getDecryptionStrategy(DataSourceProperties properties,
+    protected CryptoStrategy getDecryptionStrategy(DataSourceProperties properties,
         String defaultDecryptionName) {
         String decryptionName = properties.decryptionName();
         if (decryptionName == null) {
-            return DecryptionFactory.getStrategy(defaultDecryptionName);
+            return CryptoFactory.getStrategy(defaultDecryptionName);
         }
-        return DecryptionFactory.getStrategy(decryptionName);
+        return CryptoFactory.getStrategy(decryptionName);
     }
 
     /**

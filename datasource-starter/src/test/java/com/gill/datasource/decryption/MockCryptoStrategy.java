@@ -1,6 +1,6 @@
 package com.gill.datasource.decryption;
 
-import com.gill.common.decryption.DecryptionStrategy;
+import com.gill.common.crypto.CryptoStrategy;
 
 /**
  * MockDecryptionStrategy
@@ -8,7 +8,7 @@ import com.gill.common.decryption.DecryptionStrategy;
  * @author gill
  * @version 2023/12/18
  **/
-public class MockDecryptionStrategy implements DecryptionStrategy {
+public class MockCryptoStrategy implements CryptoStrategy {
 
     /**
      * 获取名称

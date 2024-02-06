@@ -1,6 +1,6 @@
 package com.gill.datasource;
 
-import com.gill.common.decryption.DecryptionFactory;
+import com.gill.common.crypto.CryptoFactory;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +32,7 @@ class DataSourcesConfigTests {
 
     @Test
     public void testDecryptionStrategySPI() {
-        Assertions.assertNotNull(DecryptionFactory.getStrategy("mock"));
+        Assertions.assertNotNull(CryptoFactory.getStrategy("mock"));
     }
 
     @Test

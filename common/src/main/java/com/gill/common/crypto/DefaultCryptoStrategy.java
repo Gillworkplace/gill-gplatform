@@ -1,4 +1,4 @@
-package com.gill.common.decryption;
+package com.gill.common.crypto;
 
 /**
  * DefaultDecryptionStrategy
@@ -6,7 +6,7 @@ package com.gill.common.decryption;
  * @author gill
  * @version 2023/12/18
  **/
-public class DefaultDecryptionStrategy implements DecryptionStrategy {
+public class DefaultCryptoStrategy implements CryptoStrategy {
 
     /**
      * 获取名称
@@ -26,6 +26,17 @@ public class DefaultDecryptionStrategy implements DecryptionStrategy {
      */
     @Override
     public String decrypt(String rawTest) {
+        return rawTest;
+    }
+
+    /**
+     * 加密
+     *
+     * @param rawTest 明文
+     * @return 密文
+     */
+    @Override
+    public String encrypt(String rawTest) {
         return rawTest;
     }
 }

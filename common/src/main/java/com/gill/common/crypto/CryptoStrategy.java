@@ -1,4 +1,4 @@
-package com.gill.common.decryption;
+package com.gill.common.crypto;
 
 /**
  * DecryptionStrategy
@@ -6,7 +6,7 @@ package com.gill.common.decryption;
  * @author gill
  * @version 2023/12/18
  **/
-public interface DecryptionStrategy {
+public interface CryptoStrategy {
 
     /**
      * 获取名称
@@ -22,4 +22,12 @@ public interface DecryptionStrategy {
      * @return 密文
      */
     String decrypt(String rawTest);
+
+    /**
+     * 加密
+     *
+     * @param rawTest 明文
+     * @return 密文
+     */
+    String encrypt(String rawTest);
 }

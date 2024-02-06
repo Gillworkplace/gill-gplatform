@@ -1,8 +1,8 @@
 package com.gill.redis.config;
 
 
-import com.gill.common.decryption.DecryptionFactory;
-import com.gill.common.decryption.DecryptionStrategy;
+import com.gill.common.crypto.CryptoFactory;
+import com.gill.common.crypto.CryptoStrategy;
 import com.gill.common.util.ServerUtil;
 import java.time.Duration;
 import java.util.List;
@@ -40,7 +40,7 @@ public class BeforeRedisConfiguration {
     @Primary
     @Bean
     public RedisProperties redisProperties(AliasRedisProperties aliasRedisProperties) {
-        DecryptionStrategy strategy = DecryptionFactory.getStrategy(
+        CryptoStrategy strategy = CryptoFactory.getStrategy(
             aliasRedisProperties.getDecryptionName());
         RedisProperties redisProperties = new RedisProperties();
         setNodes(aliasRedisProperties.getNodes(), redisProperties);
@@ -99,7 +99,7 @@ public class BeforeRedisConfiguration {
     }
 
     private void buildSingletonConfig(Config config, AliasRedisProperties properties) {
-        DecryptionStrategy strategy = DecryptionFactory.getStrategy(properties.getDecryptionName());
+        CryptoStrategy strategy = CryptoFactory.getStrategy(properties.getDecryptionName());
         config.useSingleServer()
             .setAddress("redis://" + properties.getNodes().get(0))
             .setPassword(strategy.decrypt(properties.getPassword()))
@@ -117,7 +117,7 @@ public class BeforeRedisConfiguration {
     }
 
     private void buildClusterConfig(Config config, AliasRedisProperties properties) {
-        DecryptionStrategy strategy = DecryptionFactory.getStrategy(properties.getDecryptionName());
+        CryptoStrategy strategy = CryptoFactory.getStrategy(properties.getDecryptionName());
         List<String> nodes = properties.getNodes().stream().map(node -> "redis://" + node).toList();
         config.useClusterServers()
             .setMasterConnectionMinimumIdleSize(Math.max(1, properties.getMinIdle()))
