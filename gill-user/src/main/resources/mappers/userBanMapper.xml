@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gill.user.mapper.UserBanMapper">
+
+  <select id="firstUserBan" resultType="com.gill.api.model.UserBan">
+    select t.user_id    as userId,
+           t.reason     as reason,
+           t.until_time as untilTime
+    from t_user_ban t
+    where user_id = ${userId}
+      and until_time > now()
+    order by until_time desc
+    limit 1
+  </select>
+</mapper>

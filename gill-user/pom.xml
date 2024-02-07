@@ -28,8 +28,34 @@
     </dependency>
     <dependency>
       <groupId>com.gill</groupId>
+      <artifactId>gill-redis-starter</artifactId>
+      <version>${module.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.gill</groupId>
+      <artifactId>gill-datasource-starter</artifactId>
+      <version>${module.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.gill</groupId>
       <artifactId>gill-api</artifactId>
       <version>${module.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.codemonstur</groupId>
+      <artifactId>embedded-redis</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

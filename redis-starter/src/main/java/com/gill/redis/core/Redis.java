@@ -41,6 +41,31 @@ public interface Redis {
     void set(@NonNull String key, Object value, long expired);
 
     /**
+     * 原子加1
+     *
+     * @param key key
+     * @return +1
+     */
+    Long increaseAndGet(@NonNull String key);
+
+    /**
+     * 原子减1
+     *
+     * @param key key
+     * @return -1
+     */
+    Long decreaseAndGet(@NonNull String key);
+
+    /**
+     * 原子加x
+     *
+     * @param key   key
+     * @param delta delta
+     * @return +x
+     */
+    Long addAndGet(@NonNull String key, @NonNull long delta);
+
+    /**
      * get
      *
      * @param key key

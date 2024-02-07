@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gill.user.mapper.UserMapper">
+
+  <select id="getEncryptPwdAndSaltByUsername" resultType="com.gill.api.model.User">
+    select t.id               as id,
+           t.username         as username,
+           t.encrypt_password as encryptPassword,
+           t.salt             as salt
+    from t_user t
+    where username = #{username}
+  </select>
+
+  <update id="updateLoginTime">
+    update t_user t
+    set t.login_time = now()
+    where t.id = #{userId}
+  </update>
+
+  <select id="getUserInfoById" resultType="com.gill.api.model.User">
+    select t.id          as id,
+           t.username    as username,
+           t.create_time as createTime,
+           t.nick_name   as nickName,
+           t.avatar      as avatar,
+           t.description as description
+    from t_user t
+    where t.id = #{userId}
+  </select>
+
+  <insert id="insertUser" parameterType="com.gill.api.model.User">
+    insert into t_user (id, username, encrypt_password, salt, create_time, nick_name, avatar,
+                        description)
+    values (#{id}, #{username}, #{encryptPassword}, #{salt}, now(), #{nickName}, #{avatar},
+            #{description})
+  </insert>
+
+  <select id="existsUsername" resultType="java.lang.Boolean">
+    select true
+    from t_user t
+    where t.username = #{username}
+  </select>
+</mapper>

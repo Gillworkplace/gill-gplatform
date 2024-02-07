@@ -11,7 +11,8 @@ server:
 spring:
   application:
     name: guser
-
+  profiles:
+    active: self
 
 logging:
   level:

@@ -14,5 +14,4 @@ public class GillUserApplication {
     public static void main(String[] args) {
         SpringApplication.run(GillUserApplication.class, args);
     }
-
 }

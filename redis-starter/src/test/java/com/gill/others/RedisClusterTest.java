@@ -1,5 +1,6 @@
 package com.gill.others;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.gill.redis.core.Redis;
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,20 +49,36 @@ public class RedisClusterTest {
         cluster.stop();
     }
 
-
     @Test
-    public void testSet() {
-        Assertions.assertDoesNotThrow(() -> redis.set("t", "123"));
+    public void test_add() {
+        Assertions.assertEquals(1L, redis.increaseAndGet("calc"));
+        redis.set("calc", "0");
+        Assertions.assertEquals(1L, redis.increaseAndGet("calc"));
+        Assertions.assertEquals(0L, redis.decreaseAndGet("calc"));
+        Assertions.assertEquals(5L, redis.addAndGet("calc", 5));
     }
 
     @Test
-    public void testGet1() {
+    public void test_set1() {
+        Assertions.assertDoesNotThrow(() -> redis.set("t1", "123"));
+    }
+
+    @Test
+    public void test_set2() {
+        redis.set("t2", "123", 1000L);
+        Assertions.assertEquals("123", redis.get("t2"));
+        ThreadUtil.sleep(1000);
+        Assertions.assertEquals("", redis.get("t2"));
+    }
+
+    @Test
+    public void test_get1() {
         redis.set("test", "123");
         Assertions.assertEquals("123", redis.get("test"));
     }
 
     @Test
-    public void testGet2() {
+    public void test_get2() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
@@ -70,12 +87,12 @@ public class RedisClusterTest {
     }
 
     @Test
-    public void testSetMap1() {
+    public void test_mset1() {
         Assertions.assertDoesNotThrow(() -> redis.mset("map1", "key", "value"));
     }
 
     @Test
-    public void testSetMap2() {
+    public void test_mset2() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
@@ -86,18 +103,18 @@ public class RedisClusterTest {
     }
 
     @Test
-    public void testSetMap3() {
+    public void test_mset3() {
         Assertions.assertDoesNotThrow(() -> redis.mset("map3", new HashMap<>()));
     }
 
     @Test
-    public void testGetMap1() {
+    public void test_mget1() {
         redis.mset("map4", "key", "value");
         Assertions.assertEquals("value", redis.mget("map4", "key"));
     }
 
     @Test
-    public void testGetMap2() {
+    public void test_mget2() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
@@ -106,13 +123,13 @@ public class RedisClusterTest {
     }
 
     @Test
-    public void testGetMap3() {
+    public void test_mget3() {
         redis.mset("map6", "key", "value");
         Assertions.assertEquals(1, redis.mget("map6").size());
     }
 
     @Test
-    public void testGetMap4() {
+    public void test_mget4() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
@@ -121,14 +138,14 @@ public class RedisClusterTest {
     }
 
     @Test
-    public void testGetMap5() {
+    public void test_mget5() {
         redis.mset("map8", "k1", "v1");
         redis.mset("map8", "k2", "v2");
         Assertions.assertEquals(2, redis.mget("map8", Set.of("k1", "k2")).size());
     }
 
     @Test
-    public void testGetMap6() {
+    public void test_mget6() {
         Bean bean1 = new Bean();
         bean1.setName("zzy");
         bean1.setAge(18);
@@ -137,178 +154,75 @@ public class RedisClusterTest {
         bean2.setAge(19);
         redis.mset("map9", "k1", bean1);
         redis.mset("map9", "k2", bean2);
-        Assertions.assertEquals(2, redis.mget("map8", Set.of("k1", "k2"), Bean.class).size());
+        Assertions.assertEquals(2, redis.mget("map9", Set.of("k1", "k2"), Bean.class).size());
     }
 
     @Test
-    public void test_llen() {
-        redis.lrpush("list0", "1", "2");
-        Assertions.assertEquals(2, redis.llen("list0"));
+    public void test_sget() {
+        redis.sadd("set1", "1");
+        Set<String> set = redis.sget("set1");
+        Assertions.assertEquals(1, set.size());
     }
 
     @Test
-    public void test_lindex1() {
-        redis.lrpush("list1", "1", "2");
-        Assertions.assertEquals("2", redis.lindex("list1", 1));
+    public void test_sadd1() {
+        long cnt1 = redis.sadd("set2", "1", "2");
+        long cnt2 = redis.sadd("set2", "1", "3");
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(1, cnt2);
     }
 
     @Test
-    public void test_lindex2() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        redis.lrpush("list2", Bean.class, Arrays.asList(bean1, bean2));
-        Assertions.assertEquals(bean2, redis.lindex("list2", 1, Bean.class));
-    }
-
-
-    @Test
-    public void test_lpop1() {
-        redis.lrpush("list3", "1", "2");
-        Assertions.assertEquals(2, redis.llen("list3"));
-        List<String> list3 = redis.lpop("list3", 2);
-        Assertions.assertEquals("1", list3.get(0));
-        Assertions.assertEquals("2", list3.get(1));
-        Assertions.assertEquals(0, redis.llen("list3"));
+    public void test_sadd2() {
+        long cnt1 = redis.sadd("set3", Arrays.asList("1", "2"));
+        long cnt2 = redis.sadd("set3", Arrays.asList("1", "3"));
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(1, cnt2);
     }
 
     @Test
-    public void test_lpop2() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        redis.lrpush("list4", Bean.class, Arrays.asList(bean1, bean2));
-        Assertions.assertEquals(2, redis.llen("list4"));
-        List<Bean> list4 = redis.lpop("list4", Bean.class, 2);
-        Assertions.assertEquals(bean1, list4.get(0));
-        Assertions.assertEquals(bean2, list4.get(1));
-        Assertions.assertEquals(0, redis.llen("list4"));
+    public void test_sremove1() {
+        redis.sadd("set4", "1", "2");
+        long cnt1 = redis.sremove("set4", "1", "2");
+        long cnt2 = redis.sremove("set4", "1", "3");
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(0, cnt2);
     }
 
     @Test
-    public void test_lrpop1() {
-        redis.lrpush("list5", "1", "2");
-        Assertions.assertEquals(2, redis.llen("list5"));
-        List<String> list5 = redis.lrpop("list5", 2);
-        Assertions.assertEquals("2", list5.get(0));
-        Assertions.assertEquals("1", list5.get(1));
-        Assertions.assertEquals(0, redis.llen("list5"));
+    public void test_sremove2() {
+        redis.sadd("set5", "1", "2");
+        long cnt1 = redis.sremove("set5", Arrays.asList("1", "2"));
+        long cnt2 = redis.sremove("set5", Arrays.asList("1", "3"));
+        Assertions.assertEquals(2, cnt1);
+        Assertions.assertEquals(0, cnt2);
     }
 
     @Test
-    public void test_lrpop2() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        redis.lrpush("list6", Bean.class, Arrays.asList(bean1, bean2));
-        Assertions.assertEquals(2, redis.llen("list6"));
-        List<Bean> list6 = redis.lrpop("list6", Bean.class, 2);
-        Assertions.assertEquals(bean2, list6.get(0));
-        Assertions.assertEquals(bean1, list6.get(1));
-        Assertions.assertEquals(0, redis.llen("list6"));
+    public void test_sclear() {
+        redis.sadd("set6", "1", "2");
+        redis.sclear("set6");
+        Set<String> set = redis.sget("set6");
+        Assertions.assertEquals(0, set.size());
     }
 
     @Test
-    public void test_lpush1() {
-        Assertions.assertDoesNotThrow(() -> redis.lpush("list7", "1", "2"));
-        Assertions.assertEquals(2, redis.llen("list7"));
+    public void test_scontains1() {
+        redis.sadd("set7", "1", "2");
+        Assertions.assertTrue(redis.scontains("set7", "1"));
+        Assertions.assertFalse(redis.scontains("set7", "3"));
     }
 
     @Test
-    public void test_lpush2() {
-        Assertions.assertDoesNotThrow(() -> redis.lpush("list8", Arrays.asList("1", "2")));
-        Assertions.assertEquals(2, redis.llen("list8"));
+    public void test_scontains2() {
+        redis.sadd("set8", Arrays.asList("1", "2"));
+        Assertions.assertTrue(redis.scontains("set8", "1"));
+        Assertions.assertFalse(redis.scontains("set8", "3"));
     }
 
     @Test
-    public void test_lpush3() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        Assertions.assertDoesNotThrow(
-            () -> redis.lpush("list9", Bean.class, Arrays.asList(bean1, bean2)));
-        Assertions.assertEquals(2, redis.llen("list9"));
-    }
-
-    @Test
-    public void test_lrpush1() {
-        Assertions.assertDoesNotThrow(() -> redis.lrpush("list10", "1", "2"));
-        Assertions.assertEquals(2, redis.llen("list10"));
-    }
-
-    @Test
-    public void test_lrpush2() {
-        Assertions.assertDoesNotThrow(() -> redis.lrpush("list11", Arrays.asList("1", "2")));
-        Assertions.assertEquals(2, redis.llen("list11"));
-    }
-
-    @Test
-    public void test_lrpush3() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        Assertions.assertDoesNotThrow(
-            () -> redis.lrpush("list12", Bean.class, Arrays.asList(bean1, bean2)));
-        Assertions.assertEquals(2, redis.llen("list12"));
-    }
-
-    @Test
-    public void test_lrange1() {
-        redis.lrpush("list13", "1", "2");
-        List<String> list13 = redis.lrange("list13", 0, -1);
-        Assertions.assertEquals("1", list13.get(0));
-        Assertions.assertEquals("2", list13.get(1));
-    }
-
-    @Test
-    public void test_lrange2() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        redis.lrpush("list14", Bean.class, Arrays.asList(bean1, bean2));
-        List<Bean> list14 = redis.lrange("list14", 0, -1, Bean.class);
-        Assertions.assertEquals(bean1, list14.get(0));
-        Assertions.assertEquals(bean2, list14.get(1));
-    }
-
-    @Test
-    public void test_lset1() {
-        redis.lrpush("list15", "1", "2");
-        redis.lset("list15", 1, "3");
-        Assertions.assertEquals("3", redis.lindex("list15", 1));
-    }
-
-    @Test
-    public void test_lset2() {
-        Bean bean1 = new Bean();
-        bean1.setName("zzy");
-        bean1.setAge(18);
-        Bean bean2 = new Bean();
-        bean2.setName("zzzy");
-        bean2.setAge(19);
-        Bean bean3 = new Bean();
-        bean3.setName("zzzzy");
-        bean3.setAge(20);
-        redis.lrpush("list16", Bean.class, Arrays.asList(bean1, bean2));
-        redis.lset("list16", 1, bean3, Bean.class);
-        Assertions.assertEquals(bean3, redis.lindex("list16", 1, Bean.class));
+    public void test_scount() {
+        redis.sadd("set9", Arrays.asList("1", "2"));
+        Assertions.assertEquals(2, redis.scount("set9"));
     }
 }

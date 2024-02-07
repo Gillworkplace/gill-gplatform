@@ -48,7 +48,8 @@ public class GlobalExceptionAspect {
                 .append(fieldError.getDefaultMessage())
                 .append("; ");
         }
-        return Response.validateFailed(error.toString()).build();
+        String message = bindingResult.getFieldErrors().get(0).getDefaultMessage();
+        return Response.validateFailed(message).build();
     }
 
     @ExceptionHandler(value = {HandlerMethodValidationException.class})

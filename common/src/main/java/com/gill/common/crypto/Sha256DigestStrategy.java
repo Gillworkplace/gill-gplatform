@@ -30,4 +30,8 @@ public class Sha256DigestStrategy implements DigestStrategy {
     public String encrypt(String rawTest) {
         return DigestUtil.sha256Hex(rawTest);
     }
+
+//    public static void main(String[] args) {
+//        System.out.println(new Sha256DigestStrategy().encrypt("12345678abcdefgh"));
+//    }
 }

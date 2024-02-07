@@ -41,21 +41,42 @@ public class UserProperties {
     /**
      * 验证码redis前缀
      */
-    public static final String REDIS_CAPTCHA_PREFIX = "captcha" + RedisConstant.REDIS_KEY_SPLITTER;
+    private static final String REDIS_CAPTCHA_PREFIX = "captcha" + RedisConstant.REDIS_KEY_SPLITTER;
 
     /**
-     * 资源redis前缀
+     * 用户资源redis前缀
      */
-    public static final String REDIS_RESOURCES_PREFIX =
-        "resources" + RedisConstant.REDIS_KEY_SPLITTER;
+    private static final String REDIS_USER_RESOURCE_PREFIX =
+        "user_resource" + RedisConstant.REDIS_KEY_SPLITTER;
 
     /**
      * 用户信息redis前缀
      */
-    public static final String REDIS_USER_INFO_PREFIX = "user" + RedisConstant.REDIS_KEY_SPLITTER;
+    private static final String REDIS_USER_INFO_PREFIX = "user" + RedisConstant.REDIS_KEY_SPLITTER;
 
     /**
      * token redis前缀
      */
-    public static final String REDIS_TOKEN_PREFIX = "token" + RedisConstant.REDIS_KEY_SPLITTER;
+    private static final String REDIS_TOKEN_PREFIX = "token" + RedisConstant.REDIS_KEY_SPLITTER;
+
+    /**
+     * redis 用户ID生成器
+     */
+    public static final String REDIS_USER_ID_KEY = "user_id_generator";
+
+    public static String getRedisCaptchaKey(String randomCode) {
+        return REDIS_CAPTCHA_PREFIX + randomCode;
+    }
+
+    public static String getRedisTokenKey(String token) {
+        return REDIS_TOKEN_PREFIX + token;
+    }
+
+    public static String getRedisUserInfoKey(int userId) {
+        return REDIS_USER_INFO_PREFIX + userId;
+    }
+
+    public static String getRedisUserResourceKey(int userId) {
+        return REDIS_USER_RESOURCE_PREFIX + userId;
+    }
 }

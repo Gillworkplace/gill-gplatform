@@ -108,6 +108,40 @@ public class RedisTemplateAdapter implements Redis {
         redisTemplate.opsForValue().set(key, valueStr, Duration.ofMillis(expired));
     }
 
+    /**
+     * 原子加1
+     *
+     * @param key key
+     * @return +1
+     */
+    @Override
+    public Long increaseAndGet(@NonNull String key) {
+        return addAndGet(key, 1);
+    }
+
+    /**
+     * 原子减1
+     *
+     * @param key key
+     * @return -1
+     */
+    @Override
+    public Long decreaseAndGet(@NonNull String key) {
+        return addAndGet(key, -1);
+    }
+
+    /**
+     * 原子加x
+     *
+     * @param key   key
+     * @param delta delta
+     * @return +x
+     */
+    @Override
+    public Long addAndGet(@NonNull String key, long delta) {
+        return redisTemplate.opsForValue().increment(key, delta);
+    }
+
 
     /**
      * get
