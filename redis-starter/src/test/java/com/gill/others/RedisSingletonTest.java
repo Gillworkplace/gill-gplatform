@@ -1,10 +1,10 @@
 package com.gill.others;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.gill.common.api.DLock;
 import com.gill.redis.core.Redis;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -90,8 +90,16 @@ public class RedisSingletonTest {
     }
 
     @Test
-    public void test_set() {
-        Assertions.assertDoesNotThrow(() -> redis.set("t", "123"));
+    public void test_set1() {
+        Assertions.assertDoesNotThrow(() -> redis.set("t1", "123"));
+    }
+
+    @Test
+    public void test_set2() {
+        redis.set("t2", "123", 1000L);
+        Assertions.assertEquals("123", redis.get("t2"));
+        ThreadUtil.sleep(1000);
+        Assertions.assertEquals("", redis.get("t2"));
     }
 
     @Test

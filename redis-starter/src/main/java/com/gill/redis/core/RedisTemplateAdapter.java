@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +54,20 @@ public class RedisTemplateAdapter implements Redis {
     }
 
     /**
+     * 设置过期时间
+     *
+     * @param key     key
+     * @param expired ms
+     */
+    @Override
+    public void expire(@NonNull String key, long expired) {
+        if (StrUtil.isBlank(key)) {
+            return;
+        }
+        redisTemplate.expire(key, Duration.ofMillis(expired));
+    }
+
+    /**
      * set
      *
      * @param key   key
@@ -70,6 +85,27 @@ public class RedisTemplateAdapter implements Redis {
             valueStr = JSONUtil.toJsonStr(value);
         }
         redisTemplate.opsForValue().set(key, valueStr);
+    }
+
+    /**
+     * set
+     *
+     * @param key     key
+     * @param value   value
+     * @param expired 过期时间
+     */
+    @Override
+    public void set(@NonNull String key, Object value, long expired) {
+        if (value == null) {
+            redisTemplate.delete(key);
+        }
+        String valueStr;
+        if (value instanceof String str) {
+            valueStr = str;
+        } else {
+            valueStr = JSONUtil.toJsonStr(value);
+        }
+        redisTemplate.opsForValue().set(key, valueStr, Duration.ofMillis(expired));
     }
 
 

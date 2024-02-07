@@ -16,12 +16,29 @@ import org.springframework.lang.Nullable;
 public interface Redis {
 
     /**
+     * 设置过期时间
+     *
+     * @param key     key
+     * @param expired ms
+     */
+    void expire(@NonNull String key, long expired);
+
+    /**
      * set
      *
      * @param key   key
      * @param value value
      */
     void set(@NonNull String key, Object value);
+
+    /**
+     * set
+     *
+     * @param key     key
+     * @param value   value
+     * @param expired 过期时间
+     */
+    void set(@NonNull String key, Object value, long expired);
 
     /**
      * get
