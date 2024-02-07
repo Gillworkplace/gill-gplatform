@@ -1,0 +1,30 @@
+@startuml
+actor User as u
+participant Browser as b
+participant UserService as us
+participant Redis as r
+database Mysql as m
+
+autonumber
+u -> b: 进入注册页面
+b --> u: 返回注册页面
+b -> b: 生成随机字符串s
+b -> us: 获取验证码图片(s)
+us -> us: 生成验证码captcha和图片
+us -> r: 设置验证码并设置\n过期时间5分钟(s, captcha)
+us --> b: 返回验证码图片
+b --> u: 显示验证码图片
+u -> b: 输入注册信息及验证码\n以及随机字符串s
+u -> b: 点击提交按钮
+b -> us: 注册用户账号
+us -> r: 获取s的验证码信息
+us -> us: 校验验证码是否匹配
+us -> r: 获取下一个用户ID
+r --> us: 返回用户ID
+us -> m: user表插入用户信息
+us -> m: user_resource表插入用户资源关系数据
+us -> us: 生成tokenID
+us -> r: 设置token相关信息
+us --> b: setcookie并返回登录主页
+b --> u: 跳转至登录主页
+@enduml
