@@ -2,7 +2,7 @@ package com.gill.web.api;
 
 import lombok.Getter;
 import lombok.ToString;
-import org.springframework.core.io.InputStreamSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,39 +31,84 @@ public class Response<T> extends ResponseEntity<Object> {
         }
     }
 
-    private Response(T data) {
-        super(data, HttpStatus.OK);
+    private Response(HttpStatus code, String message, T data, HttpHeaders headers) {
+        super(new ResultWrapper<>(message, data), headers, code);
     }
 
-    private Response(HttpStatus code, String message, T data) {
-        super(new ResultWrapper<>(message, data), code);
+    public static class ResponseBuilder<T> {
+
+        private final HttpHeaders headers = new HttpHeaders();
+
+        private HttpStatus code = HttpStatus.OK;
+
+        private String message;
+
+        private T data;
+
+        private ResponseBuilder(T data) {
+            this.data = data;
+        }
+
+        private ResponseBuilder(HttpStatus code, String message, T data) {
+            this.code = code;
+            this.message = message;
+            this.data = data;
+        }
+
+
+        /**
+         * 设置请求头
+         *
+         * @param key   key
+         * @param value value
+         * @return this
+         */
+        public ResponseBuilder<T> addHeader(String key, String value) {
+            headers.add(key, value);
+            return this;
+        }
+
+        /**
+         * 设置content-type
+         *
+         * @param mediaType content-type
+         * @return this
+         */
+        public ResponseBuilder<T> contentType(MediaType mediaType) {
+            headers.setContentType(mediaType);
+            return this;
+        }
+
+        /**
+         * 设置响应消息
+         *
+         * @param message 响应消息
+         * @return this
+         */
+        public ResponseBuilder<T> message(String message) {
+            this.message = message;
+            return this;
+        }
+
+        /**
+         * 设置数据
+         *
+         * @param data content-type
+         * @return this
+         */
+        public ResponseBuilder<T> data(T data) {
+            this.data = data;
+            return this;
+        }
+
+        public Response<T> build() {
+            return new Response<>(code, message, data, headers);
+        }
     }
 
-    /**
-     * 添加响应头
-     *
-     * @param key   key
-     * @param value value
-     * @return this
-     */
-    public Response<T> addHeader(String key, String value) {
-        getHeaders().add(key, value);
-        return this;
-    }
 
-    /**
-     * 设置content-type
-     *
-     * @param mediaType content-type
-     * @return this
-     */
-    public Response<T> contentType(MediaType mediaType) {
-        getHeaders().setContentType(mediaType);
-        return this;
-    }
-
-    public static Response<String> success() {
-        return new Response<>(HttpStatus.OK, HttpStatus.OK.getReasonPhrase(), "");
+    public static ResponseBuilder<String> success() {
+        return new ResponseBuilder<>(HttpStatus.OK, HttpStatus.OK.getReasonPhrase(), "");
     }
 
     /**
@@ -71,11 +116,8 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param data 获取的数据
      */
-    public static <T> Response<T> success(T data) {
-        if (data instanceof InputStreamSource) {
-            return new Response<>(data);
-        }
-        return new Response<>(HttpStatus.OK, HttpStatus.OK.getReasonPhrase(), data);
+    public static <T> ResponseBuilder<T> success(T data) {
+        return new ResponseBuilder<>(data);
     }
 
     /**
@@ -84,8 +126,8 @@ public class Response<T> extends ResponseEntity<Object> {
      * @param data    获取的数据
      * @param message 提示信息
      */
-    public static <T> Response<T> success(T data, String message) {
-        return new Response<>(HttpStatus.OK, message, data);
+    public static <T> ResponseBuilder<T> success(T data, String message) {
+        return new ResponseBuilder<>(HttpStatus.OK, message, data);
     }
 
     /**
@@ -93,8 +135,8 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param error 错误码
      */
-    public static <T> Response<T> failed(HttpStatus error) {
-        return new Response<>(error, error.getReasonPhrase(), null);
+    public static ResponseBuilder<?> failed(HttpStatus error) {
+        return new ResponseBuilder<>(error, error.getReasonPhrase(), null);
     }
 
     /**
@@ -103,8 +145,8 @@ public class Response<T> extends ResponseEntity<Object> {
      * @param error   错误码
      * @param message 错误信息
      */
-    public static <T> Response<T> failed(HttpStatus error, String message) {
-        return new Response<>(error, message, null);
+    public static ResponseBuilder<?> failed(HttpStatus error, String message) {
+        return new ResponseBuilder<>(error, message, null);
     }
 
     /**
@@ -112,21 +154,21 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param message 提示信息
      */
-    public static <T> Response<T> failed(String message) {
-        return new Response<T>(HttpStatus.INTERNAL_SERVER_ERROR, message, null);
+    public static ResponseBuilder<?> failed(String message) {
+        return new ResponseBuilder<>(HttpStatus.INTERNAL_SERVER_ERROR, message, null);
     }
 
     /**
      * 失败返回结果
      */
-    public static <T> Response<T> failed() {
+    public static ResponseBuilder<?> failed() {
         return failed(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
      * 参数验证失败返回结果
      */
-    public static <T> Response<T> validateFailed() {
+    public static ResponseBuilder<?> validateFailed() {
         return failed(HttpStatus.BAD_REQUEST);
     }
 
@@ -135,22 +177,23 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param message 提示信息
      */
-    public static <T> Response<T> validateFailed(String message) {
+    public static ResponseBuilder<?> validateFailed(String message) {
         return failed(HttpStatus.BAD_REQUEST, message);
     }
 
     /**
      * 未登录返回结果
      */
-    public static <T> Response<T> unauthorized(T data) {
-        return new Response<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-            data);
+    public static <T> ResponseBuilder<T> unauthorized(T data) {
+        return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED,
+            HttpStatus.UNAUTHORIZED.getReasonPhrase(), data);
     }
 
     /**
      * 未授权返回结果
      */
-    public static <T> Response<T> forbidden(T data) {
-        return new Response<>(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase(), data);
+    public static <T> ResponseBuilder<T> forbidden(T data) {
+        return new ResponseBuilder<>(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase(),
+            data);
     }
 }

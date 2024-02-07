@@ -11,6 +11,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -26,18 +27,18 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 public class GlobalExceptionAspect {
 
     @ExceptionHandler(value = WebException.class)
-    public Response<String> handleWebEx(WebException ex) {
+    public Response<?> handleWebEx(WebException ex) {
         if (ex.isInternalException()) {
-            return Response.failed();
+            return Response.failed().build();
         }
-        return Response.failed(ex.getStatus(), ex.getMessage());
+        return Response.failed(ex.getStatus(), ex.getMessage()).build();
     }
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class, BindException.class})
-    public Response<String> handleValidException(BindException ex) {
+    public Response<?> handleValidException(BindException ex) {
         BindingResult bindingResult = ex.getBindingResult();
         if (!bindingResult.hasErrors()) {
-            return Response.validateFailed();
+            return Response.validateFailed().build();
         }
         StringBuilder error = new StringBuilder();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -47,11 +48,11 @@ public class GlobalExceptionAspect {
                 .append(fieldError.getDefaultMessage())
                 .append("; ");
         }
-        return Response.validateFailed(error.toString());
+        return Response.validateFailed(error.toString()).build();
     }
 
     @ExceptionHandler(value = {HandlerMethodValidationException.class})
-    public Response<String> handleValidException2(HandlerMethodValidationException ex) {
+    public Response<?> handleValidException2(HandlerMethodValidationException ex) {
         List<ParameterValidationResult> validateResults = ex.getAllValidationResults();
         StringBuilder error = new StringBuilder();
         for (ParameterValidationResult validate : validateResults) {
@@ -59,12 +60,17 @@ public class GlobalExceptionAspect {
                 error.append(resolvableError.getDefaultMessage()).append(";");
             }
         }
-        return Response.validateFailed(error.toString());
+        return Response.validateFailed(error.toString()).build();
+    }
+
+    @ExceptionHandler(value = {MissingServletRequestParameterException.class})
+    public Response<?> handleArgumentException(Exception ex) {
+        return Response.validateFailed("参数错误").build();
     }
 
     @ExceptionHandler(value = Exception.class)
-    public Response<String> handleEx(Exception ex) {
+    public Response<?> handleEx(Exception ex) {
         log.error("web occur exception, e: {}", ExceptionUtil.getAllMessage(ex));
-        return Response.failed();
+        return Response.failed().build();
     }
 }

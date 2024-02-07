@@ -30,12 +30,12 @@ public class RestController {
 
     @PostMapping("/res")
     public Response<Body> res(@RequestBody Body body) {
-        return Response.success(body);
+        return Response.success(body).build();
     }
 
     @GetMapping("/noParam")
     public Response<String> noParam() {
-        return Response.success();
+        return Response.success().build();
     }
 
     @GetMapping("/webEx")
@@ -50,6 +50,6 @@ public class RestController {
 
     @GetMapping("/validEx")
     public Response<String> validEx(@Valid @Min(0) @RequestParam("number") Integer number) {
-        return Response.success();
+        return Response.success().build();
     }
 }

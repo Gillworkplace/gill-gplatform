@@ -31,13 +31,13 @@ public class Controller {
     @ResponseBody
     @PostMapping("/res")
     public Response<Body> res(@RequestBody Body body) {
-        return Response.success(body);
+        return Response.success(body).build();
     }
 
     @ResponseBody
     @GetMapping("/noParam")
     public Response<String> noParam() {
-        return Response.success();
+        return Response.success().build();
     }
 
     @ResponseBody
@@ -55,6 +55,6 @@ public class Controller {
     @ResponseBody
     @GetMapping("/validEx")
     public Response<String> validEx(@Valid @Min(0) @RequestParam("number") Integer number) {
-        return Response.success();
+        return Response.success().build();
     }
 }
