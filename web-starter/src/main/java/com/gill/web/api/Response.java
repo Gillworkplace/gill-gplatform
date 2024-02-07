@@ -31,6 +31,10 @@ public class Response<T> extends ResponseEntity<Object> {
         }
     }
 
+    private Response(HttpStatus code, T data, HttpHeaders headers) {
+        super(data, headers, code);
+    }
+
     private Response(HttpStatus code, String message, T data, HttpHeaders headers) {
         super(new ResultWrapper<>(message, data), headers, code);
     }
@@ -102,7 +106,14 @@ public class Response<T> extends ResponseEntity<Object> {
         }
 
         public Response<T> build() {
-            return new Response<>(code, message, data, headers);
+            return build(true);
+        }
+
+        public Response<T> build(boolean wrap) {
+            if (wrap) {
+                return new Response<>(code, message, data, headers);
+            }
+            return new Response<>(code, data, headers);
         }
     }
 
