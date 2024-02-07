@@ -30,4 +30,15 @@ public class MockCryptoStrategy implements CryptoStrategy {
     public String decrypt(String rawTest) {
         return rawTest;
     }
+
+    /**
+     * 加密
+     *
+     * @param rawTest 明文
+     * @return 密文
+     */
+    @Override
+    public String encrypt(String rawTest) {
+        return rawTest;
+    }
 }
