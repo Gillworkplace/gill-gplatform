@@ -1,0 +1,22 @@
+[
+  {
+    "roleId": "A",
+    "childId": "B"
+  },
+  {
+    "roleId": "A",
+    "childId": "C"
+  },
+  {
+    "roleId": "A",
+    "childId": "E"
+  },
+  {
+    "roleId": "C",
+    "childId": "D"
+  },
+  {
+    "roleId": "E",
+    "childId": "D"
+  }
+]

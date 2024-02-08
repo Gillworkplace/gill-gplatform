@@ -8,9 +8,11 @@ import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
 import com.gill.redis.core.Redis;
 import com.gill.user.dto.RegisterParam;
-import com.gill.user.mapper.UserBanMapper;
-import com.gill.user.mapper.UserMapper;
+import com.gill.user.mappers.UserBanMapper;
+import com.gill.user.mappers.UserMapper;
 import com.gill.web.exception.WebException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,8 +132,18 @@ public class UserService {
         userMapper.updateLoginTime(userId);
         User user = userMapper.getUserInfoById(userId);
         String token = generateToken();
-        redis.mset(UserProperties.getRedisTokenKey(token), user.toRedisUserInfoMap());
+        redis.mset(UserProperties.getRedisTokenKey(token), generateRedisUserInfo(user));
         return token;
+    }
+
+    private Map<String, Object> generateRedisUserInfo(User user) {
+        Map<String, Object> userInfoMap = new HashMap<>(16);
+        userInfoMap.put(UserProperties.USER_ID, String.valueOf(user.getId()));
+        userInfoMap.put(UserProperties.USER_NAME, user.getUsername());
+        userInfoMap.put(UserProperties.NICK_NAME, user.getNickName());
+        userInfoMap.put(UserProperties.AVATAR, user.getAvatar());
+        userInfoMap.put(UserProperties.DESCRIPTION, user.getDescription());
+        return userInfoMap;
     }
 
     private String generateToken() {

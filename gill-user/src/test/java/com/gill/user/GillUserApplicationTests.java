@@ -62,11 +62,11 @@ public class GillUserApplicationTests {
         final String password = ".!@#-=$%^&*:;aZ0";
         final String description = "0123456789012345678901234567890123456789012345678901234567890123";
         final String nickname = "中文aZ_01234567890";
-
-        // 注册
         String randomCode = RandomUtil.randomString(8);
         AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
         String captchaCode = captcha.getCode();
+
+        // 注册
         RegisterParam registerParam = new RegisterParam();
         registerParam.setRandomCode(randomCode);
         registerParam.setCaptchaCode(captchaCode);
@@ -88,6 +88,50 @@ public class GillUserApplicationTests {
         loginParam.setPassword(password);
         response = restTemplate.postForEntity(urlPrefix() + "/login", loginParam,
             Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
+        Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
+    }
+
+    @Test
+    public void test_register_validate_param_failed_should_be_throw_exception() {
+        final String username = "ZhAngzhiyan01234(";
+        final String password = ".!@#-=$%^&*:;aZ0(";
+        final String description = "0123456789012345678901234567890123456789012345678901234567890123(";
+        final String nickname = "中文aZ_01234567890(";
+
+        // 注册
+        String randomCode = RandomUtil.randomString(8);
+        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
+        String captchaCode = captcha.getCode();
+        RegisterParam registerParam = new RegisterParam();
+        registerParam.setRandomCode(randomCode);
+        registerParam.setCaptchaCode(captchaCode);
+        registerParam.setUsername(username);
+        registerParam.setPassword(password);
+        registerParam.setDescription(description);
+        registerParam.setNickName(nickname);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
+            urlPrefix() + "/register", registerParam, Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void test_login_should_be_success() {
+        final String username = "test";
+        final String password = "12345678";
+        String randomCode = RandomUtil.randomString(8);
+        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
+        String captchaCode = captcha.getCode();
+
+        // 登录
+        LoginParam loginParam = new LoginParam();
+        loginParam.setRandomCode(randomCode);
+        loginParam.setCaptchaCode(captchaCode);
+        loginParam.setUsername(username);
+        loginParam.setPassword(password);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
+            urlPrefix() + "/login", loginParam, Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));

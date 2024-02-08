@@ -1,4 +1,4 @@
-package com.gill.user.mapper;
+package com.gill.user.mappers;
 
 import com.gill.api.model.UserBan;
 import org.apache.ibatis.annotations.Mapper;

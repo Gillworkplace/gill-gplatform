@@ -1,0 +1,62 @@
+[
+  {
+    "ancestorId": "b",
+    "descendantId": "b",
+    "adjoin": 0
+  },
+  {
+    "ancestorId": "c",
+    "descendantId": "c",
+    "adjoin": 0
+  },
+  {
+    "ancestorId": "d",
+    "descendantId": "d",
+    "adjoin": 0
+  },
+  {
+    "ancestorId": "e",
+    "descendantId": "e",
+    "adjoin": 0
+  },
+  {
+    "ancestorId": "f",
+    "descendantId": "f",
+    "adjoin": 0
+  },
+  {
+    "ancestorId": "g",
+    "descendantId": "g",
+    "adjoin": 0
+  },
+  {
+    "ancestorId": "f",
+    "descendantId": "d",
+    "adjoin": 1
+  },
+  {
+    "ancestorId": "g",
+    "descendantId": "d",
+    "adjoin": 1
+  },
+  {
+    "ancestorId": "g",
+    "descendantId": "f",
+    "adjoin": 1
+  },
+  {
+    "ancestorId": "e",
+    "descendantId": "d",
+    "adjoin": 2
+  },
+  {
+    "ancestorId": "e",
+    "descendantId": "f",
+    "adjoin": 1
+  },
+  {
+    "ancestorId": "e",
+    "descendantId": "g",
+    "adjoin": 1
+  }
+]

@@ -5,12 +5,12 @@ use user;
 create table if not exists `t_user`
 (
     `id`               int primary key comment '用户id',
-    `username`         varchar(16)  not null comment '登录账号',
+    `username`         varchar(16) not null comment '登录账号',
     `encrypt_password` varchar(64) not null comment '加密密码',
-    `salt`             varchar(32)  not null comment '盐',
+    `salt`             varchar(32) not null comment '盐',
     `create_time`      datetime comment '创建时间',
     `login_time`       datetime comment '最后登录时间',
-    `nick_name`        varchar(16)  not null comment '用户昵称',
+    `nick_name`        varchar(16) not null comment '用户昵称',
     `avatar`           varchar(64) comment '头像图标',
     `description`      varchar(64) comment '个人描述'
 ) engine = innodb
@@ -40,19 +40,63 @@ create table if not exists `t_user_friends`
 create index idx_user_status on t_user_friends (`user_id`, `status`);
 create index idx_friend_status on t_user_friends (`friend_id`, `status`);
 
-create table if not exists `t_resources`
+create table if not exists `t_role`
 (
-    `id`          int primary key comment '资源id',
-    `name`        varchar(16)  not null comment '资源名称',
-    `description` varchar(128) not null default '' comment '资源描述'
+    `id`          varchar(32) primary key comment '通用角色ID',
+    `name`        varchar(16)  not null comment '角色名称',
+    `description` varchar(128) not null default '' comment '角色描述'
 ) engine = innodb
-  default charset = utf8mb4 comment '资源表';
+  default charset = utf8mb4 comment '角色表';
 
-create table if not exists `t_resources_relationships`
+create table if not exists `t_role_relationships`
 (
-    `ancestor_id`   int not null comment '祖先节点id',
-    `descendant_id` int not null comment '后代节点id',
-    `distance`      int not null comment '后代节点与祖先节点的距离',
+    `role_id`  varchar(32) comment '通用角色ID',
+    `child_id` varchar(32) comment '孩子角色ID',
+    primary key (`role_id`, `child_id`)
+) engine = innodb
+  default charset = utf8mb4 comment '角色关系表';
+
+create table if not exists `t_role_permissions`
+(
+    `role_id`       varchar(32) not null comment '角色id',
+    `permission_id` varchar(32) not null comment '权限id',
+    `self`          int default 0 comment '1: 自己的权限, 2: 孩子节点的权限',
+    primary key (`role_id`, `permission_id`)
+) engine = innodb
+  default charset = utf8mb4 comment '角色权限表';
+create index idx_role_self on t_role_permissions (`role_id`, `self`);
+
+create table if not exists `t_permission`
+(
+    `id`          varchar(32) primary key comment '权限id',
+    `name`        varchar(16)  not null comment '权限名称',
+    `description` varchar(128) not null default '' comment '权限描述'
+) engine = innodb
+  default charset = utf8mb4 comment '权限表';
+
+create table if not exists `t_permission_relationships`
+(
+    `ancestor_id`   varchar(32) not null comment '祖先节点id',
+    `descendant_id` varchar(32) not null comment '后代节点id',
+    `adjoin`        int default 0 comment '0: 自己, 1: 是直接后代, 2: 非直接后代',
     primary key (`ancestor_id`, `descendant_id`)
 ) engine = innodb
-  default charset = utf8mb4 comment '资源闭包表';
+  default charset = utf8mb4 comment '权限关系表';
+create index idx_descendant on t_permission_relationships (`descendant_id`, `ancestor_id`);
+create index idx_ancestor_adjoin on t_permission_relationships (`ancestor_id`, `adjoin`);
+
+create table if not exists `t_user_roles`
+(
+    `user_id` int         not null comment '用户id',
+    `role_id` varchar(32) not null comment '角色id',
+    primary key (`user_id`, `role_id`)
+) engine = innodb
+  default charset = utf8mb4 comment '用户角色表';
+
+-- data
+insert ignore into t_user (id, username, encrypt_password, salt, create_time, login_time, nick_name,
+                           avatar, description)
+values (0, 'admin', '5ff6689115c8eb335d0f06a52d2fcbfca19a74296626e3fd607f623de606d886', 'abcdefgh',
+        now(), null, 'administrator',
+        'https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/avatar.png',
+        'super administrator');

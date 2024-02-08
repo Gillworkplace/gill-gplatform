@@ -1,0 +1,21 @@
+permissions:
+  - id: permission.admin
+    name: 管理员资源
+    description: 管理员总资源
+  - id: permission.admin.read
+    name: 管理员资源-读
+    description: 管理员资源-读
+  - id: permission.home
+    name: 首页
+    description: 首页资源
+  - id: permission.chat
+    name: 聊天室
+    description: 聊天室资源
+  - id: permission.game
+    name: 游戏资源
+    description: 游戏资源
+
+relations:
+  - parent: permission.admin
+    children:
+      - permission.admin.read

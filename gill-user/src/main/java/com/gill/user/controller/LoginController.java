@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
  * @author gill
  * @version 2024/02/06
  **/
-@RequestMapping
 @RestController
 public class LoginController {
 

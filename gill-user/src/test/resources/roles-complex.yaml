@@ -1,0 +1,57 @@
+# A --> B --> b
+# |     |
+# |     | --> bb
+# |
+# |---> C -------> D ---> d
+# |     |          ↑      ↑
+# |     |---> c    |      |
+# |                |      |
+# |---> E ---------|      |
+#       |                 |
+#       |-----> e ----> f-|
+#               |       ↑ |
+#               |-----> g-|
+roles:
+  - id: A
+    name: A
+    description: A
+  - id: B
+    name: B
+    description: B
+  - id: C
+    name: C
+    description: C
+  - id: D
+    name: D
+    description: D
+  - id: E
+    name: E
+    description: E
+
+roleRelations:
+  - subject: A
+    items:
+      - B
+      - C
+      - E
+  - subject: C
+    items:
+      - D
+  - subject: E
+    items:
+      - D
+
+rolePermissions:
+  - subject: B
+    items:
+      - b
+      - bb
+  - subject: C
+    items:
+      - c
+  - subject: D
+    items:
+      - d
+  - subject: E
+    items:
+      - e

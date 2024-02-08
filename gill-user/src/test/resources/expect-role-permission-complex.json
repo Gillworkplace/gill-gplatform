@@ -1,0 +1,52 @@
+[
+  {
+    "roleId": "B",
+    "permissionId": "b",
+    "self": 1
+  },
+  {
+    "roleId": "D",
+    "permissionId": "d",
+    "self": 1
+  },
+  {
+    "roleId": "C",
+    "permissionId": "c",
+    "self": 1
+  },
+  {
+    "roleId": "C",
+    "permissionId": "d",
+    "self": 2
+  },
+  {
+    "roleId": "E",
+    "permissionId": "d",
+    "self": 2
+  },
+  {
+    "roleId": "E",
+    "permissionId": "e",
+    "self": 1
+  },
+  {
+    "roleId": "A",
+    "permissionId": "b",
+    "self": 2
+  },
+  {
+    "roleId": "A",
+    "permissionId": "c",
+    "self": 2
+  },
+  {
+    "roleId": "A",
+    "permissionId": "d",
+    "self": 2
+  },
+  {
+    "roleId": "A",
+    "permissionId": "e",
+    "self": 2
+  }
+]

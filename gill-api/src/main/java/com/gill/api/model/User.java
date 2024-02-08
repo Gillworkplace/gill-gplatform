@@ -1,13 +1,9 @@
 package com.gill.api.model;
 
-import com.gill.api.domain.UserProperties;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class User implements Serializable {
-
     private Integer id;
 
     private String username;
@@ -98,20 +94,5 @@ public class User implements Serializable {
 
     public void setDescription(String description) {
         this.description = description == null ? null : description.trim();
-    }
-
-    /**
-     * 转换成redis的map信息
-     *
-     * @return map
-     */
-    public Map<String, Object> toRedisUserInfoMap() {
-        Map<String, Object> userInfoMap = new HashMap<>(16);
-        userInfoMap.put(UserProperties.USER_ID, String.valueOf(this.id));
-        userInfoMap.put(UserProperties.USER_NAME, String.valueOf(this.username));
-        userInfoMap.put(UserProperties.NICK_NAME, String.valueOf(this.nickName));
-        userInfoMap.put(UserProperties.AVATAR, String.valueOf(this.avatar));
-        userInfoMap.put(UserProperties.DESCRIPTION, String.valueOf(this.description));
-        return userInfoMap;
     }
 }

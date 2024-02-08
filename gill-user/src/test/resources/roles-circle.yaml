@@ -1,0 +1,23 @@
+roles:
+  - id: role.admin
+    name: 管理员
+    description: 超级管理员
+  - id: role.normal
+    name: 普通用户
+    description: 正常注册的用户
+
+roleRelations:
+  - subject: role.admin
+    items:
+      - role.normal
+  - subject: role.normal
+    items:
+      - role.admin
+
+rolePermissions:
+  - subject: role.admin
+    items:
+      - permission.admin
+  - subject: role.normal
+    items:
+      - permission.home

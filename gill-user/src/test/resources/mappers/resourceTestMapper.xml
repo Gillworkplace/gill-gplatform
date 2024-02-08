@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gill.user.mappers.ResourceTestMapper">
+
+  <select id="queryAllRoles" resultType="com.gill.api.model.Role">
+    select
+        t.id as id,
+        t.name as name,
+        t.description as description
+    from
+        t_role t
+  </select>
+
+  <select id="queryAllPermissions" resultType="com.gill.api.model.Permission">
+    select
+        t.id as id,
+        t.name as name,
+        t.description as description
+    from
+        t_permission t
+  </select>
+
+  <select id="queryAllRoleRelationships" resultType="com.gill.api.model.RoleRelationship">
+    select
+        t.role_id as roleId,
+        t.child_id as childId
+    from
+        t_role_relationships t
+  </select>
+
+  <select id="queryAllPermissionRelationships" resultType="com.gill.api.model.PermissionRelationship">
+    select
+        t.ancestor_id as ancestorId,
+        t.descendant_id as descendantId,
+        t.adjoin as adjoin
+    from
+        t_permission_relationships t
+  </select>
+
+  <select id="queryAllRolePermissions" resultType="com.gill.api.model.RolePermission">
+    select
+        t.role_id as roleId,
+        t.permission_id as permissionId,
+        t.self as self
+    from
+        t_role_permissions t
+  </select>
+
+</mapper>

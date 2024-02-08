@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gill.user.mappers.ResourceMapper">
+
+  <insert id="insertRoles" parameterType="list">
+    insert into
+        t_role(id, name, description)
+    values
+        <foreach collection="list" item="data" separator=",">
+          (#{data.id}, #{data.name}, #{data.description})
+        </foreach>
+  </insert>
+
+  <delete id="truncateRoles">
+    truncate table t_role
+  </delete>
+
+  <insert id="insertPermissions" parameterType="list">
+    insert into
+        t_permission(id, name, description)
+    values
+        <foreach collection="list" item="data" separator=",">
+          (#{data.id}, #{data.name}, #{data.description})
+        </foreach>
+  </insert>
+
+  <delete id="truncatePermissions">
+    truncate table t_permission
+  </delete>
+
+  <insert id="insertRoleRelationships" parameterType="list">
+    insert into
+        t_role_relationships(role_id, child_id)
+    values
+        <foreach collection="list" item="data" separator=",">
+          (#{data.roleId}, #{data.childId})
+        </foreach>
+  </insert>
+
+  <delete id="truncateRoleRelationships">
+    truncate table t_role_relationships
+  </delete>
+
+  <insert id="insertPermissionRelationships" parameterType="list">
+    insert into
+        t_permission_relationships(ancestor_id, descendant_id, adjoin)
+    values
+        <foreach collection="list" item="data" separator=",">
+          (#{data.ancestorId}, #{data.descendantId}, #{data.adjoin})
+        </foreach>
+  </insert>
+
+  <delete id="truncatePermissionRelationships">
+    truncate table t_permission_relationships
+  </delete>
+
+  <insert id="insertRolePermissions" parameterType="list">
+    insert into
+        t_role_permissions(role_id, permission_id, self)
+    values
+        <foreach collection="list" item="data" separator=",">
+          (#{data.roleId}, #{data.permissionId}, #{data.self})
+        </foreach>
+  </insert>
+
+  <delete id="truncateRolePermissions">
+    truncate table t_role_permissions
+  </delete>
+</mapper>

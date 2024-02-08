@@ -23,4 +23,4 @@ datasources:
       driver-class-name: org.h2.Driver
 
 mybatis:
-  mapper-locations: classpath:mappers/*.xml
+  mapper-locations: classpath*:mappers/*.xml
