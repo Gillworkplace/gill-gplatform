@@ -40,14 +40,6 @@ public class GlobalExceptionAspect {
         if (!bindingResult.hasErrors()) {
             return Response.validateFailed().build();
         }
-        StringBuilder error = new StringBuilder();
-        List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-        for (FieldError fieldError : fieldErrors) {
-            error.append(fieldError.getField())
-                .append(":")
-                .append(fieldError.getDefaultMessage())
-                .append("; ");
-        }
         String message = bindingResult.getFieldErrors().get(0).getDefaultMessage();
         return Response.validateFailed(message).build();
     }

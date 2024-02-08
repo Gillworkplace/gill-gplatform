@@ -72,16 +72,6 @@ public class WebLogAspect {
             WebLog webLog = WebLogBuilderChain.build(context, success);
             log.info("{}", JSONUtil.parse(webLog));
         }
-//        Map<String, Object> logMap = new HashMap<>();
-//        logMap.put("url", webLog.getUrl());
-//        logMap.put("method", webLog.getMethod());
-//        logMap.put("parameter", webLog.getParameter());
-//        logMap.put("spendTime", webLog.getSpendTime());
-//        logMap.put("description", webLog.getDescription());
-////        LOGGER.info("{}", JSONUtil.parse(webLog));
-//
-//        LOGGER.info(Markers.appendEntries(logMap), JSONUtil.parse(webLog).toString());
-//        return result;
     }
 
     @Getter
