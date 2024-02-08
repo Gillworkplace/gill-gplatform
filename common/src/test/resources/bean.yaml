@@ -1,0 +1,7 @@
+beans:
+  - id: 1
+    name: user
+bean-map:
+  key:
+    id: 2
+    name: test
