@@ -4,6 +4,7 @@ import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.GifCaptcha;
 import cn.hutool.captcha.ICaptcha;
+import cn.hutool.captcha.LineCaptcha;
 import com.gill.api.domain.UserProperties;
 import com.gill.redis.core.Redis;
 import com.gill.web.exception.WebException;
@@ -33,11 +34,11 @@ public class CaptchaService {
      * @return 验证码
      */
     public AbstractCaptcha generateCaptcha(String randomCode) {
-        GifCaptcha gif = CaptchaUtil.createGifCaptcha(95, 25);
-        gif.createCode();
-        String captcha = gif.getCode();
-        redis.set(UserProperties.getRedisCaptchaKey(randomCode), captcha, 5L * 60 * 1000);
-        return gif;
+        GifCaptcha captcha = CaptchaUtil.createGifCaptcha(95, 25);
+        captcha.createCode();
+        String captchaCode = captcha.getCode();
+        redis.set(UserProperties.getRedisCaptchaKey(randomCode), captchaCode, 5L * 60 * 1000);
+        return captcha;
     }
 
     /**
