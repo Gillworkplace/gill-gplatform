@@ -6,13 +6,12 @@ import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,7 +47,8 @@ public class LoginController {
      * @return 响应
      */
     @PostMapping("/register")
-    public Response<String> register(@Validated @RequestBody RegisterParam param) {
+    public Response<String> register(@Validated @RequestBody RegisterParam param,
+        HttpServletResponse response) {
 
         // 验证码校验
         String randomCode = param.getRandomCode();
@@ -60,10 +60,9 @@ public class LoginController {
 
         // 登录
         String token = userService.successLoginAndGenerateToken(userId);
-        Cookie cookie = new Cookie("token", token);
-        return Response.success("/home")
-            .addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
-            .build();
+        Cookie cookie = buildTokenCookie(token);
+        response.addCookie(cookie);
+        return Response.success("/home").build();
     }
 
     /**
@@ -73,7 +72,8 @@ public class LoginController {
      * @return 响应
      */
     @PostMapping("/login")
-    public Response<String> login(@Validated @RequestBody LoginParam param) {
+    public Response<String> login(@Validated @RequestBody LoginParam param,
+        HttpServletResponse response) {
 
         // 校验验证码
         String randomCode = param.getRandomCode();
@@ -91,10 +91,16 @@ public class LoginController {
         // 成功登录后置处理
         String token = userService.successLoginAndGenerateToken(userId);
 
+        Cookie cookie = buildTokenCookie(token);
+        response.addCookie(cookie);
+        return Response.success("/home").build();
+    }
+
+    private static Cookie buildTokenCookie(String token) {
         Cookie cookie = new Cookie("token", token);
-        return Response.success("/home")
-            .addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
-            .build();
+        cookie.setMaxAge(7 * 24 * 60 * 60);
+        cookie.setPath("/");
+        return cookie;
     }
 
     /**
