@@ -2,6 +2,7 @@ package com.gill.user.controller;
 
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
+import com.gill.user.dto.UserInfo;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -113,5 +115,17 @@ public class LoginController {
     public Response<String> inviteCodeLogin(@RequestParam("inviteCode") String inviteCode) {
 
         return Response.success().build();
+    }
+
+    /**
+     * 获取登录用信息
+     *
+     * @param token token
+     * @return 用户信息
+     */
+    @GetMapping("info")
+    public Response<UserInfo> userInfo(@CookieValue("token") String token) {
+        UserInfo userInfo = userService.getUserInfo(token);
+        return Response.success(userInfo).build();
     }
 }

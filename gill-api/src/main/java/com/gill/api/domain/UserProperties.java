@@ -26,7 +26,7 @@ public class UserProperties {
     /**
      * 昵称
      */
-    public static final String NICK_NAME = "nickname";
+    public static final String NICK_NAME = "nickName";
 
     /**
      * 头像

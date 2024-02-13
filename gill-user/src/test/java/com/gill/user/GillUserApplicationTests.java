@@ -1,12 +1,16 @@
 package com.gill.user;
 
 import cn.hutool.captcha.AbstractCaptcha;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
+import com.gill.user.dto.UserInfo;
 import com.gill.user.service.CaptchaService;
 import com.gill.web.api.Response;
-import com.google.common.net.HttpHeaders;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,6 +142,41 @@ public class GillUserApplicationTests {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
+    }
+
+    @Test
+    public void test_get_user_info_by_token_should_be_success() {
+
+        // 登录
+        final String username = "test";
+        final String password = "12345678";
+        String randomCode = RandomUtil.randomString(8);
+        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
+        String captchaCode = captcha.getCode();
+        LoginParam loginParam = new LoginParam();
+        loginParam.setRandomCode(randomCode);
+        loginParam.setCaptchaCode(captchaCode);
+        loginParam.setUsername(username);
+        loginParam.setPassword(password);
+        ResponseEntity<Response.ResultWrapper> response1 = restTemplate.postForEntity(
+            urlPrefix() + "/login", loginParam, Response.ResultWrapper.class);
+        List<String> cookies = response1.getHeaders().get(HttpHeaders.SET_COOKIE);
+
+        // 获取用户信息
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.COOKIE, cookies);
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<Response.ResultWrapper> response2 = restTemplate.exchange(
+            urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response2.getStatusCode());
+        UserInfo userInfo = BeanUtil.mapToBean((Map) response2.getBody().getData(), UserInfo.class,
+            true, CopyOptions.create().ignoreError());
+        Assertions.assertEquals(0, userInfo.getUid());
+        Assertions.assertEquals("test", userInfo.getUsername());
+        Assertions.assertEquals("测试用户", userInfo.getNickName());
+        Assertions.assertEquals("https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/avatar.png",
+            userInfo.getAvatar());
+        Assertions.assertEquals("我是测试用户", userInfo.getDescription());
     }
 
     private String urlPrefix() {

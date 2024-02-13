@@ -1,5 +1,8 @@
 package com.gill.user.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
@@ -8,6 +11,7 @@ import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
 import com.gill.redis.core.Redis;
 import com.gill.user.dto.RegisterParam;
+import com.gill.user.dto.UserInfo;
 import com.gill.user.mappers.UserBanMapper;
 import com.gill.user.mappers.UserMapper;
 import com.gill.web.exception.WebException;
@@ -156,15 +160,22 @@ public class UserService {
         return uuid.toString(true);
     }
 
-    /**
-     * 密码摘要
-     *
-     * @param password 密码
-     * @param salt     盐
-     * @return 摘要
-     */
     private String digestPwd(String password, String salt) {
         CryptoStrategy sha256 = CryptoFactory.getStrategy("sha256");
         return sha256.encrypt(password + salt);
+    }
+
+    /**
+     * 根据token id 获取用户信息
+     *
+     * @param token token
+     * @return 用户信息
+     */
+    public UserInfo getUserInfo(String token) {
+        Map<String, Object> map = redis.mget(UserProperties.getRedisTokenKey(token));
+        if (CollectionUtil.isEmpty(map)) {
+            throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
+        }
+        return BeanUtil.mapToBean(map, UserInfo.class, true, CopyOptions.create().ignoreError());
     }
 }

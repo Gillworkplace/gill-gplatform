@@ -37,5 +37,4 @@ public class ResourceController {
         // 角色、权限入库
         resourceService.parseAndInsertIntoDb(roles, permissions);
     }
-
 }
