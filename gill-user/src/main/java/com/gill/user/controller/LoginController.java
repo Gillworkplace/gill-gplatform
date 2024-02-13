@@ -62,8 +62,8 @@ public class LoginController {
 
         // 登录
         String token = userService.successLoginAndGenerateToken(userId);
-        Cookie cookie = buildTokenCookie(token);
-        response.addCookie(cookie);
+        response.addCookie(buildCookie("uid", String.valueOf(userId)));
+        response.addCookie(buildCookie("token", token));
         return Response.success("/home").build();
     }
 
@@ -93,13 +93,13 @@ public class LoginController {
         // 成功登录后置处理
         String token = userService.successLoginAndGenerateToken(userId);
 
-        Cookie cookie = buildTokenCookie(token);
-        response.addCookie(cookie);
+        response.addCookie(buildCookie("uid", String.valueOf(userId)));
+        response.addCookie(buildCookie("token", token));
         return Response.success("/home").build();
     }
 
-    private static Cookie buildTokenCookie(String token) {
-        Cookie cookie = new Cookie("token", token);
+    private static Cookie buildCookie(String key, String value) {
+        Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(7 * 24 * 60 * 60);
         cookie.setPath("/");
         return cookie;
@@ -120,12 +120,14 @@ public class LoginController {
     /**
      * 获取登录用信息
      *
-     * @param token token
+     * @param userId 用户ID
+     * @param token  token
      * @return 用户信息
      */
     @GetMapping("info")
-    public Response<UserInfo> userInfo(@CookieValue("token") String token) {
-        UserInfo userInfo = userService.getUserInfo(token);
+    public Response<UserInfo> userInfo(@CookieValue("uid") int userId,
+        @CookieValue("token") String token) {
+        UserInfo userInfo = userService.getUserInfo(userId, token);
         return Response.success(userInfo).build();
     }
 }

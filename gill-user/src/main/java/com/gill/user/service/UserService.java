@@ -168,14 +168,21 @@ public class UserService {
     /**
      * 根据token id 获取用户信息
      *
-     * @param token token
+     * @param userId 用户ID
+     * @param token  token
      * @return 用户信息
      */
-    public UserInfo getUserInfo(String token) {
+    public UserInfo getUserInfo(int userId, String token) {
         Map<String, Object> map = redis.mget(UserProperties.getRedisTokenKey(token));
         if (CollectionUtil.isEmpty(map)) {
             throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
         }
-        return BeanUtil.mapToBean(map, UserInfo.class, true, CopyOptions.create().ignoreError());
+
+        UserInfo userInfo = BeanUtil.mapToBean(map, UserInfo.class, true,
+            CopyOptions.create().ignoreError());
+        if (userInfo.getUid() != userId) {
+            throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
+        }
+        return userInfo;
     }
 }
