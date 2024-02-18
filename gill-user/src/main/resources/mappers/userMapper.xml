@@ -37,8 +37,10 @@
   </insert>
 
   <select id="existsUsername" resultType="java.lang.Boolean">
-    select true
-    from t_user t
-    where t.username = #{username}
+    select exists(
+        select 1
+        from t_user t
+        where t.username = #{username}
+    )
   </select>
 </mapper>
