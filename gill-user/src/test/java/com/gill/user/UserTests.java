@@ -8,12 +8,12 @@ import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
 import com.gill.user.service.CaptchaService;
+import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
+import com.gill.web.exception.WebException;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,10 +25,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import redis.embedded.RedisServer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class GillUserApplicationTests {
+public class UserTests extends AbstractTest {
 
     public static final String URL_PREFIX = "http://localhost:";
 
@@ -41,26 +40,8 @@ public class GillUserApplicationTests {
     @Autowired
     private CaptchaService captchaService;
 
-    private static RedisServer redisServer;
-
-    /**
-     * 构造方法之后执行.
-     */
-    @BeforeAll
-    public static void startRedis() throws Exception {
-        redisServer = RedisServer.newRedisServer()
-            .port(19000)
-            .setting("bind 127.0.0.1")
-            .setting("maxmemory 128M")
-            .setting("requirepass 123456")
-            .build();
-        redisServer.start();
-    }
-
-    @AfterAll
-    public static void stopRedis() throws Exception {
-        redisServer.stop();
-    }
+    @Autowired
+    private UserService userService;
 
     @Transactional
     @Test
@@ -177,6 +158,26 @@ public class GillUserApplicationTests {
         Assertions.assertEquals("https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/avatar.png",
             userInfo.getAvatar());
         Assertions.assertEquals("我是测试用户", userInfo.getDescription());
+    }
+
+    @Test
+    public void test_get_user_info_without_token_should_throw_exception() {
+        HttpEntity<String> requestEntity = new HttpEntity<>("", new HttpHeaders());
+        ResponseEntity<Response.ResultWrapper> response2 = restTemplate.exchange(
+            urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
+    }
+
+    @Test
+    public void test_precheck_nonexistent_username_should_be_success() {
+        final String username = "test1";
+        userService.precheckUsername(username);
+    }
+
+    @Test
+    public void test_precheck_existent_username_should_throw_exception() {
+        final String username = "test";
+        Assertions.assertThrows(WebException.class, () -> userService.precheckUsername(username));
     }
 
     private String urlPrefix() {

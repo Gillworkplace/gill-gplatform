@@ -33,34 +33,13 @@ import redis.embedded.RedisServer;
  * @version 2024/02/08
  **/
 @SpringBootTest
-public class ResourceTests {
-
-    private static RedisServer redisServer;
+public class ResourceTests extends AbstractTest {
 
     @Autowired
     private ResourceService resourceService;
 
     @Autowired
     private ResourceTestMapper resourceTestMapper;
-
-    /**
-     * 构造方法之后执行.
-     */
-    @BeforeAll
-    public static void startRedis() throws Exception {
-        redisServer = RedisServer.newRedisServer()
-            .port(19000)
-            .setting("bind 127.0.0.1")
-            .setting("maxmemory 128M")
-            .setting("requirepass 123456")
-            .build();
-        redisServer.start();
-    }
-
-    @AfterAll
-    public static void stopRedis() throws Exception {
-        redisServer.stop();
-    }
 
     @Test
     public void test_read_roles_yaml() {

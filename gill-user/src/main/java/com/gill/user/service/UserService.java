@@ -2,7 +2,6 @@ package com.gill.user.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
@@ -10,6 +9,7 @@ import com.gill.api.model.UserBan;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
 import com.gill.redis.core.Redis;
+import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
 import com.gill.user.mappers.UserBanMapper;
@@ -132,12 +132,12 @@ public class UserService {
      * @param userId 用户ID
      * @return token
      */
-    public String successLoginAndGenerateToken(int userId) {
+    public UserDetail successLoginAndGenerateToken(int userId) {
         userMapper.updateLoginTime(userId);
         User user = userMapper.getUserInfoById(userId);
         String token = generateToken();
         redis.mset(UserProperties.getRedisTokenKey(token), generateRedisUserInfo(user));
-        return token;
+        return new UserDetail(token, user);
     }
 
     private Map<String, Object> generateRedisUserInfo(User user) {
@@ -174,15 +174,25 @@ public class UserService {
      */
     public UserInfo getUserInfo(int userId, String token) {
         Map<String, Object> map = redis.mget(UserProperties.getRedisTokenKey(token));
-        if (CollectionUtil.isEmpty(map)) {
-            throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
-        }
-
         UserInfo userInfo = BeanUtil.mapToBean(map, UserInfo.class, true,
             CopyOptions.create().ignoreError());
         if (userInfo.getUid() != userId) {
             throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
         }
         return userInfo;
+    }
+
+    /**
+     * 检查token
+     *
+     * @param userId 用户Id
+     * @param token  token
+     */
+    public void checkToken(Integer userId, String token) {
+        Integer uid = redis.mget(UserProperties.getRedisTokenKey(token), UserProperties.USER_ID,
+            Integer.class);
+        if (uid == null || !uid.equals(userId)) {
+            throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
+        }
     }
 }

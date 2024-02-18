@@ -1,5 +1,6 @@
 package com.gill.user.controller;
 
+import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
@@ -8,6 +9,8 @@ import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -24,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @version 2024/02/06
  **/
 @RestController
-public class LoginController {
+public class UserController {
 
     @Autowired
     private CaptchaService captchaService;
@@ -61,9 +64,8 @@ public class LoginController {
         int userId = userService.registerUser(param);
 
         // 登录
-        String token = userService.successLoginAndGenerateToken(userId);
-        response.addCookie(buildCookie("uid", String.valueOf(userId)));
-        response.addCookie(buildCookie("token", token));
+        UserDetail userDetail = userService.successLoginAndGenerateToken(userId);
+        addUserCookies(response, userId, userDetail);
         return Response.success("/home").build();
     }
 
@@ -91,11 +93,17 @@ public class LoginController {
         userService.checkAccess(userId);
 
         // 成功登录后置处理
-        String token = userService.successLoginAndGenerateToken(userId);
+        UserDetail userDetail = userService.successLoginAndGenerateToken(userId);
 
-        response.addCookie(buildCookie("uid", String.valueOf(userId)));
-        response.addCookie(buildCookie("token", token));
+        addUserCookies(response, userId, userDetail);
         return Response.success("/home").build();
+    }
+
+    private static void addUserCookies(HttpServletResponse response, int userId,
+        UserDetail userDetail) {
+        response.addCookie(buildCookie("uid", String.valueOf(userId)));
+        response.addCookie(buildCookie("un", userDetail.getUsername()));
+        response.addCookie(buildCookie("token", userDetail.getToken()));
     }
 
     private static Cookie buildCookie(String key, String value) {
@@ -118,7 +126,7 @@ public class LoginController {
     }
 
     /**
-     * 获取登录用信息
+     * 获取登录用户信息
      *
      * @param userId 用户ID
      * @param token  token
@@ -129,5 +137,20 @@ public class LoginController {
         @CookieValue("token") String token) {
         UserInfo userInfo = userService.getUserInfo(userId, token);
         return Response.success(userInfo).build();
+    }
+
+    /**
+     * 获取用户权限
+     *
+     * @param userId 用户ID
+     * @param token  token
+     * @return 授权信息
+     */
+    @GetMapping("permissions")
+    public Response<List<String>> userPermission(@CookieValue("uid") int userId,
+        @CookieValue("token") String token) {
+
+        List<String> res = Collections.emptyList();
+        return Response.success(res).build();
     }
 }
