@@ -33,11 +33,23 @@ public class RedisTemplateAdapter implements Redis {
         this.redisTemplate = redisTemplate;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T cast(String jsonStr, Class<T> clazz) {
         if (StrUtil.isBlank(jsonStr)) {
             return null;
         }
         try {
+            if (clazz == Integer.class) {
+                return (T) Integer.valueOf(jsonStr);
+            } else if (clazz == Long.class) {
+                return (T) Long.valueOf(jsonStr);
+            } else if (clazz == Float.class) {
+                return (T) Float.valueOf(jsonStr);
+            } else if (clazz == Double.class) {
+                return (T) Double.valueOf(jsonStr);
+            } else if (clazz == String.class) {
+                return (T) jsonStr;
+            }
             return JSONUtil.toBean(jsonStr, clazz);
         } catch (Exception e) {
             log.error("redis parse obj to {}, failed, element: {}", clazz.getCanonicalName(),
