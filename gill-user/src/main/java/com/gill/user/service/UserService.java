@@ -3,12 +3,14 @@ package com.gill.user.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.extra.expression.ExpressionUtil;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
 import com.gill.api.model.UserBan;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
 import com.gill.redis.core.Redis;
+import com.gill.user.config.RoleMap;
 import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
@@ -17,12 +19,14 @@ import com.gill.user.mappers.UserMapper;
 import com.gill.web.exception.WebException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * LoginService
@@ -36,6 +40,9 @@ public class UserService {
 
     @Autowired
     private Redis redis;
+
+    @Autowired
+    private ResourceService resourceService;
 
     @Autowired
     private UserMapper userMapper;
@@ -61,6 +68,7 @@ public class UserService {
      * @param param 参数
      * @return userId
      */
+    @Transactional(rollbackFor = Exception.class)
     public int registerUser(RegisterParam param) {
 
         // 获取用户ID
@@ -77,9 +85,10 @@ public class UserService {
             throw new WebException(HttpStatus.BAD_REQUEST, "账号已存在");
         }
 
-        // TODO extra operation
+        // 设置用户角色
+        resourceService.addUserRoles(user.getId(), RoleMap.NORMAL_USER);
 
-        return userId.intValue();
+        return user.getId();
     }
 
     private User generateUser(RegisterParam param, Long userId) {
@@ -133,10 +142,18 @@ public class UserService {
      * @return token
      */
     public UserDetail successLoginAndGenerateToken(int userId) {
+
+        // 更新登录时间
         userMapper.updateLoginTime(userId);
+
+        // 生成token
         User user = userMapper.getUserInfoById(userId);
         String token = generateToken();
         redis.mset(UserProperties.getRedisTokenKey(token), generateRedisUserInfo(user));
+
+        // 存储用户权限缓存
+        resourceService.refreshUserPermissions(userId);
+
         return new UserDetail(token, user);
     }
 
@@ -194,5 +211,40 @@ public class UserService {
         if (uid == null || !uid.equals(userId)) {
             throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
         }
+    }
+
+    /**
+     * 检查用户权限
+     *
+     * @param uid                  用户ID
+     * @param permissionExpression 权限表达式
+     * @param exceptionCode        异常码
+     * @param exceptionMessage     异常消息
+     */
+    public void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
+        String exceptionMessage) {
+        Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(uid));
+        if (!doCheckPermission(permissions, permissionExpression)) {
+            throw new WebException(HttpStatus.resolve(exceptionCode), exceptionMessage);
+        }
+    }
+
+    private static boolean doCheckPermission(Set<String> permissions, String permissionExpression) {
+        Map<String, Object> map = new HashMap<>();
+        StringBuilder sb = new StringBuilder();
+        for (char c : permissionExpression.toCharArray()) {
+            if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '.') {
+                sb.append(c);
+            } else if (!sb.isEmpty()) {
+                String permissionKey = sb.toString();
+                sb.delete(0, sb.length());
+                map.put(permissionKey, permissions.contains(permissionKey));
+            }
+        }
+        if (!sb.isEmpty()) {
+            String permissionKey = sb.toString();
+            map.put(permissionKey, permissions.contains(permissionKey));
+        }
+        return Boolean.parseBoolean(String.valueOf(ExpressionUtil.eval(permissionExpression, map)));
     }
 }

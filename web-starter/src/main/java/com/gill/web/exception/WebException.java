@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 public class WebException extends RuntimeException {
 
+    public static final WebException DEFAULT_WEB_EXCEPTION = new WebException(
+        HttpStatus.BAD_REQUEST);
+
     private final HttpStatus status;
 
     public WebException(HttpStatus status) {

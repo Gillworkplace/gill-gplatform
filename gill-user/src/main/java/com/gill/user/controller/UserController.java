@@ -1,16 +1,16 @@
 package com.gill.user.controller;
 
+import com.gill.api.domain.UserProperties;
 import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
+import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.api.Response;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Collections;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -40,6 +40,7 @@ public class UserController {
      *
      * @param username 用户名
      */
+    @IgnoreAuth
     @GetMapping("/precheck/username")
     public void precheckUsername(@RequestParam("username") String username) {
         userService.precheckUsername(username);
@@ -51,6 +52,7 @@ public class UserController {
      * @param param 参数
      * @return 响应
      */
+    @IgnoreAuth
     @PostMapping("/register")
     public Response<String> register(@Validated @RequestBody RegisterParam param,
         HttpServletResponse response) {
@@ -75,6 +77,7 @@ public class UserController {
      * @param param 参数
      * @return 响应
      */
+    @IgnoreAuth
     @PostMapping("/login")
     public Response<String> login(@Validated @RequestBody LoginParam param,
         HttpServletResponse response) {
@@ -101,9 +104,9 @@ public class UserController {
 
     private static void addUserCookies(HttpServletResponse response, int userId,
         UserDetail userDetail) {
-        response.addCookie(buildCookie("uid", String.valueOf(userId)));
-        response.addCookie(buildCookie("un", userDetail.getUsername()));
-        response.addCookie(buildCookie("token", userDetail.getToken()));
+        response.addCookie(buildCookie(UserProperties.USER_ID, String.valueOf(userId)));
+        response.addCookie(buildCookie(UserProperties.USER_NAME, userDetail.getUsername()));
+        response.addCookie(buildCookie(UserProperties.TOKEN_ID, userDetail.getToken()));
     }
 
     private static Cookie buildCookie(String key, String value) {
@@ -119,6 +122,7 @@ public class UserController {
      * @param inviteCode 邀请码
      * @return 登录结果
      */
+    @IgnoreAuth
     @PostMapping("/invite/login")
     public Response<String> inviteCodeLogin(@RequestParam("inviteCode") String inviteCode) {
 
@@ -134,23 +138,8 @@ public class UserController {
      */
     @GetMapping("info")
     public Response<UserInfo> userInfo(@CookieValue("uid") int userId,
-        @CookieValue("token") String token) {
+        @CookieValue("tid") String token) {
         UserInfo userInfo = userService.getUserInfo(userId, token);
         return Response.success(userInfo).build();
-    }
-
-    /**
-     * 获取用户权限
-     *
-     * @param userId 用户ID
-     * @param token  token
-     * @return 授权信息
-     */
-    @GetMapping("permissions")
-    public Response<List<String>> userPermission(@CookieValue("uid") int userId,
-        @CookieValue("token") String token) {
-
-        List<String> res = Collections.emptyList();
-        return Response.success(res).build();
     }
 }

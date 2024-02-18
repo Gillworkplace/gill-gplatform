@@ -44,6 +44,7 @@
     <redisson.version>3.26.0</redisson.version>
     <mybatis-generator.version>1.4.2</mybatis-generator.version>
     <snakeyaml.version>2.2</snakeyaml.version>
+    <aviator.version>5.3.3</aviator.version>
   </properties>
 
   <dependencies>
@@ -130,6 +131,11 @@
         <groupId>com.google.zxing</groupId>
         <artifactId>core</artifactId>
         <version>${zxing.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.googlecode.aviator</groupId>
+        <artifactId>aviator</artifactId>
+        <version>${aviator.version}</version>
       </dependency>
 
       <!--   other   -->

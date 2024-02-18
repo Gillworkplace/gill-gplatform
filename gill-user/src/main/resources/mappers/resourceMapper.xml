@@ -67,4 +67,58 @@
   <delete id="truncateRolePermissions">
     truncate table t_role_permissions
   </delete>
+
+  <select id="queryRolesByUserId" resultType="com.gill.api.model.Role">
+    select r.id          as id,
+           r.name        as name,
+           r.description as description
+    from t_user_roles ur
+           join t_role r
+                on ur.role_id = r.id
+    where ur.user_id = #{userId}
+  </select>
+
+  <select id="queryPermissionsByUserId" resultType="string">
+    select pr.descendant_id
+    from t_user_roles ur
+           join t_role_permissions rp
+                on ur.role_id = rp.role_id
+           join t_permission_relationships pr
+                on rp.permission_id = pr.ancestor_id
+    where ur.user_id = #{userId}
+  </select>
+
+  <select id="queryDetailPermissionsByUserId" resultType="com.gill.api.model.Permission">
+    select pp.id          as id,
+           pp.name        as name,
+           pp.description as description
+    from t_user_roles ur
+           join t_role_permissions rp
+                on ur.role_id = rp.role_id
+           join t_permission p
+                on rp.permission_id = p.id
+           join t_permission_relationships pr
+                on p.id = pr.ancestor_id
+           join t_permission pp
+                on pr.descendant_id = pp.id
+    where ur.user_id = #{userId}
+  </select>
+  
+  <insert id="insertUserRoles">
+    insert into t_user_roles(user_id, role_id)
+    values
+    <foreach collection="roles" item="role" separator=",">
+      (#{userId}, #{role})
+    </foreach>
+  </insert>
+
+  <delete id="deleteUserRoles">
+    delete
+    from t_user_roles
+    where user_id = #{userId}
+    and role_id in
+    <foreach collection="roles" item="role" open="(" separator="," close=")">
+      #{role}
+    </foreach>
+  </delete>
 </mapper>

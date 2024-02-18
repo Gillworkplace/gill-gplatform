@@ -1,7 +1,9 @@
 package com.gill.user;
 
+import com.gill.user.controller.ResourceController;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import redis.embedded.RedisServer;
 
 /**
@@ -13,6 +15,8 @@ import redis.embedded.RedisServer;
 public class AbstractTest {
 
     protected static RedisServer redisServer;
+
+    protected ResourceController resourceController;
 
     /**
      * 构造方法之后执行.
@@ -33,4 +37,11 @@ public class AbstractTest {
         redisServer.stop();
     }
 
+
+    @BeforeEach
+    public void beforeEach() {
+        if (resourceController != null) {
+            resourceController.loadResources();
+        }
+    }
 }

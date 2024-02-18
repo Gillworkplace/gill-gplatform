@@ -1,10 +1,12 @@
 package com.gill.user.service;
 
+import com.gill.api.domain.UserProperties;
 import com.gill.api.model.Permission;
 import com.gill.api.model.PermissionRelationship;
 import com.gill.api.model.Role;
 import com.gill.api.model.RolePermission;
 import com.gill.api.model.RoleRelationship;
+import com.gill.redis.core.Redis;
 import com.gill.user.domain.Permissions;
 import com.gill.user.domain.Relation;
 import com.gill.user.domain.Roles;
@@ -36,8 +38,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class ResourceService {
 
     @Autowired
+    private Redis redis;
+
+    @Autowired
     private ResourceMapper resourceMapper;
 
+    /**
+     * 解析并插入角色与权限数据
+     *
+     * @param roles       角色数据
+     * @param permissions 权限数据
+     */
     @Transactional(rollbackFor = Exception.class)
     public void parseAndInsertIntoDb(Roles roles, Permissions permissions) {
 
@@ -53,7 +64,7 @@ public class ResourceService {
         resourceMapper.insertRoles(newRoles);
 
         // 分析并插入角色关系数据
-        List<RoleRelationship> newRoleRelations = analyseRoleRelations(roles.getRoleRelations());
+        List<RoleRelationship> newRoleRelations = resolveRoleRelations(roles.getRoleRelations());
         resourceMapper.insertRoleRelationships(newRoleRelations);
 
         // 插入权限数据
@@ -61,12 +72,12 @@ public class ResourceService {
         resourceMapper.insertPermissions(newPermissions);
 
         // 分析并插入权限关系数据
-        List<PermissionRelationship> newPermissionRelations = analysePermissionRelations(
+        List<PermissionRelationship> newPermissionRelations = resolvePermissionRelations(
             permissions.getPermissions(), permissions.getRelations());
         resourceMapper.insertPermissionRelationships(newPermissionRelations);
 
         // 插入角色权限数据
-        List<RolePermission> newRolePermissions = analyseRolePermissions(roles.getRoleRelations(),
+        List<RolePermission> newRolePermissions = resolveRolePermissions(roles.getRoleRelations(),
             roles.getRolePermissions(), permissions.getPermissions());
         resourceMapper.insertRolePermissions(newRolePermissions);
     }
@@ -112,7 +123,7 @@ public class ResourceService {
         return false;
     }
 
-    private List<RoleRelationship> analyseRoleRelations(List<Relation> roleRelations) {
+    private List<RoleRelationship> resolveRoleRelations(List<Relation> roleRelations) {
         Map<String, Set<String>> adjacencyMap = transferToAdjacencyMap(roleRelations);
         if (checkCircle(adjacencyMap)) {
             throw new WebException(HttpStatus.BAD_REQUEST, "角色发现环状关系");
@@ -130,7 +141,7 @@ public class ResourceService {
         return roleRelationships;
     }
 
-    private List<PermissionRelationship> analysePermissionRelations(List<Permission> permissions,
+    private List<PermissionRelationship> resolvePermissionRelations(List<Permission> permissions,
         List<Relation> relations) {
         Map<String, Set<String>> adjacencyMap = transferToAdjacencyMap(relations);
         if (checkCircle(adjacencyMap)) {
@@ -187,7 +198,7 @@ public class ResourceService {
     }
 
 
-    private List<RolePermission> analyseRolePermissions(List<Relation> roleRelations,
+    private List<RolePermission> resolveRolePermissions(List<Relation> roleRelations,
         List<Relation> rolePermissions, List<Permission> permissions) {
         List<RolePermission> rps = new ArrayList<>();
         Map<String, Set<String>> roleAdjMap = transferToAdjacencyMap(roleRelations);
@@ -228,7 +239,7 @@ public class ResourceService {
         for (String permission : permissions) {
 
             // 忽略关系中没有定义的权限
-            if(!permissionIds.contains(permission)) {
+            if (!permissionIds.contains(permission)) {
                 continue;
             }
             int self = selfPermissions.contains(permission) ? 1 : 2;
@@ -241,5 +252,52 @@ public class ResourceService {
 
         cache.put(subject, descendants);
         return descendants;
+    }
+
+    /**
+     * 根据用户id获取所有的资源权限
+     *
+     * @param userId 用户ID
+     * @return set 权限集合
+     */
+    public Set<String> refreshUserPermissions(int userId) {
+        Set<String> permissions = resourceMapper.queryPermissionsByUserId(userId);
+        redis.sclear(UserProperties.getRedisUserResourceKey(userId));
+        redis.sadd(UserProperties.getRedisUserResourceKey(userId), permissions);
+        return permissions;
+    }
+
+    /**
+     * 根据用户ID 获取所有资源权限
+     *
+     * @param userId 用户ID
+     * @return set 权限集合
+     */
+    public Set<String> getUserPermissions(int userId) {
+        Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(userId));
+        if (permissions.isEmpty()) {
+            return refreshUserPermissions(userId);
+        }
+        return permissions;
+    }
+
+    /**
+     * 为用户添加角色
+     *
+     * @param userId 用户ID
+     * @param roles  角色
+     */
+    public void addUserRoles(int userId, Set<String> roles) {
+        resourceMapper.insertUserRoles(userId, roles);
+    }
+
+    /**
+     * 为用户删除角色
+     *
+     * @param userId 用户ID
+     * @param roles  角色
+     */
+    public void removeUserRoles(int userId, Set<String> roles) {
+        resourceMapper.deleteUserRoles(userId, roles);
     }
 }

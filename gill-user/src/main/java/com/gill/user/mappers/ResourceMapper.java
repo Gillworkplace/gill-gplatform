@@ -6,6 +6,7 @@ import com.gill.api.model.Role;
 import com.gill.api.model.RolePermission;
 import com.gill.api.model.RoleRelationship;
 import java.util.List;
+import java.util.Set;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -78,4 +79,43 @@ public interface ResourceMapper {
      */
     void truncateRolePermissions();
 
+    /**
+     * 根据用户ID 获取角色
+     *
+     * @param userId 用户ID
+     * @return 角色s
+     */
+    List<Role> queryRolesByUserId(int userId);
+
+    /**
+     * 根据用户ID获取权限
+     *
+     * @param userId 用户ID
+     * @return 权限
+     */
+    Set<String> queryPermissionsByUserId(int userId);
+
+    /**
+     * 根据用户ID 获取详细权限信息
+     *
+     * @param userId 用户ID
+     * @return 权限
+     */
+    List<Permission> queryDetailPermissionsByUserId(int userId);
+
+    /**
+     * 为用户添加角色
+     *
+     * @param userId 用户ID
+     * @param roles  角色
+     */
+    void insertUserRoles(int userId, Set<String> roles);
+
+    /**
+     * 为用户删除角色
+     *
+     * @param userId 用户ID
+     * @param roles  角色
+     */
+    void deleteUserRoles(int userId, Set<String> roles);
 }

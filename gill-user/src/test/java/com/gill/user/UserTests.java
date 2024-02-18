@@ -4,15 +4,20 @@ import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.ReflectUtil;
+import com.gill.user.controller.ResourceController;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
+import com.gill.user.mappers.ResourceTestMapper;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
 import com.gill.web.exception.WebException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +47,11 @@ public class UserTests extends AbstractTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    public UserTests(ResourceController resourceController) {
+        super.resourceController = resourceController;
+    }
 
     @Transactional
     @Test
@@ -129,28 +139,16 @@ public class UserTests extends AbstractTest {
     public void test_get_user_info_by_token_should_be_success() {
 
         // 登录
-        final String username = "test";
-        final String password = "12345678";
-        String randomCode = RandomUtil.randomString(8);
-        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
-        String captchaCode = captcha.getCode();
-        LoginParam loginParam = new LoginParam();
-        loginParam.setRandomCode(randomCode);
-        loginParam.setCaptchaCode(captchaCode);
-        loginParam.setUsername(username);
-        loginParam.setPassword(password);
-        ResponseEntity<Response.ResultWrapper> response1 = restTemplate.postForEntity(
-            urlPrefix() + "/login", loginParam, Response.ResultWrapper.class);
-        List<String> cookies = response1.getHeaders().get(HttpHeaders.SET_COOKIE);
+        List<String> cookies = login();
 
         // 获取用户信息
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE, cookies);
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-        ResponseEntity<Response.ResultWrapper> response2 = restTemplate.exchange(
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
             urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.OK, response2.getStatusCode());
-        UserInfo userInfo = BeanUtil.mapToBean((Map) response2.getBody().getData(), UserInfo.class,
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        UserInfo userInfo = BeanUtil.mapToBean((Map) response.getBody().getData(), UserInfo.class,
             true, CopyOptions.create().ignoreError());
         Assertions.assertEquals(0, userInfo.getUid());
         Assertions.assertEquals("test", userInfo.getUsername());
@@ -178,6 +176,60 @@ public class UserTests extends AbstractTest {
     public void test_precheck_existent_username_should_throw_exception() {
         final String username = "test";
         Assertions.assertThrows(WebException.class, () -> userService.precheckUsername(username));
+    }
+
+    @Test
+    public void test_check_permission_should_be_success() {
+        Set<String> permissions = Set.of("a.A", "B.b", "C", "a", "b", "c", "e", "f");
+        Method doCheckPermission = ReflectUtil.getMethod(UserService.class, "doCheckPermission",
+            Set.class, String.class);
+        boolean ret = ReflectUtil.invokeStatic(doCheckPermission, permissions,
+            "a.A && C || z && e || f && B.b");
+        Assertions.assertTrue(ret);
+    }
+
+    @Test
+    public void test_check_permission_should_be_failed() {
+        Set<String> permissions = Set.of("a.A", "B.b", "C", "a", "b", "c", "e", "f");
+        Method doCheckPermission = ReflectUtil.getMethod(UserService.class, "doCheckPermission",
+            Set.class, String.class);
+        boolean ret = ReflectUtil.invokeStatic(doCheckPermission, permissions,
+            "a.A && z || z && e || z && B.b");
+        Assertions.assertFalse(ret);
+    }
+
+    @Test
+    public void test_get_user_permissions() {
+        // 登录
+        List<String> cookies = login();
+
+        // 获取用户信息
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.COOKIE, cookies);
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
+            urlPrefix() + "/resource/permissions", HttpMethod.GET, requestEntity,
+            Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<String> permissions = (List) response.getBody().getData();
+        Assertions.assertEquals(3, permissions.size());
+
+    }
+
+    private List<String> login() {
+        final String username = "test";
+        final String password = "12345678";
+        String randomCode = RandomUtil.randomString(8);
+        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
+        String captchaCode = captcha.getCode();
+        LoginParam loginParam = new LoginParam();
+        loginParam.setRandomCode(randomCode);
+        loginParam.setCaptchaCode(captchaCode);
+        loginParam.setUsername(username);
+        loginParam.setPassword(password);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
+            urlPrefix() + "/login", loginParam, Response.ResultWrapper.class);
+        return response.getHeaders().get(HttpHeaders.SET_COOKIE);
     }
 
     private String urlPrefix() {
