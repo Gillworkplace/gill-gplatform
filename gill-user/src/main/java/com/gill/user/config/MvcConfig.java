@@ -1,6 +1,5 @@
 package com.gill.user.config;
 
-import com.gill.user.interceptor.AuthInterceptor;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
