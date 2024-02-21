@@ -146,7 +146,7 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param error 错误码
      */
-    public static ResponseBuilder<?> failed(HttpStatus error) {
+    public static <T> ResponseBuilder<T> failed(HttpStatus error) {
         return new ResponseBuilder<>(error, error.getReasonPhrase(), null);
     }
 
@@ -156,7 +156,7 @@ public class Response<T> extends ResponseEntity<Object> {
      * @param error   错误码
      * @param message 错误信息
      */
-    public static ResponseBuilder<?> failed(HttpStatus error, String message) {
+    public static <T> ResponseBuilder<T> failed(HttpStatus error, String message) {
         return new ResponseBuilder<>(error, message, null);
     }
 
@@ -165,21 +165,21 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param message 提示信息
      */
-    public static ResponseBuilder<?> failed(String message) {
+    public static <T> ResponseBuilder<T> failed(String message) {
         return new ResponseBuilder<>(HttpStatus.INTERNAL_SERVER_ERROR, message, null);
     }
 
     /**
      * 失败返回结果
      */
-    public static ResponseBuilder<?> failed() {
+    public static <T> ResponseBuilder<T> failed() {
         return failed(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
      * 参数验证失败返回结果
      */
-    public static ResponseBuilder<?> validateFailed() {
+    public static <T> ResponseBuilder<T> validateFailed() {
         return failed(HttpStatus.BAD_REQUEST);
     }
 
@@ -188,7 +188,7 @@ public class Response<T> extends ResponseEntity<Object> {
      *
      * @param message 提示信息
      */
-    public static ResponseBuilder<?> validateFailed(String message) {
+    public static <T> ResponseBuilder<T> validateFailed(String message) {
         return failed(HttpStatus.BAD_REQUEST, message);
     }
 
