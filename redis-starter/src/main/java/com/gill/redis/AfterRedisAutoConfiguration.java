@@ -16,7 +16,6 @@ import org.springframework.data.redis.connection.RedisConfiguration;
  * @author gill
  * @version 2024/01/29
  **/
-@AutoConfiguration
 @AutoConfigureAfter(org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class)
 @Import(AfterRedisConfiguration.class)
 @Slf4j

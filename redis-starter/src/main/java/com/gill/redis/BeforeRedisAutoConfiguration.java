@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Import;
  * @author gill
  * @version 2024/01/29
  **/
-@AutoConfiguration
 @AutoConfigureBefore(org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class)
 @Import(BeforeRedisConfiguration.class)
 @Slf4j

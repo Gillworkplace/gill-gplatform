@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
  * @author gill
  * @version 2024/01/29
  **/
-@Component("aliasRedisProperties")
 @ConfigurationProperties(prefix = "redis")
 @Getter
 @Setter
