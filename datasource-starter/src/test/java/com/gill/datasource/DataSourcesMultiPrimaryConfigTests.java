@@ -1,6 +1,8 @@
 package com.gill.datasource;
 
+import cn.hutool.core.util.ReflectUtil;
 import com.gill.datasource.dynamic.DynamicDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,10 @@ class DataSourcesMultiPrimaryConfigTests {
 
     @Test
     public void testConfig() {
-        Assertions.assertInstanceOf(DynamicDataSource.class, context.getBean(DataSource.class));
+        DataSource datasource = context.getBean(DataSource.class);
+        Assertions.assertInstanceOf(DynamicDataSource.class, datasource);
+        DynamicDataSource dds = (DynamicDataSource) datasource;
+        Object defaultDatasource = ReflectUtil.getFieldValue(dds, "defaultTargetDataSource");
+        Assertions.assertInstanceOf(HikariDataSource.class, defaultDatasource);
     }
 }

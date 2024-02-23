@@ -1,2 +1,1 @@
-com.gill.datasource.BeforeDataSourcesAutoConfiguration
-com.gill.datasource.AfterDataSourcesAutoConfiguration
+com.gill.datasource.DynamicDataSourcesAutoConfiguration

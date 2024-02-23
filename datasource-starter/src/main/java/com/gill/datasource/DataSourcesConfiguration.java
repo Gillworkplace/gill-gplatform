@@ -1,7 +1,6 @@
 package com.gill.datasource;
 
-import static com.gill.datasource.dynamic.DynamicDataSourceSelector.DEFAULT_DB;
-
+import cn.hutool.core.util.StrUtil;
 import com.gill.datasource.dynamic.DynamicDataSource;
 import com.gill.datasource.generator.DataSourceGenerator;
 import java.util.HashMap;
@@ -10,12 +9,9 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 
 /**
@@ -26,13 +22,9 @@ import org.springframework.context.annotation.Primary;
  * @author gill
  * @version 2023/12/18
  **/
-@Configuration
 public class DataSourcesConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourcesConfiguration.class);
-
-    @Autowired
-    private ConfigurableApplicationContext context;
 
     @Autowired
     private DataSources datasources;
@@ -44,7 +36,6 @@ public class DataSourcesConfiguration {
 
     private DataSourceInfo generateDataSources() {
         Map<String, DataSourceProperties> sources = datasources.getSources();
-        ConfigurableListableBeanFactory factory = context.getBeanFactory();
         Map<String, DataSource> dataSources = new HashMap<>();
         DataSource first = null;
         DataSource primary = null;
@@ -56,7 +47,6 @@ public class DataSourcesConfiguration {
             }
             DataSource dataSource = DataSourceGenerator.chainsGenerate(datasources, properties);
             dataSources.put(name, dataSource);
-            factory.registerSingleton(name, dataSource);
             if (first == null) {
                 first = dataSource;
             }
@@ -68,19 +58,22 @@ public class DataSourcesConfiguration {
         return new DataSourceInfo(primary == null ? first : primary, dataSources);
     }
 
+    /**
+     * 当spring.datasource.url不为空时代表已经配置了数据源， 就以该数据源为默认数据源
+     *
+     * @param primary spring数据源
+     * @return 动
+     */
     @Primary
     @Bean
-    @ConditionalOnBean(DataSource.class)
-    public DataSource dynamicDataSourceOnBean(DataSource primary) {
-        log.info("dynamicDataSourceOnBean: {}", primary);
-        return dynamicDataSource(primary);
-    }
-
-    @Primary
-    @Bean
-    @ConditionalOnMissingBean(DataSource.class)
-    public DataSource dynamicDataSourceOnMissingBean() {
-        log.info("dynamicDataSourceOnMissingBean");
+    @DependsOn({"com.gill.datasource.MybatisConfiguration"})
+    public DataSource dynamicDataSourceOnBean(DataSource primary,
+        @Value("${spring.datasource.url:}") String springDataSourceUrl) {
+        if (!StrUtil.isEmpty(springDataSourceUrl)) {
+            log.info("create dynamicDataSource with spring datasource: {}", primary);
+            return dynamicDataSource(primary);
+        }
+        log.info("create dynamicDataSource");
         return dynamicDataSource(null);
     }
 
@@ -88,7 +81,6 @@ public class DataSourcesConfiguration {
         DataSourceInfo dataSourceInfo = generateDataSources();
         Map<Object, Object> dataSources = new HashMap<>(dataSourceInfo.dataSources());
         primary = primary == null ? dataSourceInfo.defaultDataSource() : primary;
-        context.getBeanFactory().registerSingleton(DEFAULT_DB, primary);
         DynamicDataSource dynamicDataSource = new DynamicDataSource();
         dynamicDataSource.setDefaultTargetDataSource(primary);
         dynamicDataSource.setTargetDataSources(dataSources);

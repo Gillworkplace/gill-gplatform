@@ -18,7 +18,7 @@ class DataSourcesConfigTests {
 
     @Test
     public void testConfig() {
-        DataSources datasources = context.getBean("datasources", DataSources.class);
+        DataSources datasources = context.getBean(DataSources.class);
         Assertions.assertNotNull(datasources);
         Map<String, DataSourceProperties> map = datasources.getSources();
         Assertions.assertFalse(map.isEmpty());
@@ -33,12 +33,5 @@ class DataSourcesConfigTests {
     @Test
     public void testDecryptionStrategySPI() {
         Assertions.assertNotNull(CryptoFactory.getStrategy("mock"));
-    }
-
-    @Test
-    public void testGetDataSource() {
-        Assertions.assertNotNull(context.getBean("db", DataSource.class));
-        Assertions.assertNotNull(context.getBean("db-druid", DataSource.class));
-        Assertions.assertNotNull(context.getBean("db-hikari", DataSource.class));
     }
 }

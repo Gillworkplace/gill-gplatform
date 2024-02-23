@@ -46,13 +46,15 @@ public class MapperWithoutDynamicDataSourceTests {
 
     @Test
     public void testFindDynamicDataSource_shouldCount0() {
-        Assertions.assertThrows(NoSuchBeanDefinitionException.class,
-            () -> context.getBean(DataSources.class));
+        DataSources dynamicDataSources = context.getBean(DataSources.class);
+        Assertions.assertEquals(0, dynamicDataSources.getSources().size());
     }
 
     @Test
     public void testDataSource_shouldCount1() {
         Map<String, DataSource> dataSources = context.getBeansOfType(DataSource.class);
-        Assertions.assertEquals(1, dataSources.size());
+
+        // 一个dynamic 一个spring原生的
+        Assertions.assertEquals(2, dataSources.size());
     }
 }

@@ -1,5 +1,4 @@
 datasources:
-  enabled: true
   sources:
     db:
       is-primary: true
