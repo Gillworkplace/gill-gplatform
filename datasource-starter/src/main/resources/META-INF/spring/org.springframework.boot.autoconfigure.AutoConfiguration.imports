@@ -1,1 +1,2 @@
+com.gill.datasource.StubDataSourcesAutoConfiguration
 com.gill.datasource.DynamicDataSourcesAutoConfiguration

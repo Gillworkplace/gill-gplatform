@@ -1,10 +1,13 @@
 package com.gill.datasource;
 
+import com.gill.datasource.dynamic.DynamicDataSource;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
@@ -27,6 +30,6 @@ public class DynamicDataSourcesAutoConfiguration {
 
     @PostConstruct
     private void init() {
-        log.info("load dynamic datasources after DataSourcesAutoConfiguration");
+        log.info("load dynamic datasources");
     }
 }

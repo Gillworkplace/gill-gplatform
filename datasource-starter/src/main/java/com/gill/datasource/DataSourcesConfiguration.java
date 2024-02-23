@@ -67,9 +67,9 @@ public class DataSourcesConfiguration {
     @Primary
     @Bean
     @DependsOn({"com.gill.datasource.MybatisConfiguration"})
-    public DataSource dynamicDataSourceOnBean(DataSource primary,
+    public DataSource dynamicDataSource(DataSource primary,
         @Value("${spring.datasource.url:}") String springDataSourceUrl) {
-        if (!StrUtil.isEmpty(springDataSourceUrl)) {
+        if (StrUtil.isNotEmpty(springDataSourceUrl)) {
             log.info("create dynamicDataSource with spring datasource: {}", primary);
             return dynamicDataSource(primary);
         }
