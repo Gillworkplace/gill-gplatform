@@ -27,6 +27,8 @@
     <module>gill-notification</module>
     <module>gill-notification-worker</module>
     <module>redis-starter</module>
+    <module>gill-cloud</module>
+    <module>dubbo-starter</module>
   </modules>
 
   <properties>
@@ -39,12 +41,15 @@
     <zxing.version>3.4.0</zxing.version>
     <hutool-all.version>5.8.10</hutool-all.version>
     <springdoc.version>2.1.0</springdoc.version>
-    <dubbo.version>3.1.10</dubbo.version>
+    <dubbo.version>3.2.10</dubbo.version>
     <embedded-redis.version>1.4.0</embedded-redis.version>
     <redisson.version>3.26.0</redisson.version>
     <mybatis-generator.version>1.4.2</mybatis-generator.version>
     <snakeyaml.version>2.2</snakeyaml.version>
     <aviator.version>5.3.3</aviator.version>
+    <aliyun-sdk-oss.version>3.10.2</aliyun-sdk-oss.version>
+    <aliyun-sdk-sts.version>1.1.4</aliyun-sdk-sts.version>
+    <curator-test.version>5.6.0</curator-test.version>
   </properties>
 
   <dependencies>
@@ -67,6 +72,13 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
         <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -175,17 +187,21 @@
         <artifactId>hutool-all</artifactId>
         <version>${hutool-all.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-starter</artifactId>
+        <artifactId>dubbo-bom</artifactId>
         <version>${dubbo.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-dependencies-zookeeper</artifactId>
         <type>pom</type>
-        <version>${dubbo.version}</version>
+        <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-dependencies-zookeeper-curator5</artifactId>
+        <version>${dubbo.version}</version>
+        <type>pom</type>
+      </dependency>
+
       <dependency>
         <groupId>org.redisson</groupId>
         <artifactId>redisson</artifactId>
@@ -195,6 +211,16 @@
         <groupId>org.yaml</groupId>
         <artifactId>snakeyaml</artifactId>
         <version>${snakeyaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aliyun.oss</groupId>
+        <artifactId>aliyun-sdk-oss</artifactId>
+        <version>${aliyun-sdk-oss.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aliyun</groupId>
+        <artifactId>sts20150401</artifactId>
+        <version>${aliyun-sdk-sts.version}</version>
       </dependency>
 
       <!--   test   -->
@@ -227,16 +253,16 @@
         <version>${h2.version}</version>
         <scope>test</scope>
       </dependency>
-<!--      <dependency>-->
-<!--        <groupId>com.github.kstyrc</groupId>-->
-<!--        <artifactId>embedded-redis</artifactId>-->
-<!--        <version>${embedded-redis.version}</version>-->
-<!--        <scope>test</scope>-->
-<!--      </dependency>-->
       <dependency>
         <groupId>com.github.codemonstur</groupId>
         <artifactId>embedded-redis</artifactId>
         <version>${embedded-redis.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-test</artifactId>
+        <version>${curator-test.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
