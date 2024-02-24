@@ -1,0 +1,2 @@
+consumerFilter=com.gill.dubbo.filter.ServiceFilter
+providerFilter=com.gill.dubbo.filter.ProviderExceptionFilter
