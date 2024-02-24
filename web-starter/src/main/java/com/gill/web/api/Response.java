@@ -195,9 +195,8 @@ public class Response<T> extends ResponseEntity<Object> {
     /**
      * 未登录返回结果
      */
-    public static <T> ResponseBuilder<T> unauthorized(T data) {
-        return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED,
-            HttpStatus.UNAUTHORIZED.getReasonPhrase(), data);
+    public static <T> ResponseBuilder<T> unauthorized(String message) {
+        return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED, message, null);
     }
 
     /**

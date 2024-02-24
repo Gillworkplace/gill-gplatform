@@ -1,5 +1,6 @@
-package com.gill.user.config;
+package com.gill.web.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class MvcConfig implements WebMvcConfigurer {
 
     @Autowired
-    private List<HandlerInterceptor> interceptors;
+    private List<HandlerInterceptor> interceptors = new ArrayList<>();
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

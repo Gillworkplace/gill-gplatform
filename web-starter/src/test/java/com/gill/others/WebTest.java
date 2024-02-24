@@ -2,13 +2,18 @@ package com.gill.others;
 
 import cn.hutool.json.JSONUtil;
 import com.gill.others.bean.Body;
+import com.gill.others.service.MockUserServiceImpl;
 import com.gill.web.api.Response;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -18,8 +23,8 @@ import org.springframework.http.ResponseEntity;
  * @author gill
  * @version 2024/01/23
  **/
-@SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class WebTest {
+@SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.config.location=classpath:application-test.yaml")
+public class WebTest extends BaseTest {
 
     public static final String URL_PREFIX = "http://localhost:";
 
@@ -33,8 +38,8 @@ public class WebTest {
     public void testAspect_requestParamAndPathVariable_should_return200AndLogMessage() {
         Body body = new Body("key", "value");
         String json = JSONUtil.toJsonStr(body);
-        ResponseEntity<String> ret = restTemplate.getForEntity(urlPrefix() + "/rest/str/key?key=key&value=value",
-            String.class);
+        ResponseEntity<String> ret = restTemplate.getForEntity(
+            urlPrefix() + "/rest/str/key?key=key&value=value", String.class);
         Assertions.assertEquals(json, ret.getBody());
         ret = restTemplate.getForEntity(urlPrefix() + "/str/key?key=key&value=value", String.class);
         Assertions.assertEquals(json, ret.getBody());
@@ -44,12 +49,11 @@ public class WebTest {
     public void testAspect_requestBody_should_return200AndLogMessage() {
         Body body = new Body("key", "value");
         String json = JSONUtil.toJsonStr(body);
-        ResponseEntity<Response.ResultWrapper> ret = restTemplate.postForEntity(urlPrefix() + "/rest/res",
-            body, Response.ResultWrapper.class);
+        ResponseEntity<Response.ResultWrapper> ret = restTemplate.postForEntity(
+            urlPrefix() + "/rest/res", body, Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
         Assertions.assertEquals(json, JSONUtil.toJsonStr(ret.getBody().getData()));
-        ret = restTemplate.postForEntity(urlPrefix() + "/res", body,
-            Response.ResultWrapper.class);
+        ret = restTemplate.postForEntity(urlPrefix() + "/res", body, Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
         Assertions.assertEquals(json, JSONUtil.toJsonStr(ret.getBody().getData()));
     }
@@ -65,8 +69,8 @@ public class WebTest {
 
     @Test
     public void testAspect_webEx_should_return400AndLogMessage() {
-        ResponseEntity<Response.ResultWrapper> ret = restTemplate.getForEntity(urlPrefix() + "/rest/webEx",
-            Response.ResultWrapper.class);
+        ResponseEntity<Response.ResultWrapper> ret = restTemplate.getForEntity(
+            urlPrefix() + "/rest/webEx", Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, ret.getStatusCode());
         Assertions.assertEquals("failed", ret.getBody().getMessage());
         ret = restTemplate.getForEntity(urlPrefix() + "/webEx", Response.ResultWrapper.class);
@@ -91,6 +95,30 @@ public class WebTest {
         ret = restTemplate.getForEntity(urlPrefix() + "/validEx?number=-1",
             Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, ret.getStatusCode());
+    }
+
+    @Test
+    public void test_interceptor_auth_should_be_access() {
+        List<String> cookies = List.of("uid=" + MockUserServiceImpl.UID,
+            "tid=" + MockUserServiceImpl.TID);
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.COOKIE, cookies);
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
+            urlPrefix() + "/rest/auth", HttpMethod.GET, requestEntity,
+            Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void test_interceptor_auth_should_be_deny() {
+        List<String> cookies = List.of("uid=0", "tid=" + MockUserServiceImpl.TID);
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.COOKIE, cookies);
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<Object> response = restTemplate.exchange(urlPrefix() + "/rest/auth",
+            HttpMethod.GET, requestEntity, Object.class);
+        Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     private String urlPrefix() {

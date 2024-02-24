@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: test-web-starter
+
+dubbo:
+  registry:
+    address: zookeeper://localhost:22182

@@ -275,7 +275,7 @@ public class WebLogAspect {
             public Object convert(Parameter parameter, Object arg) {
                 RequestParam anno = parameter.getAnnotation(RequestParam.class);
                 String key = parameter.getName();
-                if (!StrUtil.isEmpty(anno.value())) {
+                if (StrUtil.isNotEmpty(anno.value())) {
                     key = anno.value();
                 }
                 return Pair.of(key, arg);
@@ -306,7 +306,7 @@ public class WebLogAspect {
             public Object convert(Parameter parameter, Object arg) {
                 PathVariable anno = parameter.getAnnotation(PathVariable.class);
                 String key = parameter.getName();
-                if (!StrUtil.isEmpty(anno.value())) {
+                if (StrUtil.isNotEmpty(anno.value())) {
                     key = anno.value();
                 }
                 return Pair.of(key, arg);
