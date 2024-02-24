@@ -8,7 +8,7 @@ import com.gill.api.domain.UserProperties;
  * @author gill
  * @version 2024/01/31
  **/
-public interface UserService {
+public interface IUserService {
 
     /**
      * 根据userInfo获取用户信息
@@ -24,7 +24,17 @@ public interface UserService {
      *
      * @param uid   用户id
      * @param token tokenid
-     * @return 是否有效
      */
-    boolean checkToken(String uid, String token);
+    void checkToken(Integer uid, String token);
+
+    /**
+     * 检查用户权限
+     *
+     * @param uid                  用户ID
+     * @param permissionExpression 权限表达式
+     * @param exceptionCode        异常码
+     * @param exceptionMessage     异常消息
+     */
+    void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
+        String exceptionMessage);
 }
