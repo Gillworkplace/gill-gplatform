@@ -42,8 +42,9 @@ public class UserController {
      */
     @IgnoreAuth
     @GetMapping("/precheck/username")
-    public void precheckUsername(@RequestParam("username") String username) {
+    public Response<String> precheckUsername(@RequestParam("username") String username) {
         userService.precheckUsername(username);
+        return Response.success().build();
     }
 
     /**

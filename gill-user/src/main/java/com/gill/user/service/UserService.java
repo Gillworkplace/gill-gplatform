@@ -7,6 +7,7 @@ import cn.hutool.extra.expression.ExpressionUtil;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
 import com.gill.api.model.UserBan;
+import com.gill.api.service.user.IUserService;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
 import com.gill.redis.core.Redis;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -34,9 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
  * @author gill
  * @version 2024/02/06
  **/
+@DubboService
 @Component
 @Slf4j
-public class UserService {
+public class UserService implements IUserService {
 
     @Autowired
     private Redis redis;
@@ -197,6 +200,19 @@ public class UserService {
             throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
         }
         return userInfo;
+    }
+
+    /**
+     * 根据userInfo获取用户信息
+     *
+     * @param token          token id
+     * @param userProperties 用户字段
+     * @return 用户数据
+     */
+    @Override
+    public com.gill.api.service.user.UserInfo getUserInfoByToken(String token,
+        UserProperties... userProperties) {
+        return null;
     }
 
     /**

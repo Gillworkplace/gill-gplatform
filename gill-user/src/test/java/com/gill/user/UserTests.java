@@ -9,17 +9,20 @@ import com.gill.user.controller.ResourceController;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
-import com.gill.user.mappers.ResourceTestMapper;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
 import com.gill.web.exception.WebException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -31,7 +34,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 
+ /**
+ * 10以后代表登录完成
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserTests extends AbstractTest {
 
     public static final String URL_PREFIX = "http://localhost:";
@@ -55,6 +62,7 @@ public class UserTests extends AbstractTest {
 
     @Transactional
     @Test
+    @Order(10)
     public void test_register_and_login_should_be_success() {
         final String username = "ZhAngzhiyan01234";
         final String password = ".!@#-=$%^&*:;aZ0";
@@ -92,6 +100,7 @@ public class UserTests extends AbstractTest {
     }
 
     @Test
+    @Order(1)
     public void test_register_validate_param_failed_should_be_throw_exception() {
         final String username = "ZhAngzhiyan01234(";
         final String password = ".!@#-=$%^&*:;aZ0(";
@@ -115,6 +124,7 @@ public class UserTests extends AbstractTest {
     }
 
     @Test
+    @Order(10)
     public void test_login_should_be_success() {
         final String username = "test";
         final String password = "12345678";
@@ -136,15 +146,11 @@ public class UserTests extends AbstractTest {
     }
 
     @Test
+    @Order(11)
     public void test_get_user_info_by_token_should_be_success() {
 
-        // 登录
-        List<String> cookies = login();
-
         // 获取用户信息
-        HttpHeaders headers = new HttpHeaders();
-        headers.put(HttpHeaders.COOKIE, cookies);
-        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>("", new HttpHeaders());
         ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
             urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -159,20 +165,25 @@ public class UserTests extends AbstractTest {
     }
 
     @Test
+    @Order(1)
     public void test_get_user_info_without_token_should_throw_exception() {
-        HttpEntity<String> requestEntity = new HttpEntity<>("", new HttpHeaders());
-        ResponseEntity<Response.ResultWrapper> response2 = restTemplate.exchange(
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.COOKIE, Collections.emptyList());
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
             urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
+    @Order(1)
     public void test_precheck_nonexistent_username_should_be_success() {
         final String username = "test1";
         userService.precheckUsername(username);
     }
 
     @Test
+    @Order(11)
     public void test_precheck_existent_username_should_throw_exception() {
         final String username = "test";
         Assertions.assertThrows(WebException.class, () -> userService.precheckUsername(username));
@@ -199,14 +210,11 @@ public class UserTests extends AbstractTest {
     }
 
     @Test
+    @Order(11)
     public void test_get_user_permissions() {
-        // 登录
-        List<String> cookies = login();
 
         // 获取用户信息
-        HttpHeaders headers = new HttpHeaders();
-        headers.put(HttpHeaders.COOKIE, cookies);
-        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>("", new HttpHeaders());
         ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
             urlPrefix() + "/resource/permissions", HttpMethod.GET, requestEntity,
             Response.ResultWrapper.class);
@@ -214,22 +222,6 @@ public class UserTests extends AbstractTest {
         List<String> permissions = (List) response.getBody().getData();
         Assertions.assertEquals(3, permissions.size());
 
-    }
-
-    private List<String> login() {
-        final String username = "test";
-        final String password = "12345678";
-        String randomCode = RandomUtil.randomString(8);
-        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
-        String captchaCode = captcha.getCode();
-        LoginParam loginParam = new LoginParam();
-        loginParam.setRandomCode(randomCode);
-        loginParam.setCaptchaCode(captchaCode);
-        loginParam.setUsername(username);
-        loginParam.setPassword(password);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
-            urlPrefix() + "/login", loginParam, Response.ResultWrapper.class);
-        return response.getHeaders().get(HttpHeaders.SET_COOKIE);
     }
 
     private String urlPrefix() {
