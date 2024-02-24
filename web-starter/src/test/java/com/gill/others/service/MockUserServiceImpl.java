@@ -5,6 +5,7 @@ import com.gill.api.service.user.IUserService;
 import com.gill.api.service.user.UserInfo;
 import com.gill.dubbo.contant.Filters;
 import com.gill.web.exception.WebException;
+import java.util.Optional;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.http.HttpStatus;
 
@@ -58,7 +59,10 @@ public class MockUserServiceImpl implements IUserService {
     public void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
         String exceptionMessage) {
         if (uid != UID) {
-            throw new WebException(HttpStatus.resolve(exceptionCode), exceptionMessage);
+            HttpStatus status = HttpStatus.resolve(exceptionCode);
+            throw new WebException(
+                Optional.ofNullable(status).orElse(HttpStatus.INTERNAL_SERVER_ERROR),
+                exceptionMessage);
         }
     }
 }

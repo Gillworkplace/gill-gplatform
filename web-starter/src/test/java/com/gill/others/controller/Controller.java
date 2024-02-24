@@ -62,6 +62,6 @@ public class Controller {
     @ResponseBody
     @GetMapping("/validEx")
     public Response<String> validEx(@Valid @Min(0) @RequestParam("number") Integer number) {
-        return Response.success().build();
+        return Response.success(String.valueOf(number)).build();
     }
 }
