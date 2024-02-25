@@ -6,6 +6,7 @@ import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.sts20150401.models.AssumeRoleResponseBody.AssumeRoleResponseBodyCredentials;
 import com.gill.oss.config.OssProperty;
+import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.api.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +30,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class OssController {
 
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
-    public static final String FORMATTER = "attachment; filename=\"%s\"";
+
+    private static final String FORMATTER = "attachment; filename=\"%s\"";
 
     @Autowired
     private OssProperty ossProperty;
 
+    /**
+     * 下载文件
+     *
+     * @param fileName    文件命
+     * @param credentials 临时凭证
+     * @return 文件流
+     */
     @GetMapping("download/{fileName}")
     public Response<InputStreamResource> dowanload(@PathVariable(name = "fileName") String fileName,
         @RequestBody AssumeRoleResponseBodyCredentials credentials) {
@@ -47,4 +56,16 @@ public class OssController {
             .build(false);
     }
 
+    /**
+     * 获取资源前缀
+     *
+     * @return 资源前缀
+     */
+    @IgnoreAuth
+    @GetMapping("/resource/prefix")
+    public Response<String> getResourcePrefix() {
+        String prefix = "https://" + ossProperty.getBucket() + "." + ossProperty.getEndpoint() + "/"
+            + ossProperty.getPublicResourcePath();
+        return Response.success(prefix).build();
+    }
 }

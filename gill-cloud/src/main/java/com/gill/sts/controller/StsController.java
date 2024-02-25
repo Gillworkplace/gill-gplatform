@@ -6,6 +6,7 @@ import com.aliyun.sts20150401.models.AssumeRoleRequest;
 import com.aliyun.sts20150401.models.AssumeRoleResponse;
 import com.aliyun.sts20150401.models.AssumeRoleResponseBody;
 import com.aliyun.sts20150401.models.AssumeRoleResponseBody.AssumeRoleResponseBodyCredentials;
+import com.gill.sts.config.StsConfig;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.api.Response;
 import lombok.extern.slf4j.Slf4j;

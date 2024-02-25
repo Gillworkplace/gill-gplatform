@@ -20,4 +20,6 @@ public class OssProperty {
     private String bucket;
 
     private String endpoint;
+
+    private String publicResourcePath;
 }
