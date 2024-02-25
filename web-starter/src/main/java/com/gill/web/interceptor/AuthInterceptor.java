@@ -3,6 +3,7 @@ package com.gill.web.interceptor;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.service.user.IUserService;
 import com.gill.web.annotation.IgnoreAuth;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +24,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public abstract class AuthInterceptor implements HandlerInterceptor {
 
     protected abstract IUserService getUserService();
+
+    @PostConstruct
+    private void init() {
+        log.info("load auth interceptor: {}", this.getClass().getCanonicalName());
+    }
 
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request,

@@ -13,9 +13,6 @@ import org.springframework.stereotype.Component;
  * @author gill
  * @version 2024/02/24
  **/
-@ConditionalOnMissingBean(PermissionInterceptor.class)
-@Component
-@Slf4j
 public class RemotePermissionInterceptor extends PermissionInterceptor{
 
     @DubboReference(filter = Filters.CONSUMER, check = false, lazy = true)

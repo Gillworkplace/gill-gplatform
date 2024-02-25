@@ -116,8 +116,8 @@ public class WebTest extends BaseTest {
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE, cookies);
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-        ResponseEntity<Object> response = restTemplate.exchange(urlPrefix() + "/rest/auth",
-            HttpMethod.GET, requestEntity, Object.class);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/rest/auth",
+            HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 

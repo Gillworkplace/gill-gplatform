@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
  * @author gill
  * @version 2024/02/24
  **/
-@ConditionalOnMissingBean(AuthInterceptor.class)
-@Component
 public class RemoteAuthInterceptor extends AuthInterceptor{
 
     @DubboReference(filter = Filters.CONSUMER, check = false, lazy = true)

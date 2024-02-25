@@ -42,7 +42,7 @@ public class MockUserServiceImpl implements IUserService {
      */
     @Override
     public void checkToken(Integer uid, String token) {
-        if (uid != UID || !TID.equals(token)) {
+        if (uid == null || uid != UID || !TID.equals(token)) {
             throw new WebException(HttpStatus.FORBIDDEN, "未授权登录");
         }
     }
@@ -58,7 +58,7 @@ public class MockUserServiceImpl implements IUserService {
     @Override
     public void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
         String exceptionMessage) {
-        if (uid != UID) {
+        if (uid == null || uid != UID) {
             HttpStatus status = HttpStatus.resolve(exceptionCode);
             throw new WebException(
                 Optional.ofNullable(status).orElse(HttpStatus.INTERNAL_SERVER_ERROR),
