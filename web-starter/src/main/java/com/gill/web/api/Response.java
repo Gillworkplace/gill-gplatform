@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 @ToString
 public class Response<T> extends ResponseEntity<Object> {
 
+    private static final String SUCCESS = "success";
+
     @Getter
     @ToString
     public static class ResultWrapper<T> {
@@ -49,7 +51,8 @@ public class Response<T> extends ResponseEntity<Object> {
 
         private T data;
 
-        private ResponseBuilder(T data) {
+        private ResponseBuilder(String message, T data) {
+            this.message = message;
             this.data = data;
         }
 
@@ -128,7 +131,7 @@ public class Response<T> extends ResponseEntity<Object> {
      * @param data 获取的数据
      */
     public static <T> ResponseBuilder<T> success(T data) {
-        return new ResponseBuilder<>(data);
+        return new ResponseBuilder<>(SUCCESS, data);
     }
 
     /**
