@@ -98,5 +98,5 @@ insert ignore into t_user (id, username, encrypt_password, salt, create_time, lo
                            avatar, description)
 values (0, 'admin', '5ff6689115c8eb335d0f06a52d2fcbfca19a74296626e3fd607f623de606d886', 'abcdefgh',
         now(), null, 'administrator',
-        'https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/avatar.png',
+        '/avatar/avatar-10.png',
         'super administrator');
