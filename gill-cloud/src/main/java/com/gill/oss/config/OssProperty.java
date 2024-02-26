@@ -3,7 +3,6 @@ package com.gill.oss.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * OssConfig
@@ -13,13 +12,10 @@ import org.springframework.stereotype.Component;
  **/
 @Getter
 @Setter
-@Component
 @ConfigurationProperties(prefix = "oss")
 public class OssProperty {
 
     private String bucket;
-
-    private String endpoint;
 
     private String publicResourcePath;
 }

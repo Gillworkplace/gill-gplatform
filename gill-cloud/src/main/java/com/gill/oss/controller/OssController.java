@@ -5,6 +5,7 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.sts20150401.models.AssumeRoleResponseBody.AssumeRoleResponseBodyCredentials;
+import com.gill.oss.config.OssConfig;
 import com.gill.oss.config.OssProperty;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.api.Response;
@@ -46,7 +47,7 @@ public class OssController {
     @GetMapping("download/{fileName}")
     public Response<InputStreamResource> dowanload(@PathVariable(name = "fileName") String fileName,
         @RequestBody AssumeRoleResponseBodyCredentials credentials) {
-        OSS ossClient = new OSSClientBuilder().build(ossProperty.getEndpoint(),
+        OSS ossClient = new OSSClientBuilder().build(System.getenv(OssConfig.OSS_ENDPOINT),
             credentials.accessKeyId, credentials.accessKeySecret, credentials.securityToken);
         OSSObject file = ossClient.getObject(ossProperty.getBucket(), fileName);
         ObjectMetadata metadata = file.getObjectMetadata();
@@ -64,8 +65,9 @@ public class OssController {
     @IgnoreAuth
     @GetMapping("/resource/prefix")
     public Response<String> getResourcePrefix() {
-        String prefix = "https://" + ossProperty.getBucket() + "." + ossProperty.getEndpoint() + "/"
-            + ossProperty.getPublicResourcePath();
+        String prefix =
+            "https://" + ossProperty.getBucket() + "." + System.getenv(OssConfig.OSS_ENDPOINT) + "/"
+                + ossProperty.getPublicResourcePath();
         return Response.success(prefix).build();
     }
 }
