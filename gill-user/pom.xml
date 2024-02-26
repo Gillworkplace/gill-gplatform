@@ -18,27 +18,28 @@
 
   <properties>
     <java.version>17</java.version>
+    <argLine>-Dfile.encoding=UTF-8</argLine>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-web-starter</artifactId>
+      <artifactId>web-starter</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-redis-starter</artifactId>
+      <artifactId>redis-starter</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-datasource-starter</artifactId>
+      <artifactId>datasource-starter</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-api</artifactId>
+      <artifactId>api</artifactId>
       <version>${module.version}</version>
     </dependency>
 

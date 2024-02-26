@@ -23,7 +23,7 @@
     <module>web-starter</module>
     <module>gill-user</module>
     <module>gill-oauth2-thirdpart</module>
-    <module>gill-api</module>
+    <module>api</module>
     <module>gill-notification</module>
     <module>gill-notification-worker</module>
     <module>redis-starter</module>
@@ -72,13 +72,6 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
         <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -245,6 +238,7 @@
       <dependency>
         <groupId>org.springframework.kafka</groupId>
         <artifactId>spring-kafka-test</artifactId>
+        <version>${spring-kafka.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>

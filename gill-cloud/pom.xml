@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>gill-cloud</artifactId>
-  <version>1.0.0</version>
+  <version>${module.version}</version>
   <name>gill-cloud</name>
   <description>gill-cloud</description>
   <packaging>jar</packaging>
@@ -17,12 +17,13 @@
 
   <properties>
     <java.version>17</java.version>
+    <argLine>-Dfile.encoding=UTF-8</argLine>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-web-starter</artifactId>
+      <artifactId>web-starter</artifactId>
       <version>${module.version}</version>
     </dependency>
 

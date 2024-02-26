@@ -16,15 +16,13 @@ import com.gill.user.service.ResourceService;
 import com.gill.web.exception.WebException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
-import redis.embedded.RedisServer;
 
 /**
  * ResourceTests
@@ -32,7 +30,8 @@ import redis.embedded.RedisServer;
  * @author gill
  * @version 2024/02/08
  **/
-@SpringBootTest
+@DirtiesContext
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.config.location=classpath:application-resource.yaml")
 public class ResourceTests extends AbstractTest {
 
     @Autowired

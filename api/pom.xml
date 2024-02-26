@@ -8,11 +8,11 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>gill-api</artifactId>
+  <artifactId>api</artifactId>
   <packaging>jar</packaging>
   <version>${module.version}</version>
 
-  <name>gill-api</name>
+  <name>api</name>
 
   <dependencies>
     <dependency>

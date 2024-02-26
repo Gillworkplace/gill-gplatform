@@ -9,11 +9,11 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>gill-datasource-starter</artifactId>
+  <artifactId>datasource-starter</artifactId>
   <packaging>jar</packaging>
   <version>${module.version}</version>
 
-  <name>gill-datasource-starter</name>
+  <name>datasource-starter</name>
 
   <properties>
     <java.version>17</java.version>
@@ -22,7 +22,7 @@
   <dependencies>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-common</artifactId>
+      <artifactId>common</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>

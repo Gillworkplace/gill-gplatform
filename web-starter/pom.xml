@@ -8,21 +8,21 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>gill-web-starter</artifactId>
+  <artifactId>web-starter</artifactId>
   <packaging>jar</packaging>
   <version>${module.version}</version>
 
-  <name>gill-web-starter</name>
+  <name>web-starter</name>
 
   <dependencies>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-common</artifactId>
+      <artifactId>common</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-api</artifactId>
+      <artifactId>api</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>

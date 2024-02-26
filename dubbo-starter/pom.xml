@@ -12,17 +12,17 @@
   <packaging>jar</packaging>
   <version>${module.version}</version>
 
-  <name>gill-dubbo-starter</name>
+  <name>dubbo-starter</name>
 
   <dependencies>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-common</artifactId>
+      <artifactId>common</artifactId>
       <version>${module.version}</version>
     </dependency>
     <dependency>
       <groupId>com.gill</groupId>
-      <artifactId>gill-api</artifactId>
+      <artifactId>api</artifactId>
       <version>${module.version}</version>
     </dependency>
 

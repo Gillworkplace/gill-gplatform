@@ -18,7 +18,7 @@ datasources:
   sources:
     db:
       is-primary: true
-      url: jdbc:h2:mem:test
+      url: jdbc:h2:mem:test2
       username: sa
       password:
       driver-class-name: org.h2.Driver
