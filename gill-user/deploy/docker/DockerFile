@@ -1,0 +1,21 @@
+# 改成云镜像文件路径或根据gill-image项目进行构建 https://github.com/Gillworkplace/gill-image
+FROM gill-java:1.17.0
+
+MAINTAINER gill<912343041@qq.com>
+
+ARG APP_ROOT=/home/app
+
+ENV APP_ROOT=${APP_ROOT}
+ENV XMX=256M
+ENV XMS=256M
+
+WORKDIR ${APP_ROOT}
+
+RUN mkdir -p ${APP_ROOT}
+RUN mkdir ${APP_ROOT}/logs
+RUN mkdir ${APP_ROOT}/dump
+
+COPY deploy/docker/start.sh ${APP_ROOT}
+COPY target/*.jar ${APP_ROOT}
+
+CMD sh start.sh
