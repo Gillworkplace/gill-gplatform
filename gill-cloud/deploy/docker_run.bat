@@ -1,0 +1,1 @@
+docker run --name gill-cloud -p 9001:9001 -d gill-cloud:1.0.0

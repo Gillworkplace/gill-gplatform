@@ -8,6 +8,9 @@ server:
   servlet:
     context-path: /user
 
+service:
+  port: 19000
+
 spring:
   application:
     name: guser
