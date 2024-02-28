@@ -14,9 +14,17 @@ service:
 spring:
   application:
     name: gcloud
-  profiles:
-    active: self
 
 logging:
   level:
     com.gill.user: debug
+
+oss:
+  bucket: ${OSS_BUCKET}
+  public-resource-path: ${OSS_PUBLIC_PATH}
+
+dubbo:
+  protocol:
+    port: ${service.port}
+  registry:
+    address: zookeeper://${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT}

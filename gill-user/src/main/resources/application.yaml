@@ -14,9 +14,28 @@ service:
 spring:
   application:
     name: guser
-  profiles:
-    active: self
 
 logging:
   level:
     com.gill.user: debug
+
+redis:
+  nodes:
+    - ${REDIS_HOST}:${REDIS_PORT}
+  database: ${REDIS_DB_NO}
+  password: ${REDIS_PWD}
+
+datasources:
+  sources:
+    db:
+      is-primary: true
+      url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/user?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&allowMultiQueries=true&rewriteBatchedStatements=true
+      username: ${MYSQL_USERNAME}
+      password: ${MYSQL_PWD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+dubbo:
+  protocol:
+    port: ${service.port}
+  registry:
+    address: zookeeper://${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT}
