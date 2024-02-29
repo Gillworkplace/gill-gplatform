@@ -19,6 +19,11 @@ public class UserProperties {
     public static final String TOKEN_ID = "tid";
 
     /**
+     * CSRF token
+     */
+    public static final String CSRF_TOKEN = "ct";
+
+    /**
      * 用户名
      */
     public static final String USER_NAME = "username";

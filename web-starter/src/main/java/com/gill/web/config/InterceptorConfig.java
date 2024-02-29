@@ -1,6 +1,7 @@
 package com.gill.web.config;
 
 import com.gill.web.interceptor.AuthInterceptor;
+import com.gill.web.interceptor.CsrfInterceptor;
 import com.gill.web.interceptor.PermissionInterceptor;
 import com.gill.web.interceptor.RemoteAuthInterceptor;
 import com.gill.web.interceptor.RemotePermissionInterceptor;
@@ -29,5 +30,10 @@ public class InterceptorConfig {
     @Bean
     public PermissionInterceptor remotePermissionInterceptor() {
         return new RemotePermissionInterceptor();
+    }
+
+    @Bean
+    public CsrfInterceptor csrfInterceptor() {
+        return new CsrfInterceptor();
     }
 }

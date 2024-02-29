@@ -7,6 +7,8 @@ import com.gill.web.util.http.HeaderResolver;
 import com.gill.web.util.http.HttpRequestResolver;
 import com.gill.web.util.http.ParameterResolver;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -94,5 +96,25 @@ public class RequestUtil {
             }
         }
         return "";
+    }
+
+    /**
+     * 获取cookie
+     *
+     * @param cookies cookies
+     * @param name    cookie名
+     * @return cookie
+     */
+    @Nullable
+    public static Cookie findCookie(Cookie[] cookies, String name) {
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
+                return cookie;
+            }
+        }
+        return null;
     }
 }

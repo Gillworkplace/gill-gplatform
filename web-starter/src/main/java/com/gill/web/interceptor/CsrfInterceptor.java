@@ -1,35 +1,26 @@
 package com.gill.web.interceptor;
 
 import com.gill.api.domain.UserProperties;
-import com.gill.api.service.user.IUserService;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.util.RequestUtil;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * AuthInterceptor
+ * CSRFInterceptor
  *
  * @author gill
- * @version 2024/02/13
+ * @version 2024/02/29
  **/
-@Slf4j
-public abstract class AuthInterceptor implements HandlerInterceptor {
+public class CsrfInterceptor implements HandlerInterceptor {
 
-    protected abstract IUserService getUserService();
-
-    @PostConstruct
-    private void init() {
-        log.info("load auth interceptor: {}", this.getClass().getCanonicalName());
-    }
+    private static final String CT = "Csrf-Token";
 
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request,
@@ -40,18 +31,18 @@ public abstract class AuthInterceptor implements HandlerInterceptor {
             if (ignore != null) {
                 return true;
             }
-            Integer uid = Optional.ofNullable(
-                    RequestUtil.findCookie(request.getCookies(), UserProperties.USER_ID))
-                .map(Cookie::getValue)
-                .map(Integer::parseInt)
-                .orElse(null);
-            String token = Optional.ofNullable(
-                    RequestUtil.findCookie(request.getCookies(), UserProperties.TOKEN_ID))
+            String csrfTokenHeader = request.getHeader(CT);
+            String csrfTokenCookie = Optional.ofNullable(
+                    RequestUtil.findCookie(request.getCookies(), UserProperties.CSRF_TOKEN))
                 .map(Cookie::getValue)
                 .orElse(null);
-            getUserService().checkToken(uid, token);
-            request.setAttribute(UserProperties.USER_ID, uid);
-            request.setAttribute(UserProperties.TOKEN_ID, token);
+
+            // 接口需要用户凭证信息的情况下必须通过csrf校验
+            // crsf 校验：header 和 cookie中的 csrf参数需要一样
+            if (csrfTokenHeader == null || csrfTokenCookie == null) {
+                return false;
+            }
+            return csrfTokenHeader.equals(csrfTokenCookie);
         }
         return true;
     }

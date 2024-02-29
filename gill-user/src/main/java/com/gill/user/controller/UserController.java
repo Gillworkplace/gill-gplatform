@@ -1,5 +1,6 @@
 package com.gill.user.controller;
 
+import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
 import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.LoginParam;
@@ -108,6 +109,8 @@ public class UserController {
         response.addCookie(buildCookie(UserProperties.USER_ID, String.valueOf(userId)));
         response.addCookie(buildCookie(UserProperties.USER_NAME, userDetail.getUsername()));
         response.addCookie(buildCookie(UserProperties.TOKEN_ID, userDetail.getToken()));
+        response.addCookie(
+            buildCookie(UserProperties.CSRF_TOKEN, UUID.randomUUID().toString(true)));
     }
 
     private static Cookie buildCookie(String key, String value) {
