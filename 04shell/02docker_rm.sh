@@ -7,4 +7,5 @@ VERSION=$2
 docker stop $PROJECT
 docker rm $PROJECT 
 
+docker rmi $PROJECT:$VERSION
 docker rmi $REGISTRY/$PROJECT:$VERSION
