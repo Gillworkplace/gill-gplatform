@@ -66,6 +66,16 @@ public class RedisTemplateAdapter implements Redis {
     }
 
     /**
+     * 删除key
+     *
+     * @param key key
+     */
+    @Override
+    public void clear(String key) {
+        redisTemplate.delete(key);
+    }
+
+    /**
      * 设置过期时间
      *
      * @param key     key
@@ -421,16 +431,6 @@ public class RedisTemplateAdapter implements Redis {
         }
         Long remove = redisTemplate.opsForSet().remove(key, vals.toArray(new Object[0]));
         return Optional.ofNullable(remove).orElse(0L);
-    }
-
-    /**
-     * set 清空
-     *
-     * @param key key
-     */
-    @Override
-    public void sclear(@NonNull String key) {
-        redisTemplate.delete(key);
     }
 
     /**

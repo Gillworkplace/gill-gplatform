@@ -99,6 +99,13 @@ public class RedisSingletonTest {
     }
 
     @Test
+    public void test_clear() {
+        redis.set("clear", "1");
+        redis.clear("clear");
+        Assertions.assertEquals("", redis.get("clear"));
+    }
+
+    @Test
     public void test_set1() {
         Assertions.assertDoesNotThrow(() -> redis.set("t1", "123"));
     }
@@ -236,14 +243,6 @@ public class RedisSingletonTest {
         long cnt2 = redis.sremove("set5", Arrays.asList("1", "3"));
         Assertions.assertEquals(2, cnt1);
         Assertions.assertEquals(0, cnt2);
-    }
-
-    @Test
-    public void test_sclear() {
-        redis.sadd("set6", "1", "2");
-        redis.sclear("set6");
-        Set<String> set = redis.sget("set6");
-        Assertions.assertEquals(0, set.size());
     }
 
     @Test

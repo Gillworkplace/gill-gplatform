@@ -16,6 +16,13 @@ import org.springframework.lang.Nullable;
 public interface Redis {
 
     /**
+     * 删除key
+     *
+     * @param key key
+     */
+    void clear(String key);
+
+    /**
      * 设置过期时间
      *
      * @param key     key
@@ -210,13 +217,6 @@ public interface Redis {
      * @return cnt
      */
     long sremove(@NonNull String key, Collection<String> vals);
-
-    /**
-     * set 清空
-     *
-     * @param key key
-     */
-    void sclear(@NonNull String key);
 
     /**
      * set 是否存在
