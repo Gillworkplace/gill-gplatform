@@ -7,6 +7,7 @@ import com.gill.web.interceptor.RemoteAuthInterceptor;
 import com.gill.web.interceptor.RemotePermissionInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +33,7 @@ public class InterceptorConfig {
         return new RemotePermissionInterceptor();
     }
 
+    @ConditionalOnProperty(value = "interceptor.csrf", havingValue = "true", matchIfMissing = true)
     @Bean
     public CsrfInterceptor csrfInterceptor() {
         return new CsrfInterceptor();
