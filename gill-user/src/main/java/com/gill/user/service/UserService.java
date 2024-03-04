@@ -263,4 +263,16 @@ public class UserService implements IUserService {
         }
         return Boolean.parseBoolean(String.valueOf(ExpressionUtil.eval(permissionExpression, map)));
     }
+
+    /**
+     * 退出登录
+     *
+     * @param userId 用户ID
+     * @param token  token
+     */
+    public void logout(int userId, String token) {
+
+        // 清除redis token 信息
+        redis.clear(UserProperties.getRedisTokenKey(token));
+    }
 }

@@ -121,6 +121,31 @@ public class UserController {
     }
 
     /**
+     * 登出
+     *
+     * @param userId   用户ID
+     * @param response 响应
+     * @return 响应
+     */
+    @PostMapping("/logout")
+    public Response<String> logout(@CookieValue("uid") int userId, @CookieValue("tid") String token,
+        HttpServletResponse response) {
+        userService.logout(userId, token);
+        response.addCookie(clearCookie(UserProperties.USER_ID));
+        response.addCookie(clearCookie(UserProperties.USER_NAME));
+        response.addCookie(clearCookie(UserProperties.TOKEN_ID));
+        response.addCookie(clearCookie(UserProperties.CSRF_TOKEN));
+        return Response.success().build();
+    }
+
+    private static Cookie clearCookie(String key) {
+        Cookie cookie = new Cookie(key, null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        return cookie;
+    }
+
+    /**
      * 邀请码登录
      *
      * @param inviteCode 邀请码

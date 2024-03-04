@@ -262,7 +262,7 @@ public class ResourceService {
      */
     public Set<String> refreshUserPermissions(int userId) {
         Set<String> permissions = resourceMapper.queryPermissionsByUserId(userId);
-        redis.sclear(UserProperties.getRedisUserResourceKey(userId));
+        redis.clear(UserProperties.getRedisUserResourceKey(userId));
         redis.sadd(UserProperties.getRedisUserResourceKey(userId), permissions);
         return permissions;
     }

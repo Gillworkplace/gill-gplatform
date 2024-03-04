@@ -12,6 +12,7 @@ import com.gill.user.dto.UserInfo;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
+import com.gill.web.api.Response.ResultWrapper;
 import com.gill.web.exception.WebException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -36,7 +37,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 10以后代表登录完成
+ * 10以后代表登录完成 100以后代表退出登录
  */
 @DirtiesContext
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.config.location=classpath:application-user.yaml")
@@ -82,8 +83,8 @@ public class UserTests extends AbstractTest {
         registerParam.setPassword(password);
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
-            urlPrefix() + "/register", registerParam, Response.ResultWrapper.class);
+        ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
+            urlPrefix() + "/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
@@ -95,7 +96,7 @@ public class UserTests extends AbstractTest {
         loginParam.setUsername(username);
         loginParam.setPassword(password);
         response = restTemplate.postForEntity(urlPrefix() + "/login", loginParam,
-            Response.ResultWrapper.class);
+            ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
@@ -120,8 +121,8 @@ public class UserTests extends AbstractTest {
         registerParam.setPassword(password);
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
-            urlPrefix() + "/register", registerParam, Response.ResultWrapper.class);
+        ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
+            urlPrefix() + "/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
@@ -140,8 +141,8 @@ public class UserTests extends AbstractTest {
         loginParam.setCaptchaCode(captchaCode);
         loginParam.setUsername(username);
         loginParam.setPassword(password);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.postForEntity(
-            urlPrefix() + "/login", loginParam, Response.ResultWrapper.class);
+        ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(urlPrefix() + "/login",
+            loginParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
@@ -152,9 +153,8 @@ public class UserTests extends AbstractTest {
     public void test_get_user_info_by_token_should_be_success() {
 
         // 获取用户信息
-        HttpEntity<String> requestEntity = new HttpEntity<>("", new HttpHeaders());
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
-            urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
+        ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(urlPrefix() + "/info",
+            ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         UserInfo userInfo = BeanUtil.mapToBean((Map) response.getBody().getData(), UserInfo.class,
             true, CopyOptions.create().ignoreError());
@@ -172,8 +172,8 @@ public class UserTests extends AbstractTest {
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE, Collections.emptyList());
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
-            urlPrefix() + "/info", HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
+        ResponseEntity<ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/info",
+            HttpMethod.GET, requestEntity, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
@@ -216,14 +216,23 @@ public class UserTests extends AbstractTest {
     public void test_get_user_permissions() {
 
         // 获取用户信息
-        HttpEntity<String> requestEntity = new HttpEntity<>("", new HttpHeaders());
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
-            urlPrefix() + "/resource/permissions", HttpMethod.GET, requestEntity,
-            Response.ResultWrapper.class);
+        ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(
+            urlPrefix() + "/resource/permissions", Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         List<String> permissions = (List) response.getBody().getData();
         Assertions.assertEquals(3, permissions.size());
 
+    }
+
+    @Test
+    @Order(100)
+    public void test_logout_should_be_success() {
+        ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(urlPrefix() + "/logout",
+            null, ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        ResponseEntity<ResultWrapper> response2 = restTemplate.getForEntity(
+            urlPrefix() + "/resource/permissions", Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
     }
 
     private String urlPrefix() {
