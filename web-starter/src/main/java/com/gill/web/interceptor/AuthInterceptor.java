@@ -3,6 +3,7 @@ package com.gill.web.interceptor;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.service.user.IUserService;
 import com.gill.web.annotation.IgnoreAuth;
+import com.gill.web.exception.WebException;
 import com.gill.web.util.RequestUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +13,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -49,6 +51,9 @@ public abstract class AuthInterceptor implements HandlerInterceptor {
                     RequestUtil.findCookie(request.getCookies(), UserProperties.TOKEN_ID))
                 .map(Cookie::getValue)
                 .orElse(null);
+            if(uid == null || token == null) {
+                throw new WebException(HttpStatus.UNAUTHORIZED, "unauthorized");
+            }
             getUserService().checkToken(uid, token);
             request.setAttribute(UserProperties.USER_ID, uid);
             request.setAttribute(UserProperties.TOKEN_ID, token);

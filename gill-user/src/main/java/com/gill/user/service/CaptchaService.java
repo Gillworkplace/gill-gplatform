@@ -48,6 +48,7 @@ public class CaptchaService {
      * @param captchaCode 验证码
      */
     public void checkCaptchaCode(@Nonnull String randomCode, @Nonnull String captchaCode) {
+        randomCode = randomCode.toLowerCase();
         String target = redis.get(UserProperties.getRedisCaptchaKey(randomCode));
         if (captchaCode.equals(target)) {
             return;
