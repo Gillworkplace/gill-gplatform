@@ -4,11 +4,9 @@ import com.gill.api.domain.UserProperties;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.exception.WebException;
 import com.gill.web.util.RequestUtil;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
-import java.util.Optional;
 import org.springframework.core.annotation.AnnotatedMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -34,10 +32,8 @@ public class CsrfInterceptor implements HandlerInterceptor {
                 return true;
             }
             String csrfTokenHeader = request.getHeader(CT);
-            String csrfTokenCookie = Optional.ofNullable(
-                    RequestUtil.findCookie(request.getCookies(), UserProperties.CSRF_TOKEN))
-                .map(Cookie::getValue)
-                .orElse(null);
+            String csrfTokenCookie = RequestUtil.getParamFromRequestParamOrCookie(request,
+                UserProperties.CSRF_TOKEN);
 
             // 接口需要用户凭证信息的情况下必须通过csrf校验
             // crsf 校验：header 和 cookie中的 csrf参数需要一样

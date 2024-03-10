@@ -98,7 +98,7 @@ public class WebTest extends BaseTest {
     }
 
     @Test
-    public void test_interceptor_auth_should_be_access() {
+    public void test_interceptor_auth_use_cookie_should_be_access() {
         List<String> cookies = List.of("uid=" + MockUserServiceImpl.UID,
             "tid=" + MockUserServiceImpl.TID, "ct=123");
         HttpHeaders headers = new HttpHeaders();
@@ -112,14 +112,27 @@ public class WebTest extends BaseTest {
     }
 
     @Test
+    public void test_interceptor_auth_should_be_access() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.put("Csrf-Token", List.of("123"));
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
+            urlPrefix() + "/rest/auth?" + "uid=" + MockUserServiceImpl.UID + "&tid="
+                + MockUserServiceImpl.TID + "&ct=123", HttpMethod.GET, requestEntity,
+            Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
     public void test_interceptor_auth_should_be_deny() {
         List<String> cookies = List.of("uid=0", "tid=" + MockUserServiceImpl.TID, "ct=123");
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE, cookies);
         headers.put("Csrf-Token", List.of("123"));
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/rest/auth",
-            HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
+            urlPrefix() + "/rest/auth", HttpMethod.GET, requestEntity,
+            Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
@@ -129,8 +142,9 @@ public class WebTest extends BaseTest {
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE, cookies);
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/rest/auth",
-            HttpMethod.GET, requestEntity, Response.ResultWrapper.class);
+        ResponseEntity<Response.ResultWrapper> response = restTemplate.exchange(
+            urlPrefix() + "/rest/auth", HttpMethod.GET, requestEntity,
+            Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 

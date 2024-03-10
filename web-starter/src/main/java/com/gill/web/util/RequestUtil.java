@@ -36,9 +36,9 @@ public class RequestUtil {
     private static final List<HttpRequestResolver> RESOLVERS = new ArrayList<>();
 
     static {
-        RESOLVERS.add(new CookiesResolver());
-        RESOLVERS.add(new HeaderResolver());
-        RESOLVERS.add(new ParameterResolver());
+        RESOLVERS.add(CookiesResolver.INSTANCE);
+        RESOLVERS.add(HeaderResolver.INSTANCE);
+        RESOLVERS.add(ParameterResolver.INSTANCE);
     }
 
     /**
@@ -116,5 +116,41 @@ public class RequestUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * 获取请求参数
+     *
+     * @param request 请求
+     * @param name    参数名
+     * @return 参数值
+     */
+    public static String getRequestParam(HttpServletRequest request, String name) {
+        return ParameterResolver.INSTANCE.get(request, name);
+    }
+
+    /**
+     * 从请求参数或cookie中获取参数
+     *
+     * @param request request
+     * @param name    参数
+     * @return value
+     */
+    @Nullable
+    public static String getParamFromRequestParamOrCookie(HttpServletRequest request, String name) {
+        String param = getRequestParam(request, name);
+        if (StrUtil.isEmpty(param)) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                Cookie cookie = findCookie(cookies, name);
+                if (cookie != null) {
+                    param = cookie.getValue();
+                }
+            }
+        }
+        if (param != null && param.isEmpty()) {
+            param = null;
+        }
+        return param;
     }
 }

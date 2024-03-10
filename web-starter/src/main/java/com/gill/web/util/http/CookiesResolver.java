@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpServletRequest;
  **/
 public class CookiesResolver implements HttpRequestResolver {
 
+    public static final CookiesResolver INSTANCE = new CookiesResolver();
+
     /**
      * 从HttpRequest中获取指定的参数
      *

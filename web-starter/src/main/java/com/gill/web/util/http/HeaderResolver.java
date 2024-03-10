@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
  **/
 public class HeaderResolver implements HttpRequestResolver {
 
+    public static final HeaderResolver INSTANCE = new HeaderResolver();
+
     /**
      * 从HttpRequest中获取指定的参数
      *

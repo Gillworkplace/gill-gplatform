@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
  **/
 public class ParameterResolver implements HttpRequestResolver {
 
+    public static final ParameterResolver INSTANCE = new ParameterResolver();
+
     /**
      * 从HttpRequest中获取指定的参数
      *

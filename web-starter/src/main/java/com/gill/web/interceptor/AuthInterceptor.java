@@ -6,7 +6,6 @@ import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.exception.WebException;
 import com.gill.web.util.RequestUtil;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
@@ -43,15 +42,12 @@ public abstract class AuthInterceptor implements HandlerInterceptor {
                 return true;
             }
             Integer uid = Optional.ofNullable(
-                    RequestUtil.findCookie(request.getCookies(), UserProperties.USER_ID))
-                .map(Cookie::getValue)
+                    RequestUtil.getParamFromRequestParamOrCookie(request, UserProperties.USER_ID))
                 .map(Integer::parseInt)
                 .orElse(null);
-            String token = Optional.ofNullable(
-                    RequestUtil.findCookie(request.getCookies(), UserProperties.TOKEN_ID))
-                .map(Cookie::getValue)
-                .orElse(null);
-            if(uid == null || token == null) {
+            String token = RequestUtil.getParamFromRequestParamOrCookie(request,
+                UserProperties.TOKEN_ID);
+            if (uid == null || token == null) {
                 throw new WebException(HttpStatus.UNAUTHORIZED, "unauthorized");
             }
             getUserService().checkToken(uid, token);
