@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice.Return;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -299,5 +300,24 @@ public class ResourceService {
      */
     public void removeUserRoles(int userId, Set<String> roles) {
         resourceMapper.deleteUserRoles(userId, roles);
+    }
+
+    /**
+     * 判断角色是否存在
+     *
+     * @param role 角色ID
+     * @return boolean
+     */
+    public boolean containsRole(String role) {
+        return resourceMapper.containsRole(role);
+    }
+
+    /**
+     * 获取所有角色
+     *
+     * @return 所有角色
+     */
+    public List<Role> queryAllRoles() {
+        return resourceMapper.queryAllRoles();
     }
 }

@@ -8,15 +8,6 @@ permissions:
   - id: permission.home
     name: 首页
     description: 首页资源
-  - id: permission.chat
-    name: 聊天室
-    description: 聊天室资源
-  - id: permission.game
-    name: 游戏资源
-    description: 游戏资源
-  - id: permission.register
-    name: 注册权限
-    description: 帮助其他人注册的权限
 
 relations:
   - subject: permission.admin

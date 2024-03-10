@@ -3,20 +3,26 @@ package com.gill.user.controller;
 import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
 import com.gill.user.domain.UserDetail;
+import com.gill.user.dto.AdminRegisterParam;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
 import com.gill.user.service.CaptchaService;
+import com.gill.user.service.ResourceService;
 import com.gill.user.service.UserService;
 import com.gill.web.annotation.IgnoreAuth;
+import com.gill.web.annotation.OperationPermission;
 import com.gill.web.api.Response;
+import com.gill.web.exception.WebException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +41,20 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ResourceService resourceService;
+
+    /**
+     * 刷新redis用户ID
+     *
+     * @return 响应
+     */
+    @PostMapping("/refresh/userId")
+    public Response<String> refreshRedisUserId() {
+        userService.refreshRedisUserId();
+        return Response.success().build();
+    }
 
     /**
      * 预校验用户名是否已存在
@@ -71,6 +91,31 @@ public class UserController {
         UserDetail userDetail = userService.successLoginAndGenerateToken(userId);
         addUserCookies(response, userId, userDetail);
         return Response.success("/home").build();
+    }
+
+    /**
+     * 管理员注册接口
+     *
+     * @param param 参数
+     * @return 响应
+     */
+    @OperationPermission(permissionExpression = "permission.register")
+    @PostMapping("/admin/register")
+    public Response<String> adminRegister(@Validated @RequestBody AdminRegisterParam param) {
+
+        // 校验角色ID是否正确
+        if (!resourceService.containsRole(param.getRole())) {
+            throw new WebException(HttpStatus.BAD_REQUEST, "角色不存在");
+        }
+
+        // 验证码校验
+        String randomCode = param.getRandomCode();
+        String captchaCode = param.getCaptchaCode();
+        captchaService.checkCaptchaCode(randomCode, captchaCode);
+
+        // 注册用户信息
+        userService.registerUserWithRole(param, Set.of(param.getRole()));
+        return Response.success().build();
     }
 
     /**
@@ -128,8 +173,8 @@ public class UserController {
      * @return 响应
      */
     @PostMapping("/logout")
-    public Response<String> logout(@CookieValue("uid") int userId, @CookieValue("tid") String token,
-        HttpServletResponse response) {
+    public Response<String> logout(@RequestAttribute(UserProperties.USER_ID) int userId,
+        @RequestAttribute(UserProperties.TOKEN_ID) String token, HttpServletResponse response) {
         userService.logout(userId, token);
         response.addCookie(clearCookie(UserProperties.USER_ID));
         response.addCookie(clearCookie(UserProperties.USER_NAME));
@@ -166,8 +211,8 @@ public class UserController {
      * @return 用户信息
      */
     @GetMapping("info")
-    public Response<UserInfo> userInfo(@CookieValue("uid") int userId,
-        @CookieValue("tid") String token) {
+    public Response<UserInfo> userInfo(@RequestAttribute(UserProperties.USER_ID) int userId,
+        @RequestAttribute(UserProperties.TOKEN_ID) String token) {
         UserInfo userInfo = userService.getUserInfo(userId, token);
         return Response.success(userInfo).build();
     }

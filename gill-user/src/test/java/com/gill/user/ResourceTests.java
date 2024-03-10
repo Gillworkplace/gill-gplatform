@@ -17,7 +17,10 @@ import com.gill.web.exception.WebException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
@@ -26,12 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ResourceTests
+ * 10以后为角色权限入库后的场景
  *
  * @author gill
  * @version 2024/02/08
  **/
-@DirtiesContext
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.config.location=classpath:application-resource.yaml")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResourceTests extends AbstractTest {
 
     @Autowired
@@ -43,7 +47,7 @@ public class ResourceTests extends AbstractTest {
     @Test
     public void test_read_roles_yaml() {
 
-        Roles roles = ObjectUtil.readYamlFromClasspath("roles.yaml", Roles.class);
+        Roles roles = ObjectUtil.readYamlFromClasspath("roles-test.yaml", Roles.class);
         Role admin = new Role();
         admin.setId("role.admin");
         admin.setName("管理员");
@@ -75,7 +79,7 @@ public class ResourceTests extends AbstractTest {
 
     @Test
     public void test_read_permissions_yaml() {
-        Permissions permissions = ObjectUtil.readYamlFromClasspath("permission.yaml",
+        Permissions permissions = ObjectUtil.readYamlFromClasspath("permission-test.yaml",
             Permissions.class);
         Permission admin = new Permission();
         admin.setId("permission.admin");
@@ -108,6 +112,7 @@ public class ResourceTests extends AbstractTest {
         return JSONUtil.toList(json, clazz);
     }
 
+    @Order(1)
     @Transactional
     @Test
     public void test_analyse_roles_yaml_find_circle_should_throw_web_exception() {
@@ -119,6 +124,7 @@ public class ResourceTests extends AbstractTest {
         Assertions.assertEquals("角色发现环状关系", webException.getMessage());
     }
 
+    @Order(1)
     @Transactional
     @Test
     public void test_analyse_permission_yaml_find_circle_should_throw_web_exception() {
@@ -130,6 +136,7 @@ public class ResourceTests extends AbstractTest {
         Assertions.assertEquals("权限发现环状关系", webException.getMessage());
     }
 
+    @Order(1)
     @Transactional
     @Test
     public void test_analyse_complex_relations_should_be_expected() throws Exception {
@@ -159,5 +166,25 @@ public class ResourceTests extends AbstractTest {
         Assertions.assertEquals(JSONUtil.toJsonStr(err), JSONUtil.toJsonStr(rr));
         Assertions.assertEquals(JSONUtil.toJsonStr(epp), JSONUtil.toJsonStr(pp));
         Assertions.assertEquals(JSONUtil.toJsonStr(erp), JSONUtil.toJsonStr(rp));
+    }
+
+    @Order(10)
+    @Test
+    public void test_analyse_normal_relations_should_be_success() {
+        Roles roles = ObjectUtil.readYamlFromClasspath("roles-test.yaml", Roles.class);
+        Permissions permissions = ObjectUtil.readYamlFromClasspath("permission-test.yaml", Permissions.class);
+        resourceService.parseAndInsertIntoDb(roles, permissions);
+    }
+
+    @Test
+    @Order(11)
+    public void test_contains_role_should_return_true() {
+        Assertions.assertTrue(resourceService.containsRole("role.admin"));
+    }
+
+    @Test
+    @Order(11)
+    public void test_contains_role_should_return_false() {
+        Assertions.assertFalse(resourceService.containsRole("role.unknown"));
     }
 }

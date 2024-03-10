@@ -73,6 +73,17 @@ public class UserService implements IUserService {
      */
     @Transactional(rollbackFor = Exception.class)
     public int registerUser(RegisterParam param) {
+        return registerUserWithRole(param, RoleMap.NORMAL_USER);
+    }
+
+    /**
+     * 注册用户账号
+     *
+     * @param param 参数
+     * @return userId
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public int registerUserWithRole(RegisterParam param, Set<String> roles) {
 
         // 获取用户ID
         Long userId = redis.increaseAndGet(UserProperties.REDIS_USER_ID_KEY);
@@ -89,7 +100,7 @@ public class UserService implements IUserService {
         }
 
         // 设置用户角色
-        resourceService.addUserRoles(user.getId(), RoleMap.NORMAL_USER);
+        resourceService.addUserRoles(user.getId(), roles);
 
         return user.getId();
     }
@@ -241,7 +252,12 @@ public class UserService implements IUserService {
         String exceptionMessage) {
         Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(uid));
         if (!doCheckPermission(permissions, permissionExpression)) {
-            throw new WebException(HttpStatus.resolve(exceptionCode), exceptionMessage);
+            HttpStatus status = HttpStatus.resolve(exceptionCode);
+            if (status == null) {
+                throw new WebException(HttpStatus.FORBIDDEN, exceptionMessage);
+            } else {
+                throw new WebException(status, exceptionMessage);
+            }
         }
     }
 
@@ -274,5 +290,15 @@ public class UserService implements IUserService {
 
         // 清除redis token 信息
         redis.clear(UserProperties.getRedisTokenKey(token));
+    }
+
+    /**
+     * 刷新redis最大用户ID
+     */
+    public void refreshRedisUserId() {
+
+        // TODO 加锁避免查询的时候有用户在注册
+        int maxUserId = userMapper.queryMaxUserId();
+        redis.set(UserProperties.REDIS_USER_ID_KEY, maxUserId + 1);
     }
 }

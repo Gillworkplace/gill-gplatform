@@ -5,11 +5,11 @@
 
   <insert id="insertRoles" parameterType="list">
     insert into
-        t_role(id, name, description)
+    t_role(id, name, description)
     values
-        <foreach collection="list" item="data" separator=",">
-          (#{data.id}, #{data.name}, #{data.description})
-        </foreach>
+    <foreach collection="list" item="data" separator=",">
+      (#{data.id}, #{data.name}, #{data.description})
+    </foreach>
   </insert>
 
   <delete id="truncateRoles">
@@ -18,11 +18,11 @@
 
   <insert id="insertPermissions" parameterType="list">
     insert into
-        t_permission(id, name, description)
+    t_permission(id, name, description)
     values
-        <foreach collection="list" item="data" separator=",">
-          (#{data.id}, #{data.name}, #{data.description})
-        </foreach>
+    <foreach collection="list" item="data" separator=",">
+      (#{data.id}, #{data.name}, #{data.description})
+    </foreach>
   </insert>
 
   <delete id="truncatePermissions">
@@ -31,11 +31,11 @@
 
   <insert id="insertRoleRelationships" parameterType="list">
     insert into
-        t_role_relationships(role_id, child_id)
+    t_role_relationships(role_id, child_id)
     values
-        <foreach collection="list" item="data" separator=",">
-          (#{data.roleId}, #{data.childId})
-        </foreach>
+    <foreach collection="list" item="data" separator=",">
+      (#{data.roleId}, #{data.childId})
+    </foreach>
   </insert>
 
   <delete id="truncateRoleRelationships">
@@ -44,11 +44,11 @@
 
   <insert id="insertPermissionRelationships" parameterType="list">
     insert into
-        t_permission_relationships(ancestor_id, descendant_id, adjoin)
+    t_permission_relationships(ancestor_id, descendant_id, adjoin)
     values
-        <foreach collection="list" item="data" separator=",">
-          (#{data.ancestorId}, #{data.descendantId}, #{data.adjoin})
-        </foreach>
+    <foreach collection="list" item="data" separator=",">
+      (#{data.ancestorId}, #{data.descendantId}, #{data.adjoin})
+    </foreach>
   </insert>
 
   <delete id="truncatePermissionRelationships">
@@ -57,11 +57,11 @@
 
   <insert id="insertRolePermissions" parameterType="list">
     insert into
-        t_role_permissions(role_id, permission_id, self)
+    t_role_permissions(role_id, permission_id, self)
     values
-        <foreach collection="list" item="data" separator=",">
-          (#{data.roleId}, #{data.permissionId}, #{data.self})
-        </foreach>
+    <foreach collection="list" item="data" separator=",">
+      (#{data.roleId}, #{data.permissionId}, #{data.self})
+    </foreach>
   </insert>
 
   <delete id="truncateRolePermissions">
@@ -103,7 +103,7 @@
                 on pr.descendant_id = pp.id
     where ur.user_id = #{userId}
   </select>
-  
+
   <insert id="insertUserRoles">
     insert into t_user_roles(user_id, role_id)
     values
@@ -121,4 +121,17 @@
       #{role}
     </foreach>
   </delete>
+
+  <select id="containsRole">
+    select exists(select 1
+                  from t_role r
+                  where r.id = #{role})
+  </select>
+
+  <select id="queryAllRoles" resultType="com.gill.api.model.Role">
+    select r.id          as id,
+           r.name        as name,
+           r.description as description
+    from t_role r
+  </select>
 </mapper>

@@ -48,4 +48,11 @@ public interface UserMapper {
      * @param username 用户名
      */
     boolean existsUsername(String username);
+
+    /**
+     * 获取用户当前用户的最大ID
+     *
+     * @return 最大ID
+     */
+    int queryMaxUserId();
 }

@@ -43,4 +43,9 @@
         where t.username = #{username}
     )
   </select>
+
+  <select id="queryMaxUserId" resultType="java.lang.Integer">
+    select ifnull(max(id), 0) as id
+    from t_user
+  </select>
 </mapper>

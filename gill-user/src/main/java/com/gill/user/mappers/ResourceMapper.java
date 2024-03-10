@@ -118,4 +118,19 @@ public interface ResourceMapper {
      * @param roles  角色
      */
     void deleteUserRoles(int userId, Set<String> roles);
+
+    /**
+     * 判断角色是否存在
+     *
+     * @param role 角色
+     * @return boolean
+     */
+    boolean containsRole(String role);
+
+    /**
+     * 获取所有角色
+     *
+     * @return 所有角色
+     */
+    List<Role> queryAllRoles();
 }

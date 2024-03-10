@@ -1,16 +1,18 @@
 package com.gill.user.controller;
 
+import com.gill.api.model.Role;
 import com.gill.common.util.ObjectUtil;
 import com.gill.user.domain.Permissions;
 import com.gill.user.domain.Roles;
 import com.gill.user.service.ResourceService;
 import com.gill.web.annotation.OperationPermission;
 import com.gill.web.api.Response;
+import java.util.List;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,8 +56,19 @@ public class ResourceController {
      * @return 授权信息
      */
     @GetMapping("/permissions")
-    public Response<Set<String>> userPermission(@CookieValue("uid") int userId) {
+    public Response<Set<String>> userPermission(@RequestAttribute("uid") int userId) {
         Set<String> permissions = resourceService.getUserPermissions(userId);
         return Response.success(permissions).build();
+    }
+
+    /**
+     * 获取所有角色
+     *
+     * @return 所有角色
+     */
+    @OperationPermission(permissionExpression = "permission.register")
+    @GetMapping("/admin/roles")
+    public Response<List<Role>> allRoles() {
+        return Response.success(resourceService.queryAllRoles()).build();
     }
 }

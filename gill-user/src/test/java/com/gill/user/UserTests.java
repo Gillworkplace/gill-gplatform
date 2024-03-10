@@ -7,6 +7,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.gill.api.domain.UserProperties;
 import com.gill.user.controller.ResourceController;
+import com.gill.user.dto.AdminRegisterParam;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
@@ -35,13 +36,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 10以后代表登录完成 100以后代表退出登录
  */
-@DirtiesContext
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.config.location=classpath:application-user.yaml")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserTests extends AbstractTest {
@@ -57,14 +56,13 @@ public class UserTests extends AbstractTest {
     @Autowired
     private CaptchaService captchaService;
 
-    @Autowired
-    private UserService userService;
-
-    private String csrfToken = "";
+    private final UserService userService;
 
     @Autowired
-    public UserTests(ResourceController resourceController) {
+    public UserTests(ResourceController resourceController, UserService userService) {
         super.resourceController = resourceController;
+        this.userService = userService;
+        userService.refreshRedisUserId();
     }
 
     @Transactional
@@ -107,7 +105,6 @@ public class UserTests extends AbstractTest {
             .collect(
                 Collectors.toMap(cookie -> cookie.split("=")[0], cookie -> cookie.split("=")[1]));
 
-        csrfToken = cookies.get("ct");
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertTrue(cookies.containsKey(UserProperties.USER_ID));
         Assertions.assertTrue(cookies.containsKey(UserProperties.TOKEN_ID));
@@ -171,7 +168,7 @@ public class UserTests extends AbstractTest {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         UserInfo userInfo = BeanUtil.mapToBean((Map) response.getBody().getData(), UserInfo.class,
             true, CopyOptions.create().ignoreError());
-        Assertions.assertEquals(0, userInfo.getUid());
+        Assertions.assertEquals(1, userInfo.getUid());
         Assertions.assertEquals("test", userInfo.getUsername());
         Assertions.assertEquals("测试用户", userInfo.getNickName());
         Assertions.assertEquals("https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/avatar.png",
@@ -234,7 +231,39 @@ public class UserTests extends AbstractTest {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         List<String> permissions = (List) response.getBody().getData();
         Assertions.assertEquals(3, permissions.size());
+    }
 
+    @Test
+    @Order(12)
+    public void test_admin_register() {
+        final String username = "register";
+        final String password = "12345678";
+        final String description = "12345678";
+        final String nickname = "12345678";
+        String randomCode = RandomUtil.randomString(8);
+        AbstractCaptcha captcha = captchaService.generateCaptcha(randomCode);
+        String captchaCode = captcha.getCode();
+
+        // 注册
+        AdminRegisterParam registerParam = new AdminRegisterParam();
+        registerParam.setRandomCode(randomCode);
+        registerParam.setCaptchaCode(captchaCode);
+        registerParam.setUsername(username);
+        registerParam.setPassword(password);
+        registerParam.setDescription(description);
+        registerParam.setNickName(nickname);
+        registerParam.setRole("role.normal");
+        ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
+            urlPrefix() + "/admin/register", registerParam, ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @Order(12)
+    public void test_admin_get_all_roles_should_be_forbidden() {
+        ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(
+            urlPrefix() + "/resource/admin/roles", ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test

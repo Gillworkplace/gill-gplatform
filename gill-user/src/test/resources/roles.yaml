@@ -11,10 +11,13 @@ role-relations:
     items:
       - role.normal
 
-rolePermissions:
+role-permissions:
   - subject: role.admin
     items:
       - permission.admin
+      - permission.register
   - subject: role.normal
     items:
       - permission.home
+      - permission.game
+      - permission.chat
