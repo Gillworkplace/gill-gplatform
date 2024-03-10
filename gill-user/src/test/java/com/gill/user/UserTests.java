@@ -5,6 +5,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.gill.api.domain.UserProperties;
 import com.gill.user.controller.ResourceController;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
@@ -19,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -57,6 +59,8 @@ public class UserTests extends AbstractTest {
 
     @Autowired
     private UserService userService;
+
+    private String csrfToken = "";
 
     @Autowired
     public UserTests(ResourceController resourceController) {
@@ -97,8 +101,17 @@ public class UserTests extends AbstractTest {
         loginParam.setPassword(password);
         response = restTemplate.postForEntity(urlPrefix() + "/login", loginParam,
             ResultWrapper.class);
+        Map<String, String> cookies = response.getHeaders()
+            .getOrEmpty(HttpHeaders.SET_COOKIE)
+            .stream()
+            .collect(
+                Collectors.toMap(cookie -> cookie.split("=")[0], cookie -> cookie.split("=")[1]));
+
+        csrfToken = cookies.get("ct");
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
+        Assertions.assertTrue(cookies.containsKey(UserProperties.USER_ID));
+        Assertions.assertTrue(cookies.containsKey(UserProperties.TOKEN_ID));
+        Assertions.assertTrue(cookies.containsKey(UserProperties.CSRF_TOKEN));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
     }
 
