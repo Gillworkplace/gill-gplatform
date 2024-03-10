@@ -103,6 +103,8 @@ public class RedisTemplateAdapter implements Redis {
         String valueStr;
         if (value instanceof String str) {
             valueStr = str;
+        } else if (value instanceof Number number) {
+            valueStr = number.toString();
         } else {
             valueStr = JSONUtil.toJsonStr(value);
         }

@@ -92,7 +92,7 @@ public class RedisSingletonTest {
     @Test
     public void test_add() {
         Assertions.assertEquals(1L, redis.increaseAndGet("calc"));
-        redis.set("calc", "0");
+        redis.set("calc", 0);
         Assertions.assertEquals(1L, redis.increaseAndGet("calc"));
         Assertions.assertEquals(0L, redis.decreaseAndGet("calc"));
         Assertions.assertEquals(5L, redis.addAndGet("calc", 5));
