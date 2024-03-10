@@ -1,0 +1,41 @@
+server:
+  port: 9011
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: '%t %h %a -> %A %S %H "%r" len: %b resp: %s cost: %D thread: %I'
+    basedir: ./
+  servlet:
+    context-path: /media
+
+service:
+  port: 19011
+
+spring:
+  application:
+    name: gmedia
+
+logging:
+  level:
+    com.gill.media: debug
+
+#redis:
+#  nodes:
+#    - ${REDIS_HOST}:${REDIS_PORT}
+#  database: ${REDIS_DB_NO}
+#  password: ${REDIS_PWD}
+#
+#datasources:
+#  sources:
+#    db:
+#      is-primary: true
+#      url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/voice?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&allowMultiQueries=true&rewriteBatchedStatements=true
+#      username: ${MYSQL_USERNAME}
+#      password: ${MYSQL_PWD}
+#      driver-class-name: com.mysql.cj.jdbc.Driver
+
+dubbo:
+  protocol:
+    port: ${service.port}
+  registry:
+    address: zookeeper://${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT}

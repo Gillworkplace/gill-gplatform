@@ -1,0 +1,29 @@
+@startuml
+participant Browser1 as b1
+participant StunServer as stun
+participant SignalServer as signal
+participant Browser2 as b2
+
+autonumber
+b1 -> signal: websocket连接信令服务器
+b2 -> signal: websocket连接信令服务器
+b1 -> b1: 创建RTCPeerConnection
+b1 -> b1: 添加本地音频输入流
+b1 -> b1: createOffer
+b1 -> signal: websocket发送offer消息
+signal -> b2: websocket广播offer消息
+b2 -> b2: createAnswer
+b2 -> signal:  websocket发送answer消息
+signal -> b1: websocket广播answer消息
+b1 -> stun: 获取公网IP和端口
+stun -> b1: oncandidate 获取公网IP和端口
+b1 -> signal: websocket发送candidate消息
+signal -> b2: websocket广播candidate消息
+b2 -> b2: addCandidate
+b2 -> stun: 获取公网IP和端口
+stun -> b2: oncandidate 获取公网IP和端口
+b2 -> signal: websocket发送candidate消息
+signal -> b1: websocket广播candidate消息
+b1 -> b1: addCandidate
+b1 <-> b2: p2p通信
+@enduml
