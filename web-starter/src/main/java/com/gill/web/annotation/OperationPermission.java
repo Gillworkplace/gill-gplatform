@@ -32,7 +32,7 @@ public @interface OperationPermission {
      *
      * @return 异常码
      */
-    int exceptionCode() default 400;
+    int exceptionCode() default 403;
 
     /**
      * 异常消息

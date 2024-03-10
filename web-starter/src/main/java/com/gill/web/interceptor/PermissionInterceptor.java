@@ -35,7 +35,7 @@ public abstract class PermissionInterceptor implements HandlerInterceptor {
         if (handler instanceof AnnotatedMethod ha) {
             Method method = ha.getMethod();
             IgnoreAuth ignore = method.getAnnotation(IgnoreAuth.class);
-            if (ignore == null) {
+            if (ignore != null) {
                 return true;
             }
             Integer uid = (Integer) request.getAttribute(UserProperties.USER_ID);
