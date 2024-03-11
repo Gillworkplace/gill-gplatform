@@ -2,6 +2,8 @@ package com.gill.user;
 
 import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.core.util.RandomUtil;
+import com.gill.api.common.SelectorData;
+import com.gill.api.model.Role;
 import com.gill.user.controller.ResourceController;
 import com.gill.user.dto.AdminRegisterParam;
 import com.gill.user.dto.LoginParam;
@@ -9,7 +11,6 @@ import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response.ResultWrapper;
 import com.gill.web.exception.WebException;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -64,6 +65,7 @@ public class AdminTests extends AbstractTest {
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(urlPrefix() + "/login",
             loginParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals("/admin", String.valueOf(response.getBody().getData()));
     }
 
     @Test
@@ -72,7 +74,8 @@ public class AdminTests extends AbstractTest {
         ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(
             urlPrefix() + "/resource/admin/roles", ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertEquals(2, ((List) response.getBody().getData()).size());
+        SelectorData<Role> selectorData = getBean(response, SelectorData.class);
+        Assertions.assertEquals(2, selectorData.getOptions().size());
     }
 
     @Test

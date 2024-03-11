@@ -22,6 +22,8 @@ public class User implements Serializable {
 
     private String description;
 
+    private String home;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -94,5 +96,13 @@ public class User implements Serializable {
 
     public void setDescription(String description) {
         this.description = description == null ? null : description.trim();
+    }
+
+    public String getHome() {
+        return home;
+    }
+
+    public void setHome(String home) {
+        this.home = home == null ? null : home.trim();
     }
 }

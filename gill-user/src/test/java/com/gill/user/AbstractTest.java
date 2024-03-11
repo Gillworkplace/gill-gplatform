@@ -1,9 +1,12 @@
 package com.gill.user;
 
+import cn.hutool.json.JSONUtil;
 import com.gill.user.controller.ResourceController;
+import com.gill.web.api.Response.ResultWrapper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.http.ResponseEntity;
 import redis.embedded.RedisServer;
 
 /**
@@ -43,5 +46,9 @@ public class AbstractTest {
         if (resourceController != null) {
             resourceController.loadResources();
         }
+    }
+
+    protected <T> T getBean(ResponseEntity<ResultWrapper> response, Class<T> clazz) {
+        return JSONUtil.toBean(JSONUtil.toJsonStr(response.getBody().getData()), clazz);
     }
 }

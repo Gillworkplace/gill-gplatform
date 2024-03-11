@@ -1,6 +1,7 @@
 package com.gill.user.domain;
 
 import com.gill.api.model.User;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
@@ -28,7 +29,9 @@ public class UserDetail {
 
     private String avatar;
 
-    private List<String> permissions = Collections.emptyList();
+    private String home;
+
+    private Collection<String> permissions = Collections.emptyList();
 
     public UserDetail(String token, User user) {
         this.token = token;
@@ -37,5 +40,6 @@ public class UserDetail {
         this.description = user.getDescription();
         this.nickName = user.getNickName();
         this.avatar = user.getAvatar();
+        this.home = user.getHome();
     }
 }

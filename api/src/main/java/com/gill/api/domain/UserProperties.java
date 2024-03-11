@@ -44,6 +44,16 @@ public class UserProperties {
     public static final String DESCRIPTION = "description";
 
     /**
+     * 首页位置
+     */
+    public static final String HOME = "home";
+
+    /**
+     * 默认首页位置
+     */
+    public static final String DEFAULT_HOME = "/home";
+
+    /**
      * 验证码redis前缀
      */
     private static final String REDIS_CAPTCHA_PREFIX = "captcha" + RedisConstant.REDIS_KEY_SPLITTER;

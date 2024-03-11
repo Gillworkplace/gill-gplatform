@@ -2,6 +2,8 @@ package com.gill.api.common;
 
 import java.util.List;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * SelectorData
@@ -10,11 +12,13 @@ import lombok.Getter;
  * @version 2024/03/11
  **/
 @Getter
+@Setter
+@NoArgsConstructor
 public class SelectorData<T> {
 
-    private final String defaultValue;
+    private String defaultValue;
 
-    private final List<T> options;
+    private List<T> options;
 
     public SelectorData(String defaultValue, List<T> options) {
         this.defaultValue = defaultValue;

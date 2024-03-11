@@ -29,18 +29,30 @@ public class UserInfo {
 
     private String description;
 
+    private String home;
+
+    public UserInfo(UserInfo user) {
+        this.uid = user.getUid();
+        this.username = user.getUsername();
+        this.nickName = user.getNickName();
+        this.avatar = user.getAvatar();
+        this.description = user.getDescription();
+        this.home = user.getHome();
+    }
+
     public UserInfo(User user) {
         this.uid = user.getId();
         this.username = user.getUsername();
         this.nickName = user.getNickName();
         this.avatar = user.getAvatar();
         this.description = user.getDescription();
+        this.home = user.getHome();
     }
 
     /**
      * 转map
      *
-     * @return
+     * @return map
      */
     public Map<String, Object> toMap() {
         Map<String, Object> userInfoMap = new HashMap<>(16);
@@ -49,6 +61,7 @@ public class UserInfo {
         userInfoMap.put(UserProperties.NICK_NAME, this.getNickName());
         userInfoMap.put(UserProperties.AVATAR, this.getAvatar());
         userInfoMap.put(UserProperties.DESCRIPTION, this.getDescription());
+        userInfoMap.put(UserProperties.HOME, this.getHome());
         return userInfoMap;
     }
 }

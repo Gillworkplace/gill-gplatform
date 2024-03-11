@@ -24,16 +24,17 @@
            t.create_time as createTime,
            t.nick_name   as nickName,
            t.avatar      as avatar,
-           t.description as description
+           t.description as description,
+           t.home        as home
     from t_user t
     where t.id = #{userId}
   </select>
 
   <insert id="insertUser" parameterType="com.gill.api.model.User">
     insert into t_user (id, username, encrypt_password, salt, create_time, nick_name, avatar,
-                        description)
+                        description, home)
     values (#{id}, #{username}, #{encryptPassword}, #{salt}, now(), #{nickName}, #{avatar},
-            #{description})
+            #{description}, #{home})
   </insert>
 
   <select id="existsUsername" resultType="java.lang.Boolean">

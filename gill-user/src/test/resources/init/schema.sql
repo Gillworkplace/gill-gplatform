@@ -8,7 +8,8 @@ create table if not exists `t_user`
     `login_time`       datetime comment '最后登录时间',
     `nick_name`        varchar(16) not null comment '用户昵称',
     `avatar`           varchar(64) comment '头像图标',
-    `description`      varchar(64) comment '个人描述'
+    `description`      varchar(64) comment '个人描述',
+    `home`             varchar(63) comment '登录首页'
 );
 
 create unique index idx_username on t_user (`username`);

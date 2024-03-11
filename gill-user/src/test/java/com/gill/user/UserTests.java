@@ -1,13 +1,12 @@
 package com.gill.user;
 
 import cn.hutool.captcha.AbstractCaptcha;
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.gill.api.domain.UserProperties;
 import com.gill.user.controller.ResourceController;
 import com.gill.user.dto.AdminRegisterParam;
+import com.gill.user.dto.CurrentUser;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
@@ -166,8 +165,7 @@ public class UserTests extends AbstractTest {
         ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(urlPrefix() + "/info",
             ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        UserInfo userInfo = BeanUtil.mapToBean((Map) response.getBody().getData(), UserInfo.class,
-            true, CopyOptions.create().ignoreError());
+        UserInfo userInfo = getBean(response, UserInfo.class);
         Assertions.assertEquals(1, userInfo.getUid());
         Assertions.assertEquals("test", userInfo.getUsername());
         Assertions.assertEquals("测试用户", userInfo.getNickName());
@@ -179,6 +177,35 @@ public class UserTests extends AbstractTest {
     @Test
     @Order(1)
     public void test_get_user_info_without_token_should_throw_exception() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.COOKIE, Collections.emptyList());
+        HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
+        ResponseEntity<ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/current",
+            HttpMethod.GET, requestEntity, ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @Order(11)
+    public void test_get_current_user_by_token_should_be_success() {
+
+        // 获取用户信息
+        ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(urlPrefix() + "/current",
+            ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        CurrentUser currentUser = getBean(response, CurrentUser.class);
+        Assertions.assertEquals(1, currentUser.getUid());
+        Assertions.assertEquals("test", currentUser.getUsername());
+        Assertions.assertEquals("测试用户", currentUser.getNickName());
+        Assertions.assertEquals("https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/avatar.png",
+            currentUser.getAvatar());
+        Assertions.assertEquals("我是测试用户", currentUser.getDescription());
+        Assertions.assertTrue(!currentUser.getPermissions().isEmpty());
+    }
+
+    @Test
+    @Order(1)
+    public void test_get_current_user_without_token_should_throw_exception() {
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE, Collections.emptyList());
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);

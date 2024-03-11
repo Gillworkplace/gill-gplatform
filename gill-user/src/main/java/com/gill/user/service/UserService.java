@@ -20,6 +20,7 @@ import com.gill.user.mappers.UserMapper;
 import com.gill.web.exception.WebException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -101,7 +102,6 @@ public class UserService implements IUserService {
 
         // 设置用户角色
         resourceService.addUserRoles(user.getId(), roles);
-
         return user.getId();
     }
 
@@ -114,6 +114,7 @@ public class UserService implements IUserService {
         user.setNickName(param.getNickName());
         user.setAvatar(param.getAvatar());
         user.setDescription(param.getDescription());
+        user.setHome(UserProperties.DEFAULT_HOME);
         return user;
     }
 
@@ -167,7 +168,6 @@ public class UserService implements IUserService {
 
         // 存储用户权限缓存
         resourceService.refreshUserPermissions(userId);
-
         return new UserDetail(token, user);
     }
 
@@ -178,6 +178,7 @@ public class UserService implements IUserService {
         userInfoMap.put(UserProperties.NICK_NAME, user.getNickName());
         userInfoMap.put(UserProperties.AVATAR, user.getAvatar());
         userInfoMap.put(UserProperties.DESCRIPTION, user.getDescription());
+        userInfoMap.put(UserProperties.HOME, UserProperties.DEFAULT_HOME);
         return userInfoMap;
     }
 
@@ -253,11 +254,8 @@ public class UserService implements IUserService {
         Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(uid));
         if (!doCheckPermission(permissions, permissionExpression)) {
             HttpStatus status = HttpStatus.resolve(exceptionCode);
-            if (status == null) {
-                throw new WebException(HttpStatus.FORBIDDEN, exceptionMessage);
-            } else {
-                throw new WebException(status, exceptionMessage);
-            }
+            throw new WebException(Objects.requireNonNullElse(status, HttpStatus.FORBIDDEN),
+                exceptionMessage);
         }
     }
 

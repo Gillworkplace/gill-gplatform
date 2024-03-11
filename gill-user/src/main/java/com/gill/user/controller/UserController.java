@@ -4,6 +4,7 @@ import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
 import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.AdminRegisterParam;
+import com.gill.user.dto.CurrentUser;
 import com.gill.user.dto.LoginParam;
 import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
@@ -90,7 +91,7 @@ public class UserController {
         // 登录
         UserDetail userDetail = userService.successLoginAndGenerateToken(userId);
         addUserCookies(response, userId, userDetail);
-        return Response.success("/home").build();
+        return Response.success(userDetail.getHome()).build();
     }
 
     /**
@@ -144,9 +145,8 @@ public class UserController {
 
         // 成功登录后置处理
         UserDetail userDetail = userService.successLoginAndGenerateToken(userId);
-
         addUserCookies(response, userId, userDetail);
-        return Response.success("/home").build();
+        return Response.success(userDetail.getHome()).build();
     }
 
     private static void addUserCookies(HttpServletResponse response, int userId,
@@ -210,10 +210,26 @@ public class UserController {
      * @param token  token
      * @return 用户信息
      */
-    @GetMapping("info")
+    @GetMapping("/info")
     public Response<UserInfo> userInfo(@RequestAttribute(UserProperties.USER_ID) int userId,
         @RequestAttribute(UserProperties.TOKEN_ID) String token) {
         UserInfo userInfo = userService.getUserInfo(userId, token);
         return Response.success(userInfo).build();
+    }
+
+    /**
+     * 获取登录用户信息
+     *
+     * @param userId 用户ID
+     * @param token  token
+     * @return 用户信息
+     */
+    @GetMapping("/current")
+    public Response<CurrentUser> currentUser(@RequestAttribute(UserProperties.USER_ID) int userId,
+        @RequestAttribute(UserProperties.TOKEN_ID) String token) {
+        UserInfo userInfo = userService.getUserInfo(userId, token);
+        Set<String> permissions = resourceService.getUserPermissions(userId);
+        CurrentUser currentUser = new CurrentUser(userInfo, permissions);
+        return Response.success(currentUser).build();
     }
 }
