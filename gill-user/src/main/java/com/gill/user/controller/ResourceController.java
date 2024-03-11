@@ -1,5 +1,6 @@
 package com.gill.user.controller;
 
+import com.gill.api.common.SelectorData;
 import com.gill.api.model.Role;
 import com.gill.common.util.ObjectUtil;
 import com.gill.user.domain.Permissions;
@@ -68,7 +69,10 @@ public class ResourceController {
      */
     @OperationPermission(permissionExpression = "permission.register")
     @GetMapping("/admin/roles")
-    public Response<List<Role>> allRoles() {
-        return Response.success(resourceService.queryAllRoles()).build();
+    public Response<SelectorData<Role>> allRoles() {
+        List<Role> resource = resourceService.queryAllRoles();
+        String defaultValue = resource.stream().findFirst().map(Role::getId).orElse("");
+        SelectorData<Role> selectorData = new SelectorData<>(defaultValue, resource);
+        return Response.success(selectorData).build();
     }
 }

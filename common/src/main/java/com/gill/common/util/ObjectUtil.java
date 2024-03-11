@@ -2,6 +2,7 @@ package com.gill.common.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
+import cn.hutool.core.io.resource.UrlResource;
 import cn.hutool.setting.yaml.YamlUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,19 +26,19 @@ public class ObjectUtil {
      * @return bean对象
      */
     public static <T> T readYamlFromClasspath(String yamlPath, Class<T> clazz) {
-        return readYaml(new ClassPathResource(yamlPath).getAbsolutePath(), clazz);
+        return readYaml(new ClassPathResource(yamlPath), clazz);
     }
 
     /**
      * 读取yaml 文件为Bean对象
      *
-     * @param yamlPath yaml路径
+     * @param resource yaml路径
      * @param clazz    type
      * @param <T>      type
      * @return bean对象
      */
-    public static <T> T readYaml(String yamlPath, Class<T> clazz) {
-        Map<?, ?> map = YamlUtil.loadByPath(yamlPath, Map.class);
+    public static <T> T readYaml(UrlResource resource, Class<T> clazz) {
+        Map<?, ?> map = YamlUtil.load(resource.getStream(), Map.class);
         formatKey(map);
         return BeanUtil.toBeanIgnoreError(map, clazz);
     }

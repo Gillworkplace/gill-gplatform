@@ -17,7 +17,7 @@ spring:
 
 logging:
   level:
-    com.gill.user: debug
+    com.gill: debug
 
 oss:
   bucket: ${OSS_BUCKET}

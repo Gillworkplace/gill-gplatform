@@ -17,7 +17,7 @@ spring:
 
 logging:
   level:
-    com.gill.media: debug
+    com.gill: debug
 
 #redis:
 #  nodes:
