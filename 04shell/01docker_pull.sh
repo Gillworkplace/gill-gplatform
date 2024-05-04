@@ -1,8 +1,8 @@
 #!/bin/bash
 
 USERNAME=ryougishikiiiii
-REGISTRY=registry.cn-guangzhou.aliyuncs.com
-NAMESPACE=gill-gplatform
+REGISTRY=$REPO_REGISTRY
+NAMESPACE=$REPO_REGISTRY_NAMESPACE
 PROJECT=$1
 VERSION=$2
 

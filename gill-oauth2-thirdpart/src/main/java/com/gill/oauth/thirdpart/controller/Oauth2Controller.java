@@ -2,12 +2,10 @@ package com.gill.oauth.thirdpart.controller;
 
 
 import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSONUtil;
 import com.gill.oauth.thirdpart.core.BaseOauth2Service;
 import com.gill.oauth.thirdpart.domain.UserInfo;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,9 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("oauth2")
 @Slf4j
 public class Oauth2Controller {
-
-    @Autowired
-    private INotificationService notificationService;
 
     @RequestMapping("/{type}/auth")
     public void auth(@PathVariable("type") String type, HttpServletResponse response)
@@ -43,7 +38,8 @@ public class Oauth2Controller {
         BaseOauth2Service oauth2Service = getOauth2Service(type);
         UserInfo userInfo = oauth2Service.authCallback(code);
         log.info("user info: {}", userInfo);
-        notificationService.send(state, "wxLogin", JSONUtil.toJsonStr(userInfo));
+
+        // TODO 处理userInfo并获取登录token返回至用户
     }
 
     private static BaseOauth2Service getOauth2Service(String type) {

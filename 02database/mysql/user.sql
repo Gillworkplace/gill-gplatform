@@ -12,7 +12,8 @@ create table if not exists `t_user`
     `login_time`       datetime comment '最后登录时间',
     `nick_name`        varchar(16) not null comment '用户昵称',
     `avatar`           varchar(64) comment '头像图标',
-    `description`      varchar(64) comment '个人描述'
+    `description`      varchar(64) comment '个人描述',
+    `home`             varchar(32) comment '登录首页'
 ) engine = innodb
   default charset = utf8mb4 comment '用户表';
 
@@ -95,11 +96,11 @@ create table if not exists `t_user_roles`
 
 -- data
 insert ignore into t_user (id, username, encrypt_password, salt, create_time, login_time, nick_name,
-                           avatar, description)
+                           avatar, description, home)
 values (0, 'admin', '5ff6689115c8eb335d0f06a52d2fcbfca19a74296626e3fd607f623de606d886', 'abcdefgh',
         now(), null, 'administrator',
         '/avatar/avatar-10.png',
-        'super administrator');
+        'super administrator', '/home');
 
 insert ignore into t_user_roles(user_id, role_id)
 values (0, 'role.admin');

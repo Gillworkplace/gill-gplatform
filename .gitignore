@@ -34,3 +34,5 @@ build/
 
 **/*-self.*
 **/*-self
+**.log
+**/gc.*

@@ -1,8 +1,10 @@
 package com.gill.notification.worker.mock;
 
 import com.gill.api.domain.UserProperties;
-import com.gill.api.user.UserInfo;
-import com.gill.api.user.UserService;
+import com.gill.api.service.user.IUserService;
+import com.gill.api.service.user.UserInfo;
+import com.gill.web.exception.WebException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @version 2024/01/31
  **/
 @Component
-public class MockUserService implements UserService {
+public class MockUserService implements IUserService {
 
     /**
      * 根据userInfo获取用户信息
@@ -31,13 +33,28 @@ public class MockUserService implements UserService {
      *
      * @param uid   用户id
      * @param token tokenid
-     * @return 是否有效
      */
     @Override
-    public boolean checkToken(String uid, String token) {
+    public void checkToken(Integer uid, String token) {
         if (uid == null || token == null) {
-            return false;
+            throw new WebException(HttpStatus.UNAUTHORIZED, "un auth");
         }
-        return uid.startsWith("user-id") && token.startsWith("token-id");
+        if (uid != 0 || !token.startsWith("token-id")) {
+            throw new WebException(HttpStatus.UNAUTHORIZED, "un auth");
+        }
+    }
+
+    /**
+     * 检查用户权限
+     *
+     * @param uid                  用户ID
+     * @param permissionExpression 权限表达式
+     * @param exceptionCode        异常码
+     * @param exceptionMessage     异常消息
+     */
+    @Override
+    public void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
+        String exceptionMessage) {
+
     }
 }

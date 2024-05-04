@@ -7,8 +7,10 @@ import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.sts20150401.models.AssumeRoleResponseBody.AssumeRoleResponseBodyCredentials;
 import com.gill.oss.config.OssConfig;
 import com.gill.oss.config.OssProperty;
+import com.gill.oss.service.OssService;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.api.Response;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -37,6 +39,9 @@ public class OssController {
     @Autowired
     private OssProperty ossProperty;
 
+    @Autowired
+    private OssService ossService;
+
     /**
      * 下载文件
      *
@@ -44,7 +49,7 @@ public class OssController {
      * @param credentials 临时凭证
      * @return 文件流
      */
-    @GetMapping("download/{fileName}")
+    @GetMapping("/download/{fileName}")
     public Response<InputStreamResource> dowanload(@PathVariable(name = "fileName") String fileName,
         @RequestBody AssumeRoleResponseBodyCredentials credentials) {
         OSS ossClient = new OSSClientBuilder().build(System.getenv(OssConfig.OSS_ENDPOINT),
@@ -69,5 +74,15 @@ public class OssController {
             "https://" + ossProperty.getBucket() + "." + System.getenv(OssConfig.OSS_ENDPOINT) + "/"
                 + ossProperty.getPublicResourcePath();
         return Response.success(prefix).build();
+    }
+
+    /**
+     * 获取默认头像列表
+     *
+     * @return 头像文件列表
+     */
+    @GetMapping("/avatar/default")
+    public Response<List<String>> getDefaultAvatarList() {
+        return Response.success(ossService.getDefaultAvatarList()).build();
     }
 }

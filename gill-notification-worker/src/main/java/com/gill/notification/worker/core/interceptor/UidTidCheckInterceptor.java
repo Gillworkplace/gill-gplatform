@@ -1,7 +1,7 @@
 package com.gill.notification.worker.core.interceptor;
 
 import com.gill.api.domain.UserProperties;
-import com.gill.api.user.UserService;
+import com.gill.api.service.user.IUserService;
 import com.gill.web.util.RequestUtil;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ import org.springframework.web.socket.WebSocketHandler;
 public class UidTidCheckInterceptor implements WebSocketInterceptor {
 
     @Autowired(required = false)
-    private UserService userService;
+    private IUserService userService;
 
     @Override
     public boolean beforeHandshake(@Nonnull ServerHttpRequest request,
@@ -43,7 +43,8 @@ public class UidTidCheckInterceptor implements WebSocketInterceptor {
                 return false;
             }
             attributes.put(UserProperties.USER_ID, uid);
-            return userService.checkToken(uid, tid);
+            userService.checkToken(Integer.valueOf(uid), tid);
+            return true;
         }
         return false;
     }

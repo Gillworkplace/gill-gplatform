@@ -3,13 +3,16 @@ package com.gill.user.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.expression.ExpressionUtil;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
 import com.gill.api.model.UserBan;
+import com.gill.api.service.oss.IOssService;
 import com.gill.api.service.user.IUserService;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
+import com.gill.dubbo.contant.Filters;
 import com.gill.redis.core.Redis;
 import com.gill.user.config.RoleMap;
 import com.gill.user.domain.UserDetail;
@@ -19,11 +22,13 @@ import com.gill.user.mappers.UserBanMapper;
 import com.gill.user.mappers.UserMapper;
 import com.gill.web.exception.WebException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -53,6 +58,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserBanMapper userBanMapper;
+
+    @DubboReference(filter = Filters.CONSUMER, check = false, lazy = true)
+    private IOssService ossService;
 
     /**
      * 预校验用户名是否已存在
@@ -112,10 +120,16 @@ public class UserService implements IUserService {
         user.setSalt(generateSalt());
         user.setEncryptPassword(digestPwd(param.getPassword(), user.getSalt()));
         user.setNickName(param.getNickName());
-        user.setAvatar(param.getAvatar());
+        user.setAvatar(randomDefaultAvatar());
         user.setDescription(param.getDescription());
         user.setHome(UserProperties.DEFAULT_HOME);
         return user;
+    }
+
+    private String randomDefaultAvatar() {
+        List<String> defaultAvatarList = ossService.getDefaultAvatarList();
+        int randomIdx = RandomUtil.randomInt(defaultAvatarList.size());
+        return defaultAvatarList.get(randomIdx);
     }
 
     /**

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-REGISTRY=registry.cn-guangzhou.aliyuncs.com/gill-gplatform
+REGISTRY=$REPO_REGISTRY
+NAMESPACE=$REPO_REGISTRY_NAMESPACE
 PROJECT=$1
 VERSION=$2
 
@@ -8,4 +9,4 @@ docker stop $PROJECT
 docker rm $PROJECT 
 
 docker rmi $PROJECT:$VERSION
-docker rmi $REGISTRY/$PROJECT:$VERSION
+docker rmi $REGISTRY/$NAMESPACE/$PROJECT:$VERSION
