@@ -1,4 +1,4 @@
-drop database if exists chat;
+# drop database if exists chat;
 create database if not exists chat;
 use chat;
 
@@ -8,4 +8,5 @@ create table if not exists `t_chat_room`
     `name`        varchar(16)  not null comment '房间名称',
     `description` varchar(128) not null comment '房间描述',
     `url`         varchar(128) not null comment '房间图标',
+    ``
 )
