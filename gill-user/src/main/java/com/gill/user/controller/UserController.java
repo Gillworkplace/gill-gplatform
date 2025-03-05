@@ -220,4 +220,27 @@ public class UserController {
         CurrentUser currentUser = new CurrentUser(userInfo, permissions);
         return Response.success(currentUser).build();
     }
+
+    /**
+     * 获取用户邀请码
+     *
+     * @return 邀请码
+     */
+    @GetMapping("/invite_key")
+    public Response<String> inviteKey() {
+        Long userId = ThreadLocals.USER_ID.get();
+        return Response.success(userService.getInviteKey(userId)).build();
+    }
+
+    /**
+     * 刷新用户邀请码
+     *
+     * @return void
+     */
+    @PostMapping("/invite_key")
+    public Response<String> refreshInviteKey() {
+        Long userId = ThreadLocals.USER_ID.get();
+        userService.refreshInviteKey(userId);
+        return Response.success().build();
+    }
 }

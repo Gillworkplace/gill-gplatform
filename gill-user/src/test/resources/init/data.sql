@@ -14,3 +14,6 @@ values (0, '管理员', 'https://cdn.jsdelivr.net/gh/IT-JUNKIES/CDN-FILES/img/av
 insert into t_user_roles(user_id, role_id)
 values (0, 'role.admin'),
        (1, 'role.normal');
+
+insert into t_user_invite_key(user_id, invite_key)
+values (0, '8a288820');

@@ -2,6 +2,7 @@ package com.gill.user;
 
 import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.gill.api.common.SelectorData;
 import com.gill.api.model.Role;
 import com.gill.user.controller.ResourceController;
@@ -28,6 +29,8 @@ import org.springframework.http.ResponseEntity;
 public class AdminTests extends AbstractTest {
 
     public static final String URL_PREFIX = "http://localhost:";
+
+    private static String INVITE_KEY = "";
 
     @LocalServerPort
     private int port;
@@ -69,6 +72,16 @@ public class AdminTests extends AbstractTest {
 
     @Test
     @Order(1)
+    public void test_refresh_invite_key() {
+        restTemplate.postForLocation(urlPrefix() + "/invite_key", null);
+        ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(
+            urlPrefix() + "/invite_key", ResultWrapper.class);
+        INVITE_KEY = String.valueOf(response.getBody().getData());
+        Assertions.assertTrue(StrUtil.isNotBlank(INVITE_KEY));
+    }
+
+    @Test
+    @Order(2)
     public void test_admin_get_all_roles() {
         ResponseEntity<ResultWrapper> response = restTemplate.getForEntity(
             urlPrefix() + "/resource/admin/roles", ResultWrapper.class);
@@ -78,7 +91,7 @@ public class AdminTests extends AbstractTest {
     }
 
     @Test
-    @Order(1)
+    @Order(2)
     public void test_admin_register() {
         final String username = "register";
         final String password = "12345678";
@@ -97,7 +110,7 @@ public class AdminTests extends AbstractTest {
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
         registerParam.setRole("role.normal");
-        registerParam.setInviteKey("12345678");
+        registerParam.setInviteKey(INVITE_KEY);
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/admin/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

@@ -33,6 +33,21 @@ create table if not exists `t_user_info`
 ) engine = innodb
   default charset = utf8mb4 comment '用户信息表';
 
+-- 用户邀请码表
+create table if not exists `t_user_invite_key`
+(
+    `id`          int auto_increment primary key comment '自增ID',
+    `user_id`     bigint     not null comment '用户ID',
+    `invite_key`  varchar(8) not null comment '邀请码',
+    `create_time` datetime   not null default CURRENT_TIMESTAMP comment '创建时间',
+    `update_time` datetime   not null default CURRENT_TIMESTAMP comment '更新时间',
+    `delete_time` datetime   null comment '删除时间',
+    `deleted`     boolean    not null default 0 comment '逻辑删除',
+    index `idx_user_invite_key` (`user_id`),
+    unique index `udx_invite_key` (`invite_key`, `delete_time`)
+) engine = innodb
+  default charset = utf8mb4 comment '邀请码表';
+
 -- 用户封禁表
 create table if not exists `t_user_ban`
 (

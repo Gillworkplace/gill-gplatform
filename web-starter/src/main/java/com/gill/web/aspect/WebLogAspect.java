@@ -357,6 +357,7 @@ public class WebLogAspect {
             webLog.setUsername(request.map(HttpServletRequest::getRemoteUser).orElse(""));
             webLog.setIp(RequestUtil.getRequestIp(request.orElse(null)));
             webLog.setHostPath(StrUtil.removeSuffix(url, URLUtil.url(url).getPath()));
+            webLog.setMethod(request.map(HttpServletRequest::getMethod).orElse(""));
         }
     }
 

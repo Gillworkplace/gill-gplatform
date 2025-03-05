@@ -55,12 +55,12 @@ public class UserTests extends AbstractTest {
     @Autowired
     private CaptchaService captchaService;
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
-    public UserTests(ResourceController resourceController, UserService userService) {
+    public UserTests(ResourceController resourceController) {
         super.resourceController = resourceController;
-        this.userService = userService;
     }
 
     @Transactional
@@ -83,7 +83,7 @@ public class UserTests extends AbstractTest {
         registerParam.setPassword(password);
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
-        registerParam.setInviteKey("12345678");
+        registerParam.setInviteKey("8a288820");
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -130,6 +130,7 @@ public class UserTests extends AbstractTest {
         registerParam.setPassword(password);
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
+        registerParam.setInviteKey("8a288820");
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());

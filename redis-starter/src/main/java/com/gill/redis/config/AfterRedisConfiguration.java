@@ -7,6 +7,7 @@ import com.gill.redis.core.RedisTemplateAdapter;
 import com.gill.redis.core.RedissonDLockAdapter;
 import com.gill.redis.fortest.RedisTemplateWindowAdapter;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -37,7 +38,7 @@ public class AfterRedisConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = {"dLock"})
-    public DLock dLock(RedissonClient client) {
-        return new RedissonDLockAdapter(client);
+    public DLock dLock(RedissonClient client, @Value("${spring.application.name}") String appName) {
+        return new RedissonDLockAdapter(client, appName);
     }
 }

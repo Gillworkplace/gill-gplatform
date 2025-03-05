@@ -42,7 +42,7 @@ public class RegisterParam {
     @Length(max = 64, message = "个人描述字数应小于等于64个")
     private String description;
 
-    @Length(max = 32, message = "参数错误")
+    @Pattern(regexp = "^[0-9a-z]{8}$", message = "参数错误")
     @NotNull(message = "邀请码不能为空")
     private String inviteKey;
 }

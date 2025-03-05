@@ -13,6 +13,7 @@ import org.redisson.config.Config;
 import org.redisson.config.ReadMode;
 import org.redisson.config.SubscriptionMode;
 import org.redisson.config.TransportMode;
+import org.redisson.connection.balancer.RoundRobinLoadBalancer;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties.ClientType;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties.Cluster;
@@ -127,7 +128,7 @@ public class BeforeRedisConfiguration {
             .setSubscriptionConnectionPoolSize(50)
             .setSubscriptionConnectionMinimumIdleSize(1)
             .setSubscriptionsPerConnection(5)
-            .setLoadBalancer(new org.redisson.connection.balancer.CommandsLoadBalancer())
+            .setLoadBalancer(new RoundRobinLoadBalancer())
             .setTimeout(3000)
             .setConnectTimeout(10000)
             .setIdleConnectionTimeout(10000)

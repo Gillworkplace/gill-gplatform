@@ -2,7 +2,11 @@ package com.gill.user.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.ByteUtil;
+import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.expression.ExpressionUtil;
@@ -10,7 +14,7 @@ import com.gill.api.constant.AccountStatusEnum;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
 import com.gill.api.service.oss.IOssService;
-import com.gill.api.service.user.IUserService;
+import com.gill.common.api.DLock;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
 import com.gill.dubbo.contant.Filters;
@@ -22,16 +26,21 @@ import com.gill.user.dto.param.RegisterParam;
 import com.gill.user.entity.UserAccountEntity;
 import com.gill.user.entity.UserBanEntity;
 import com.gill.user.entity.UserInfoEntity;
+import com.gill.user.entity.UserInviteKeyEntity;
 import com.gill.user.service.mapperservice.UserAccountService;
 import com.gill.user.service.mapperservice.UserBanService;
 import com.gill.user.service.mapperservice.UserInfoService;
+import com.gill.user.service.mapperservice.UserInviteKeyService;
 import com.gill.web.exception.WebException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -51,10 +60,13 @@ import org.springframework.transaction.annotation.Transactional;
 @DubboService
 @Component
 @Slf4j
-public class UserService implements IUserService {
+public class UserService implements IUserService, com.gill.api.service.user.IUserService {
 
     @Autowired
     private Redis redis;
+
+    @Autowired
+    private DLock lock;
 
     @Autowired
     private ResourceService resourceService;
@@ -67,6 +79,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserBanService userBanService;
+
+    @Autowired
+    private UserInviteKeyService userInviteKeyService;
 
     @DubboReference(filter = Filters.CONSUMER, check = false, lazy = true)
     private IOssService ossService;
@@ -108,6 +123,9 @@ public class UserService implements IUserService {
 
         // 获取用户ID
         long userId = IdUtil.getSnowflakeNextId();
+
+        // 校验邀请码
+        checkInviteKey(param.getInviteKey());
 
         try {
             UserAccountEntity userAccount = generateUserAccount(param, userId);
@@ -365,5 +383,167 @@ public class UserService implements IUserService {
 
         // 清除redis token 信息
         redis.clear(UserProperties.getRedisTokenKey(token));
+    }
+
+    @Override
+    public String getInviteKey(long userId) {
+        UserInviteKeyEntity entity = userInviteKeyService.lambdaQuery()
+            .select(UserInviteKeyEntity::getInviteKey)
+            .eq(UserInviteKeyEntity::getUserId, userId)
+            .eq(UserInviteKeyEntity::getDeleted, false)
+            .orderByDesc(UserInviteKeyEntity::getCreateTime)
+            .last("limit 1")
+            .one();
+        return Optional.ofNullable(entity).map(UserInviteKeyEntity::getInviteKey).orElse("");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void refreshInviteKey(long userId) {
+        lock.tryLock("refresh-invite-key:" + userId, () -> {
+            List<UserInviteKeyEntity> keys = userInviteKeyService.lambdaQuery()
+                .select(UserInviteKeyEntity::getId)
+                .eq(UserInviteKeyEntity::getUserId, userId)
+                .eq(UserInviteKeyEntity::getDeleted, false)
+                .list();
+
+            Set<Integer> ids = keys.stream()
+                .map(UserInviteKeyEntity::getId)
+                .collect(Collectors.toSet());
+            if (CollectionUtil.isNotEmpty(ids)) {
+                userInviteKeyService.lambdaUpdate()
+                    .set(UserInviteKeyEntity::getDeleteTime, LocalDateTime.now())
+                    .set(UserInviteKeyEntity::getDeleted, true)
+                    .in(UserInviteKeyEntity::getId, ids)
+                    .update();
+            }
+
+            String inviteKey = generateInviteKey(userId);
+            UserInviteKeyEntity newKey = new UserInviteKeyEntity();
+            newKey.setUserId(userId);
+            newKey.setInviteKey(inviteKey);
+            userInviteKeyService.save(newKey);
+        }, () -> {
+            throw new WebException(HttpStatus.TOO_MANY_REQUESTS);
+        });
+    }
+
+    private String generateInviteKey(long userId) {
+        long n1 = userId * 7;
+        byte[] bs1 = ByteUtil.longToBytes(n1);
+        Assert.isTrue(bs1.length == 8);
+        byte[] cp = compress(bs1);
+        byte[] salts = RandomUtil.randomBytes(2);
+
+        byte[] keyBytes = new byte[4];
+        byte[] merge = magicMerge(cp[0], salts[0]);
+        keyBytes[0] = merge[0];
+        keyBytes[1] = merge[1];
+        merge = magicMerge(cp[1], salts[1]);
+        keyBytes[2] = merge[0];
+        keyBytes[3] = merge[1];
+        return HexUtil.encodeHexStr(keyBytes);
+    }
+
+    public static void main(String[] args) {
+        byte b1 = RandomUtil.randomBytes(1)[0];
+        byte b2 = RandomUtil.randomBytes(1)[0];
+
+        // 0b 0010 0011, 0b 00100100
+        System.out.println(b1 + ", " + b2);
+        System.out.println(byteToBits(b1) + ", " + byteToBits(b2));
+        byte[] merge = magicMerge(b1, b2);
+        System.out.println("merge: " + byteToBits(merge[0]) + ", " + byteToBits(merge[1]));
+        System.out.println("merge hex: " + HexUtil.encodeHexStr(merge));
+        merge = HexUtil.decodeHex(HexUtil.encodeHexStr(merge));
+        System.out.println("decode hex: " + byteToBits(merge[0]) + ", " + byteToBits(merge[1]));
+        byte[] split = magicSplit(merge[0], merge[1]);
+        System.out.println("split: " + byteToBits(split[0]) + ", " + byteToBits(split[1]));
+    }
+
+    private static String byteToBits(byte b) {
+        StringBuilder bits = new StringBuilder();
+        for (int i = 7; i >= 0; i--) {
+            bits.append((b >>> i) & 1); // 逐位提取
+        }
+        return bits.toString();
+    }
+
+    private static byte[] magicMerge(byte b, byte salt) {
+        byte r1 = 0;
+        byte r2 = 0;
+        for (int i = 0; i < 4; i++) {
+            r1 |= (byte) ((b >>> i & 1) << 2 * i);
+            r1 |= (byte) ((salt >>> i & 1) << 2 * i + 1);
+        }
+        for (int i = 4; i < 8; i++) {
+            r2 |= (byte) ((b >>> i & 1) << 2 * (i - 4));
+            r2 |= (byte) ((salt >>> i & 1) << 2 * (i - 4) + 1);
+        }
+        return new byte[]{r1, r2};
+    }
+
+    private static byte[] magicSplit(byte b1, byte b2) {
+        byte b = 0;
+        byte salt = 0;
+        for (int i = 0; i < 8; i++) {
+            if (i % 2 == 0) {
+                b |= (byte) ((b1 >>> i & 1) << i / 2);
+            } else {
+                salt |= (byte) ((b1 >>> i & 1) << i / 2);
+            }
+        }
+        for (int i = 0; i < 8; i++) {
+            if (i % 2 == 0) {
+                b |= (byte) ((b2 >>> i & 1) << i / 2 + 4);
+            } else {
+                salt |= (byte) ((b2 >>> i & 1) << i / 2 + 4);
+            }
+        }
+        return new byte[]{b, salt};
+    }
+
+    private byte[] compress(byte[] bs) {
+        byte[] cp = new byte[2];
+        cp[0] = (byte) (bs[0] ^ bs[1] ^ bs[2] ^ bs[3]);
+        cp[1] = (byte) (bs[4] ^ bs[5] ^ bs[6] ^ bs[7]);
+        return cp;
+    }
+
+    /**
+     * cp '1011 0011'
+     * <p/>
+     * salt '1100 1011'
+     * <p/>
+     * result '1110 0101 1000 1111'
+     *
+     * @param inviteKey 邀请码
+     */
+    private void checkInviteKey(String inviteKey) {
+        UserInviteKeyEntity entity = userInviteKeyService.lambdaQuery()
+            .select(UserInviteKeyEntity::getUserId)
+            .eq(UserInviteKeyEntity::getInviteKey, inviteKey)
+            .isNull(UserInviteKeyEntity::getDeleteTime)
+            .last("limit 1")
+            .one();
+        if (entity == null) {
+            throw new WebException(HttpStatus.BAD_REQUEST, "无效邀请码");
+        }
+        long userId = entity.getUserId();
+        byte[] bs1 = ByteUtil.longToBytes(userId * 7);
+        byte[] cp = compress(bs1);
+
+        byte[] keyBytes = HexUtil.decodeHex(inviteKey);
+        Assert.isTrue(keyBytes.length == 4);
+
+        byte[] acp = new byte[2];
+        byte[] split = magicSplit(keyBytes[0], keyBytes[1]);
+        acp[0] = split[0];
+        split = magicSplit(keyBytes[2], keyBytes[3]);
+        acp[1] = split[0];
+
+        if (!Arrays.equals(cp, acp)) {
+            throw new WebException(HttpStatus.BAD_REQUEST, "无效邀请码");
+        }
     }
 }
