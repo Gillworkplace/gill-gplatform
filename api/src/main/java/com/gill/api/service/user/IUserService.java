@@ -25,7 +25,7 @@ public interface IUserService {
      * @param uid   用户id
      * @param token tokenid
      */
-    void checkToken(Integer uid, String token);
+    void checkToken(Long uid, String token);
 
     /**
      * 检查用户权限
@@ -35,6 +35,6 @@ public interface IUserService {
      * @param exceptionCode        异常码
      * @param exceptionMessage     异常消息
      */
-    void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
+    void checkPermission(Long uid, String permissionExpression, int exceptionCode,
         String exceptionMessage);
 }

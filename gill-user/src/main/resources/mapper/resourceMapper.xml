@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gill.user.mapper.ResourceMapper">
+  <delete id="truncateRoles">
+    truncate table t_role
+  </delete>
+
+  <delete id="truncatePermissions">
+    truncate table t_permission
+  </delete>
+
+  <delete id="truncateRoleRelationships">
+    truncate table t_role_relationships
+  </delete>
+
+  <delete id="truncatePermissionRelationships">
+    truncate table t_permission_relationships
+  </delete>
+
+  <delete id="truncateRolePermissions">
+    truncate table t_role_permissions
+  </delete>
+
+  <select id="queryRolesByUserId" resultType="com.gill.api.model.Role">
+    select r.id          as id,
+           r.name        as name,
+           r.description as description
+    from t_user_roles ur
+           join t_role r
+                on ur.role_id = r.id
+    where ur.user_id = #{userId}
+      and ur.delete_time is null
+  </select>
+
+  <select id="queryPermissionsByUserId" resultType="string">
+    select pr.descendant_id
+    from t_user_roles ur
+           join t_role_permissions rp
+                on ur.role_id = rp.role_id
+           join t_permission_relationships pr
+                on rp.permission_id = pr.ancestor_id
+    where ur.user_id = #{userId}
+      and ur.delete_time is null
+  </select>
+</mapper>

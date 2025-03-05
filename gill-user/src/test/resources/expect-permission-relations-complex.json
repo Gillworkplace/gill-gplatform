@@ -1,60 +1,72 @@
 [
   {
+    "id": 1,
     "ancestorId": "b",
     "descendantId": "b",
     "adjoin": 0
   },
   {
+    "id": 2,
     "ancestorId": "c",
     "descendantId": "c",
     "adjoin": 0
   },
   {
+    "id": 3,
     "ancestorId": "d",
     "descendantId": "d",
     "adjoin": 0
   },
   {
+    "id": 4,
     "ancestorId": "e",
     "descendantId": "e",
     "adjoin": 0
   },
   {
+    "id": 5,
     "ancestorId": "f",
     "descendantId": "f",
     "adjoin": 0
   },
   {
+    "id": 6,
     "ancestorId": "g",
     "descendantId": "g",
     "adjoin": 0
   },
   {
+    "id": 7,
     "ancestorId": "f",
     "descendantId": "d",
     "adjoin": 1
   },
   {
+    "id": 8,
     "ancestorId": "g",
     "descendantId": "d",
     "adjoin": 1
   },
   {
+    "id": 9,
     "ancestorId": "g",
     "descendantId": "f",
     "adjoin": 1
   },
   {
+    "id": 10,
     "ancestorId": "e",
     "descendantId": "d",
     "adjoin": 2
   },
   {
+    "id": 11,
     "ancestorId": "e",
     "descendantId": "f",
     "adjoin": 1
   },
   {
+    "id": 12,
     "ancestorId": "e",
     "descendantId": "g",
     "adjoin": 1

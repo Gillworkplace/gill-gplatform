@@ -5,11 +5,13 @@ import com.gill.web.interceptor.CsrfInterceptor;
 import com.gill.web.interceptor.PermissionInterceptor;
 import com.gill.web.interceptor.RemoteAuthInterceptor;
 import com.gill.web.interceptor.RemotePermissionInterceptor;
+import com.gill.web.interceptor.TraceInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * InterceptorConfig
@@ -37,5 +39,10 @@ public class InterceptorConfig {
     @Bean
     public CsrfInterceptor csrfInterceptor() {
         return new CsrfInterceptor();
+    }
+
+    @Bean
+    public HandlerInterceptor traceInterceptor() {
+        return new TraceInterceptor();
     }
 }

@@ -87,11 +87,11 @@ public class UserProperties {
         return REDIS_TOKEN_PREFIX + token;
     }
 
-    public static String getRedisUserInfoKey(int userId) {
+    public static String getRedisUserInfoKey(long userId) {
         return REDIS_USER_INFO_PREFIX + userId;
     }
 
-    public static String getRedisUserResourceKey(int userId) {
+    public static String getRedisUserResourceKey(long userId) {
         return REDIS_USER_RESOURCE_PREFIX + userId;
     }
 }

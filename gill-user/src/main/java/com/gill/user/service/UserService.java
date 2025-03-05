@@ -3,11 +3,12 @@ package com.gill.user.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.expression.ExpressionUtil;
+import com.gill.api.constant.AccountStatusEnum;
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.User;
-import com.gill.api.model.UserBan;
 import com.gill.api.service.oss.IOssService;
 import com.gill.api.service.user.IUserService;
 import com.gill.common.crypto.CryptoFactory;
@@ -16,11 +17,16 @@ import com.gill.dubbo.contant.Filters;
 import com.gill.redis.core.Redis;
 import com.gill.user.config.RoleMap;
 import com.gill.user.domain.UserDetail;
-import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
-import com.gill.user.mappers.UserBanMapper;
-import com.gill.user.mappers.UserMapper;
+import com.gill.user.dto.param.RegisterParam;
+import com.gill.user.entity.UserAccountEntity;
+import com.gill.user.entity.UserBanEntity;
+import com.gill.user.entity.UserInfoEntity;
+import com.gill.user.service.mapperservice.UserAccountService;
+import com.gill.user.service.mapperservice.UserBanService;
+import com.gill.user.service.mapperservice.UserInfoService;
 import com.gill.web.exception.WebException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,10 +60,13 @@ public class UserService implements IUserService {
     private ResourceService resourceService;
 
     @Autowired
-    private UserMapper userMapper;
+    private UserAccountService userAccountService;
 
     @Autowired
-    private UserBanMapper userBanMapper;
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private UserBanService userBanService;
 
     @DubboReference(filter = Filters.CONSUMER, check = false, lazy = true)
     private IOssService ossService;
@@ -68,7 +77,10 @@ public class UserService implements IUserService {
      * @param username 用户名
      */
     public void precheckUsername(String username) {
-        boolean exists = userMapper.existsUsername(username);
+        boolean exists = userAccountService.lambdaQuery()
+            .eq(UserAccountEntity::getUsername, username)
+            .eq(UserAccountEntity::getDeleted, false)
+            .exists();
         if (exists) {
             throw new WebException(HttpStatus.BAD_REQUEST, "账号已存在");
         }
@@ -81,7 +93,7 @@ public class UserService implements IUserService {
      * @return userId
      */
     @Transactional(rollbackFor = Exception.class)
-    public int registerUser(RegisterParam param) {
+    public long registerUser(RegisterParam param) {
         return registerUserWithRole(param, RoleMap.NORMAL_USER);
     }
 
@@ -92,33 +104,40 @@ public class UserService implements IUserService {
      * @return userId
      */
     @Transactional(rollbackFor = Exception.class)
-    public int registerUserWithRole(RegisterParam param, Set<String> roles) {
+    public long registerUserWithRole(RegisterParam param, Set<String> roles) {
 
         // 获取用户ID
-        Long userId = redis.increaseAndGet(UserProperties.REDIS_USER_ID_KEY);
-        if (userId == null) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "服务器异常");
-        }
+        long userId = IdUtil.getSnowflakeNextId();
 
-        // 插入用户数据
-        User user = generateUser(param, userId);
         try {
-            userMapper.insertUser(user);
+            UserAccountEntity userAccount = generateUserAccount(param, userId);
+            userAccountService.save(userAccount);
+
+            UserInfoEntity userInfo = generateUserInfo(param, userId);
+            userInfoService.save(userInfo);
         } catch (DuplicateKeyException e) {
             throw new WebException(HttpStatus.BAD_REQUEST, "账号已存在");
         }
 
         // 设置用户角色
-        resourceService.addUserRoles(user.getId(), roles);
-        return user.getId();
+        resourceService.addUserRoles(userId, roles);
+        return userId;
     }
 
-    private User generateUser(RegisterParam param, Long userId) {
-        User user = new User();
-        user.setId(userId.intValue());
-        user.setUsername(param.getUsername());
-        user.setSalt(generateSalt());
-        user.setEncryptPassword(digestPwd(param.getPassword(), user.getSalt()));
+    private UserAccountEntity generateUserAccount(RegisterParam param, long userId) {
+        UserAccountEntity userAccount = new UserAccountEntity();
+        userAccount.setId(userId);
+        userAccount.setUsername(param.getUsername());
+        userAccount.setSalt(generateSalt());
+        userAccount.setEncryptPassword(digestPwd(param.getPassword(), userAccount.getSalt()));
+        userAccount.setRegisterKey(param.getInviteKey());
+        userAccount.setAccountStatus(AccountStatusEnum.UNUSED.getCode());
+        return userAccount;
+    }
+
+    private UserInfoEntity generateUserInfo(RegisterParam param, Long userId) {
+        UserInfoEntity user = new UserInfoEntity();
+        user.setUserId(userId);
         user.setNickName(param.getNickName());
         user.setAvatar(randomDefaultAvatar());
         user.setDescription(param.getDescription());
@@ -139,17 +158,24 @@ public class UserService implements IUserService {
      * @param password 密码
      * @return userid
      */
-    public int checkLogin(@NonNull String username, @NonNull String password) {
-        User user = userMapper.getEncryptPwdAndSaltByUsername(username);
-        if (user == null) {
+    public long checkLogin(@NonNull String username, @NonNull String password) {
+        UserAccountEntity userAccount = userAccountService.lambdaQuery()
+            .select(UserAccountEntity::getId, UserAccountEntity::getUsername,
+                UserAccountEntity::getEncryptPassword, UserAccountEntity::getSalt)
+            .eq(UserAccountEntity::getUsername, username)
+            .eq(UserAccountEntity::getDeleted, false)
+            .one();
+
+        if (userAccount == null) {
             throw new WebException(HttpStatus.BAD_REQUEST, "用户名不存在或密码错误");
         }
-        String salt = user.getSalt();
-        String encryptPassword = user.getEncryptPassword();
+
+        String salt = userAccount.getSalt();
+        String encryptPassword = userAccount.getEncryptPassword();
         if (!encryptPassword.equals(digestPwd(password, salt))) {
             throw new WebException(HttpStatus.BAD_REQUEST, "用户名不存在或密码错误");
         }
-        return user.getId();
+        return userAccount.getId();
     }
 
     /**
@@ -157,10 +183,16 @@ public class UserService implements IUserService {
      *
      * @param userId 用户ID
      */
-    public void checkAccess(int userId) {
-        UserBan userBan = userBanMapper.firstUserBan(userId);
-        if (userBan != null) {
-            throw new WebException(HttpStatus.FORBIDDEN, userBan.getReason());
+    public void checkAccess(long userId) {
+        UserBanEntity entity = userBanService.lambdaQuery()
+            .eq(UserBanEntity::getUserId, userId)
+            .gt(UserBanEntity::getUntilTime, LocalDateTime.now())
+            .eq(UserBanEntity::getDeleted, false)
+            .orderByAsc(UserBanEntity::getUntilTime)
+            .last("limit 1")
+            .one();
+        if (entity != null) {
+            throw new WebException(HttpStatus.FORBIDDEN, entity.getReason());
         }
     }
 
@@ -170,22 +202,53 @@ public class UserService implements IUserService {
      * @param userId 用户ID
      * @return token
      */
-    public UserDetail successLoginAndGenerateToken(int userId) {
+    public UserDetail successLoginAndGenerateToken(long userId) {
 
         // 更新登录时间
-        userMapper.updateLoginTime(userId);
+        userAccountService.lambdaUpdate()
+            .set(UserAccountEntity::getLoginTime, LocalDateTime.now())
+            .eq(UserAccountEntity::getId, userId)
+            .eq(UserAccountEntity::getDeleted, false)
+            .update();
 
         // 生成token
-        User user = userMapper.getUserInfoById(userId);
+        UserAccountEntity userAccount = userAccountService.lambdaQuery()
+            .select(UserAccountEntity::getUsername)
+            .eq(UserAccountEntity::getId, userId)
+            .eq(UserAccountEntity::getDeleted, false)
+            .one();
+        if (userAccount == null) {
+            throw new WebException(HttpStatus.BAD_REQUEST, "用户不存在");
+        }
+
+        String username = userAccount.getUsername();
+
+        UserInfoEntity userInfo = userInfoService.lambdaQuery()
+            .select(UserInfoEntity::getUserId, UserInfoEntity::getNickName,
+                UserInfoEntity::getAvatar, UserInfoEntity::getDescription, UserInfoEntity::getHome)
+            .eq(UserInfoEntity::getUserId, userId)
+            .eq(UserInfoEntity::getDeleted, false)
+            .one();
         String token = generateToken();
-        redis.mset(UserProperties.getRedisTokenKey(token), generateRedisUserInfo(user));
+
+        User user = new User();
+        user.setId(userInfo.getUserId());
+        user.setUsername(username);
+        user.setNickName(userInfo.getNickName());
+        user.setAvatar(userInfo.getAvatar());
+        user.setDescription(userInfo.getDescription());
+        user.setHome(userInfo.getHome());
+        user.setLoginTime(userAccount.getLoginTime());
+        user.setCreateTime(userAccount.getCreateTime());
+
+        redis.mset(UserProperties.getRedisTokenKey(token), generateRedisUserInfo(username, user));
 
         // 存储用户权限缓存
-        resourceService.refreshUserPermissions(userId);
-        return new UserDetail(token, user);
+        Set<String> permissions = resourceService.refreshUserPermissions(userId);
+        return new UserDetail(token, user, permissions);
     }
 
-    private Map<String, Object> generateRedisUserInfo(User user) {
+    private Map<String, Object> generateRedisUserInfo(String username, User user) {
         Map<String, Object> userInfoMap = new HashMap<>(16);
         userInfoMap.put(UserProperties.USER_ID, String.valueOf(user.getId()));
         userInfoMap.put(UserProperties.USER_NAME, user.getUsername());
@@ -218,7 +281,7 @@ public class UserService implements IUserService {
      * @param token  token
      * @return 用户信息
      */
-    public UserInfo getUserInfo(int userId, String token) {
+    public UserInfo getUserInfo(long userId, String token) {
         Map<String, Object> map = redis.mget(UserProperties.getRedisTokenKey(token));
         UserInfo userInfo = BeanUtil.mapToBean(map, UserInfo.class, true,
             CopyOptions.create().ignoreError());
@@ -247,9 +310,9 @@ public class UserService implements IUserService {
      * @param userId 用户Id
      * @param token  token
      */
-    public void checkToken(Integer userId, String token) {
-        Integer uid = redis.mget(UserProperties.getRedisTokenKey(token), UserProperties.USER_ID,
-            Integer.class);
+    public void checkToken(Long userId, String token) {
+        Long uid = redis.mget(UserProperties.getRedisTokenKey(token), UserProperties.USER_ID,
+            Long.class);
         if (uid == null || !uid.equals(userId)) {
             throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
         }
@@ -263,7 +326,7 @@ public class UserService implements IUserService {
      * @param exceptionCode        异常码
      * @param exceptionMessage     异常消息
      */
-    public void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
+    public void checkPermission(Long uid, String permissionExpression, int exceptionCode,
         String exceptionMessage) {
         Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(uid));
         if (!doCheckPermission(permissions, permissionExpression)) {
@@ -298,19 +361,9 @@ public class UserService implements IUserService {
      * @param userId 用户ID
      * @param token  token
      */
-    public void logout(int userId, String token) {
+    public void logout(long userId, String token) {
 
         // 清除redis token 信息
         redis.clear(UserProperties.getRedisTokenKey(token));
-    }
-
-    /**
-     * 刷新redis最大用户ID
-     */
-    public void refreshRedisUserId() {
-
-        // TODO 加锁避免查询的时候有用户在注册
-        int maxUserId = userMapper.queryMaxUserId();
-        redis.set(UserProperties.REDIS_USER_ID_KEY, maxUserId + 1);
     }
 }

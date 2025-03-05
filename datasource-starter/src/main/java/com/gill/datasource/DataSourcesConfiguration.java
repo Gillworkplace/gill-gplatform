@@ -1,9 +1,15 @@
 package com.gill.datasource;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.druid.filter.Filter;
+import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.druid.wall.WallFilter;
+import com.gill.datasource.config.DruidConfig;
 import com.gill.datasource.dynamic.DynamicDataSource;
 import com.gill.datasource.generator.DataSourceGenerator;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -47,6 +53,9 @@ public class DataSourcesConfiguration {
             }
             DataSource dataSource = DataSourceGenerator.chainsGenerate(datasources, properties);
             dataSources.put(name, dataSource);
+            if (properties.druid() != null) {
+                handleDruid(dataSource, properties);
+            }
             if (first == null) {
                 first = dataSource;
             }
@@ -56,6 +65,25 @@ public class DataSourcesConfiguration {
             log.info("dynamic datasources load: {}", name);
         }
         return new DataSourceInfo(primary == null ? first : primary, dataSources);
+    }
+
+    private void handleDruid(DataSource dataSource, DataSourceProperties properties) {
+        DruidDataSource ds = (DruidDataSource) dataSource;
+        DruidConfig druidConfig = properties.druid();
+        List<Filter> proxyFilters = new ArrayList<>();
+        String filters = druidConfig.getFilters();
+        if (StrUtil.isNotBlank(filters) && filters.contains("stat")) {
+            proxyFilters.add(druidConfig.getStat());
+        }
+        if (StrUtil.isNotBlank(filters) && filters.contains("wall")) {
+            WallFilter wallFilter = new WallFilter();
+            wallFilter.setConfig(druidConfig.getWall());
+            proxyFilters.add(wallFilter);
+        }
+        if (StrUtil.isNotBlank(filters) && filters.contains("slf4j")) {
+            proxyFilters.add(druidConfig.getSlf4j());
+        }
+        ds.setProxyFilters(proxyFilters);
     }
 
     /**

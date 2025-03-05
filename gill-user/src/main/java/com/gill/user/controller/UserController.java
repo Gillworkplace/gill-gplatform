@@ -2,12 +2,13 @@ package com.gill.user.controller;
 
 import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
+import com.gill.common.threadlocal.ThreadLocals;
 import com.gill.user.domain.UserDetail;
-import com.gill.user.dto.AdminRegisterParam;
 import com.gill.user.dto.CurrentUser;
-import com.gill.user.dto.LoginParam;
-import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
+import com.gill.user.dto.param.AdminRegisterParam;
+import com.gill.user.dto.param.LoginParam;
+import com.gill.user.dto.param.RegisterParam;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.ResourceService;
 import com.gill.user.service.UserService;
@@ -47,17 +48,6 @@ public class UserController {
     private ResourceService resourceService;
 
     /**
-     * 刷新redis用户ID
-     *
-     * @return 响应
-     */
-    @PostMapping("/refresh/userId")
-    public Response<String> refreshRedisUserId() {
-        userService.refreshRedisUserId();
-        return Response.success().build();
-    }
-
-    /**
      * 预校验用户名是否已存在
      *
      * @param username 用户名
@@ -86,7 +76,7 @@ public class UserController {
         captchaService.checkCaptchaCode(randomCode, captchaCode);
 
         // 注册用户信息
-        int userId = userService.registerUser(param);
+        long userId = userService.registerUser(param);
 
         // 登录
         UserDetail userDetail = userService.successLoginAndGenerateToken(userId);
@@ -138,7 +128,7 @@ public class UserController {
         // 校验用户名密码
         String username = param.getUsername();
         String password = param.getPassword();
-        int userId = userService.checkLogin(username, password);
+        long userId = userService.checkLogin(username, password);
 
         // 校验用户是否可登录
         userService.checkAccess(userId);
@@ -149,7 +139,7 @@ public class UserController {
         return Response.success(userDetail.getHome()).build();
     }
 
-    private static void addUserCookies(HttpServletResponse response, int userId,
+    private static void addUserCookies(HttpServletResponse response, long userId,
         UserDetail userDetail) {
         response.addCookie(buildCookie(UserProperties.USER_ID, String.valueOf(userId)));
         response.addCookie(buildCookie(UserProperties.USER_NAME, userDetail.getUsername()));
@@ -173,7 +163,7 @@ public class UserController {
      * @return 响应
      */
     @PostMapping("/logout")
-    public Response<String> logout(@RequestAttribute(UserProperties.USER_ID) int userId,
+    public Response<String> logout(@RequestAttribute(UserProperties.USER_ID) long userId,
         @RequestAttribute(UserProperties.TOKEN_ID) String token, HttpServletResponse response) {
         userService.logout(userId, token);
         response.addCookie(clearCookie(UserProperties.USER_ID));
@@ -206,13 +196,12 @@ public class UserController {
     /**
      * 获取登录用户信息
      *
-     * @param userId 用户ID
-     * @param token  token
      * @return 用户信息
      */
     @GetMapping("/info")
-    public Response<UserInfo> userInfo(@RequestAttribute(UserProperties.USER_ID) int userId,
-        @RequestAttribute(UserProperties.TOKEN_ID) String token) {
+    public Response<UserInfo> userInfo() {
+        Long userId = ThreadLocals.USER_ID.get();
+        String token = ThreadLocals.TOKEN.get();
         UserInfo userInfo = userService.getUserInfo(userId, token);
         return Response.success(userInfo).build();
     }
@@ -220,13 +209,12 @@ public class UserController {
     /**
      * 获取登录用户信息
      *
-     * @param userId 用户ID
-     * @param token  token
      * @return 用户信息
      */
     @GetMapping("/current")
-    public Response<CurrentUser> currentUser(@RequestAttribute(UserProperties.USER_ID) int userId,
-        @RequestAttribute(UserProperties.TOKEN_ID) String token) {
+    public Response<CurrentUser> currentUser() {
+        Long userId = ThreadLocals.USER_ID.get();
+        String token = ThreadLocals.TOKEN.get();
         UserInfo userInfo = userService.getUserInfo(userId, token);
         Set<String> permissions = resourceService.getUserPermissions(userId);
         CurrentUser currentUser = new CurrentUser(userInfo, permissions);

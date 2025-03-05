@@ -35,7 +35,7 @@ public class MockUserService implements IUserService {
      * @param token tokenid
      */
     @Override
-    public void checkToken(Integer uid, String token) {
+    public void checkToken(Long uid, String token) {
         if (uid == null || token == null) {
             throw new WebException(HttpStatus.UNAUTHORIZED, "un auth");
         }
@@ -53,7 +53,7 @@ public class MockUserService implements IUserService {
      * @param exceptionMessage     异常消息
      */
     @Override
-    public void checkPermission(Integer uid, String permissionExpression, int exceptionCode,
+    public void checkPermission(Long uid, String permissionExpression, int exceptionCode,
         String exceptionMessage) {
 
     }

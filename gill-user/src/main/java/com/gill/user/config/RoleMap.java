@@ -11,6 +11,11 @@ import java.util.Set;
 public class RoleMap {
 
     /**
+     * 超级管理员
+     */
+    public static final Set<String> SUPER_ADMIN = Set.of("role.superadmin");
+
+    /**
      * 管理员
      */
     public static final Set<String> ADMIN = Set.of("role.admin");

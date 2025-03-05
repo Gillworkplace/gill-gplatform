@@ -1,17 +1,26 @@
 package com.gill.user.service;
 
 import com.gill.api.domain.UserProperties;
-import com.gill.api.model.Permission;
-import com.gill.api.model.PermissionRelationship;
 import com.gill.api.model.Role;
-import com.gill.api.model.RolePermission;
-import com.gill.api.model.RoleRelationship;
 import com.gill.redis.core.Redis;
 import com.gill.user.domain.Permissions;
 import com.gill.user.domain.Relation;
 import com.gill.user.domain.Roles;
-import com.gill.user.mappers.ResourceMapper;
+import com.gill.user.entity.PermissionEntity;
+import com.gill.user.entity.PermissionRelationshipsEntity;
+import com.gill.user.entity.RoleEntity;
+import com.gill.user.entity.RolePermissionsEntity;
+import com.gill.user.entity.RoleRelationshipsEntity;
+import com.gill.user.entity.UserRolesEntity;
+import com.gill.user.mapper.ResourceMapper;
+import com.gill.user.service.mapperservice.PermissionRelationshipsService;
+import com.gill.user.service.mapperservice.PermissionService;
+import com.gill.user.service.mapperservice.RolePermissionsService;
+import com.gill.user.service.mapperservice.RoleRelationshipsService;
+import com.gill.user.service.mapperservice.RoleService;
+import com.gill.user.service.mapperservice.UserRolesService;
 import com.gill.web.exception.WebException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,8 +30,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice.Return;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -44,6 +53,24 @@ public class ResourceService {
     @Autowired
     private ResourceMapper resourceMapper;
 
+    @Autowired
+    private UserRolesService userRolesService;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private RoleRelationshipsService roleRelationshipsService;
+
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private PermissionRelationshipsService permissionRelationshipService;
+
+    @Autowired
+    private RolePermissionsService rolePermissionService;
+
     /**
      * 解析并插入角色与权限数据
      *
@@ -61,29 +88,30 @@ public class ResourceService {
         resourceMapper.truncateRolePermissions();
 
         // 插入角色数据
-        List<Role> newRoles = roles.getRoles();
-        resourceMapper.insertRoles(newRoles);
+        List<RoleEntity> newRoles = roles.getRoles();
+        roleService.saveBatch(newRoles);
 
         // 分析并插入角色关系数据
-        List<RoleRelationship> newRoleRelations = resolveRoleRelations(roles.getRoleRelations());
-        resourceMapper.insertRoleRelationships(newRoleRelations);
+        List<RoleRelationshipsEntity> newRoleRelations = resolveRoleRelations(
+            roles.getRoleRelations());
+        roleRelationshipsService.saveBatch(newRoleRelations);
 
         // 插入权限数据
-        List<Permission> newPermissions = permissions.getPermissions();
-        resourceMapper.insertPermissions(newPermissions);
+        List<PermissionEntity> newPermissions = permissions.getPermissions();
+        permissionService.saveBatch(newPermissions);
 
         // 分析并插入权限关系数据
-        List<PermissionRelationship> newPermissionRelations = resolvePermissionRelations(
+        List<PermissionRelationshipsEntity> newPermissionRelations = resolvePermissionRelations(
             permissions.getPermissions(), permissions.getRelations());
-        resourceMapper.insertPermissionRelationships(newPermissionRelations);
+        permissionRelationshipService.saveBatch(newPermissionRelations);
 
         // 插入角色权限数据
-        List<RolePermission> newRolePermissions = resolveRolePermissions(roles.getRoleRelations(),
-            roles.getRolePermissions(), permissions.getPermissions());
-        resourceMapper.insertRolePermissions(newRolePermissions);
+        List<RolePermissionsEntity> newRolePermissions = resolveRolePermissions(
+            roles.getRoleRelations(), roles.getRolePermissions(), permissions.getPermissions());
+        rolePermissionService.saveBatch(newRolePermissions);
     }
 
-    private static Map<String, Set<String>> transferToAdjacencyMap(List<Relation> roleRelations) {
+    private static Map<String, Set<String>> toAdjacencyMap(List<Relation> roleRelations) {
         Map<String, Set<String>> adjacencyMap = new HashMap<>();
         for (Relation relation : roleRelations) {
             String roleId = relation.getSubject();
@@ -124,16 +152,16 @@ public class ResourceService {
         return false;
     }
 
-    private List<RoleRelationship> resolveRoleRelations(List<Relation> roleRelations) {
-        Map<String, Set<String>> adjacencyMap = transferToAdjacencyMap(roleRelations);
+    private List<RoleRelationshipsEntity> resolveRoleRelations(List<Relation> roleRelations) {
+        Map<String, Set<String>> adjacencyMap = toAdjacencyMap(roleRelations);
         if (checkCircle(adjacencyMap)) {
             throw new WebException(HttpStatus.BAD_REQUEST, "角色发现环状关系");
         }
-        List<RoleRelationship> roleRelationships = new ArrayList<>();
+        List<RoleRelationshipsEntity> roleRelationships = new ArrayList<>();
         for (Entry<String, Set<String>> entry : adjacencyMap.entrySet()) {
             String roleId = entry.getKey();
             for (String child : entry.getValue()) {
-                RoleRelationship relationship = new RoleRelationship();
+                RoleRelationshipsEntity relationship = new RoleRelationshipsEntity();
                 relationship.setRoleId(roleId);
                 relationship.setChildId(child);
                 roleRelationships.add(relationship);
@@ -142,20 +170,20 @@ public class ResourceService {
         return roleRelationships;
     }
 
-    private List<PermissionRelationship> resolvePermissionRelations(List<Permission> permissions,
-        List<Relation> relations) {
-        Map<String, Set<String>> adjacencyMap = transferToAdjacencyMap(relations);
+    private List<PermissionRelationshipsEntity> resolvePermissionRelations(
+        List<PermissionEntity> permissions, List<Relation> relations) {
+        Map<String, Set<String>> adjacencyMap = toAdjacencyMap(relations);
         if (checkCircle(adjacencyMap)) {
             throw new WebException(HttpStatus.BAD_REQUEST, "权限发现环状关系");
         }
-        List<PermissionRelationship> permissionRelationships = new ArrayList<>();
+        List<PermissionRelationshipsEntity> permissionRelationships = new ArrayList<>();
 
         // self
-        for (Permission permission : permissions) {
-            PermissionRelationship self = new PermissionRelationship();
+        for (PermissionEntity permission : permissions) {
+            PermissionRelationshipsEntity self = new PermissionRelationshipsEntity();
             self.setAncestorId(permission.getId());
             self.setDescendantId(permission.getId());
-            self.setAdjoin(0);
+            self.setAdjoin(RelationType.SELF.getCode());
             permissionRelationships.add(self);
         }
 
@@ -169,7 +197,7 @@ public class ResourceService {
     }
 
     private Set<String> dfsBuildPermissionRelations(Map<String, Set<String>> adjacencyMap,
-        String ancestor, List<PermissionRelationship> permissionRelations,
+        String ancestor, List<PermissionRelationshipsEntity> permissionRelations,
         Map<String, Set<String>> cache) {
         Set<String> descendants = cache.get(ancestor);
         if (descendants != null) {
@@ -187,8 +215,9 @@ public class ResourceService {
 
         // 子孙权限添加至列表
         for (String descendant : descendants) {
-            int adjoin = children.contains(descendant) ? 1 : 2;
-            PermissionRelationship relationship = new PermissionRelationship();
+            int adjoin = children.contains(descendant) ? RelationType.CHILD.getCode()
+                : RelationType.DESCENDANT.getCode();
+            PermissionRelationshipsEntity relationship = new PermissionRelationshipsEntity();
             relationship.setAncestorId(ancestor);
             relationship.setDescendantId(descendant);
             relationship.setAdjoin(adjoin);
@@ -199,13 +228,13 @@ public class ResourceService {
     }
 
 
-    private List<RolePermission> resolveRolePermissions(List<Relation> roleRelations,
-        List<Relation> rolePermissions, List<Permission> permissions) {
-        List<RolePermission> rps = new ArrayList<>();
-        Map<String, Set<String>> roleAdjMap = transferToAdjacencyMap(roleRelations);
-        Map<String, Set<String>> roleAdjPermissionsMap = transferToAdjacencyMap(rolePermissions);
+    private List<RolePermissionsEntity> resolveRolePermissions(List<Relation> roleRelations,
+        List<Relation> rolePermissions, List<PermissionEntity> permissions) {
+        List<RolePermissionsEntity> rps = new ArrayList<>();
+        Map<String, Set<String>> roleAdjMap = toAdjacencyMap(roleRelations);
+        Map<String, Set<String>> roleAdjPermissionsMap = toAdjacencyMap(rolePermissions);
         Set<String> permissionIds = permissions.stream()
-            .map(Permission::getId)
+            .map(PermissionEntity::getId)
             .collect(Collectors.toSet());
 
         Map<String, Set<String>> cache = new HashMap<>(256);
@@ -217,7 +246,7 @@ public class ResourceService {
     }
 
     private Set<String> dfsFindRoleDescendants(Map<String, Set<String>> adjacencyMap,
-        Set<String> permissionIds, String subject, List<RolePermission> rps,
+        Set<String> permissionIds, String subject, List<RolePermissionsEntity> rps,
         Map<String, Set<String>> roleAdjPermissions, Map<String, Set<String>> cache) {
         Set<String> descendants = cache.get(subject);
         if (descendants != null) {
@@ -243,8 +272,9 @@ public class ResourceService {
             if (!permissionIds.contains(permission)) {
                 continue;
             }
-            int self = selfPermissions.contains(permission) ? 1 : 2;
-            RolePermission rp = new RolePermission();
+            int self = selfPermissions.contains(permission) ? RelationType.CHILD.getCode()
+                : RelationType.DESCENDANT.getCode();
+            RolePermissionsEntity rp = new RolePermissionsEntity();
             rp.setRoleId(subject);
             rp.setPermissionId(permission);
             rp.setSelf(self);
@@ -261,7 +291,7 @@ public class ResourceService {
      * @param userId 用户ID
      * @return set 权限集合
      */
-    public Set<String> refreshUserPermissions(int userId) {
+    public Set<String> refreshUserPermissions(long userId) {
         Set<String> permissions = resourceMapper.queryPermissionsByUserId(userId);
         redis.clear(UserProperties.getRedisUserResourceKey(userId));
         redis.sadd(UserProperties.getRedisUserResourceKey(userId), permissions);
@@ -274,7 +304,7 @@ public class ResourceService {
      * @param userId 用户ID
      * @return set 权限集合
      */
-    public Set<String> getUserPermissions(int userId) {
+    public Set<String> getUserPermissions(long userId) {
         Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(userId));
         if (permissions.isEmpty()) {
             return refreshUserPermissions(userId);
@@ -288,8 +318,15 @@ public class ResourceService {
      * @param userId 用户ID
      * @param roles  角色
      */
-    public void addUserRoles(int userId, Set<String> roles) {
-        resourceMapper.insertUserRoles(userId, roles);
+    public void addUserRoles(long userId, Set<String> roles) {
+        List<UserRolesEntity> entities = new ArrayList<>();
+        for (String role : roles) {
+            UserRolesEntity entity = new UserRolesEntity();
+            entity.setUserId(userId);
+            entity.setRoleId(role);
+            entities.add(entity);
+        }
+        userRolesService.saveBatch(entities);
     }
 
     /**
@@ -298,8 +335,22 @@ public class ResourceService {
      * @param userId 用户ID
      * @param roles  角色
      */
-    public void removeUserRoles(int userId, Set<String> roles) {
-        resourceMapper.deleteUserRoles(userId, roles);
+    public void removeUserRoles(long userId, Set<String> roles) {
+        Set<Integer> ids = userRolesService.lambdaQuery()
+            .select(UserRolesEntity::getId)
+            .eq(UserRolesEntity::getUserId, userId)
+            .in(UserRolesEntity::getRoleId, roles)
+            .isNull(UserRolesEntity::getDeleteTime)
+            .list()
+            .stream()
+            .map(UserRolesEntity::getId)
+            .collect(Collectors.toSet());
+
+        userRolesService.lambdaUpdate()
+            .set(UserRolesEntity::getDeleteTime, LocalDateTime.now())
+            .set(UserRolesEntity::getDeleted, true)
+            .in(UserRolesEntity::getId, ids)
+            .update();
     }
 
     /**
@@ -309,7 +360,7 @@ public class ResourceService {
      * @return boolean
      */
     public boolean containsRole(String role) {
-        return resourceMapper.containsRole(role);
+        return roleService.lambdaQuery().eq(RoleEntity::getId, role).exists();
     }
 
     /**
@@ -318,6 +369,38 @@ public class ResourceService {
      * @return 所有角色
      */
     public List<Role> queryAllRoles() {
-        return resourceMapper.queryAllRoles();
+        List<RoleEntity> entities = roleService.list();
+        return entities.stream().map(entity -> {
+            Role role = new Role();
+            role.setId(entity.getId());
+            role.setName(entity.getName());
+            role.setDescription(entity.getDescription());
+            return role;
+        }).collect(Collectors.toList());
+    }
+
+    @Getter
+    public enum RelationType {
+
+        /**
+         * 自己
+         */
+        SELF(0),
+
+        /**
+         * 孩子节点
+         */
+        CHILD(1),
+
+        /**
+         * 孙节点
+         */
+        DESCENDANT(2);
+
+        private final int code;
+
+        RelationType(int code) {
+            this.code = code;
+        }
     }
 }

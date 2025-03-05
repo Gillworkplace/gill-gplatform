@@ -5,11 +5,11 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.gill.api.domain.UserProperties;
 import com.gill.user.controller.ResourceController;
-import com.gill.user.dto.AdminRegisterParam;
 import com.gill.user.dto.CurrentUser;
-import com.gill.user.dto.LoginParam;
-import com.gill.user.dto.RegisterParam;
 import com.gill.user.dto.UserInfo;
+import com.gill.user.dto.param.AdminRegisterParam;
+import com.gill.user.dto.param.LoginParam;
+import com.gill.user.dto.param.RegisterParam;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
@@ -61,7 +61,6 @@ public class UserTests extends AbstractTest {
     public UserTests(ResourceController resourceController, UserService userService) {
         super.resourceController = resourceController;
         this.userService = userService;
-        userService.refreshRedisUserId();
     }
 
     @Transactional
@@ -84,6 +83,7 @@ public class UserTests extends AbstractTest {
         registerParam.setPassword(password);
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
+        registerParam.setInviteKey("12345678");
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

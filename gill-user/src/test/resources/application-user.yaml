@@ -22,6 +22,22 @@ datasources:
       username: sa
       password:
       driver-class-name: org.h2.Driver
+      druid:
+        filters: stat
+        stat:
+          log-slow-sql: true
+          merge-sql: true
+          slow-sql-millis: 0
+          slow-sql-log-level: WARN
+
+mybatis-plus:
+  long-sql-threshold: 0
 
 interceptor:
   csrf: false
+
+dubbo:
+  registry:
+    address: zookeeper://127.0.0.1:2181
+  application:
+    qos-enable: false

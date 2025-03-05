@@ -38,7 +38,7 @@ public abstract class PermissionInterceptor implements HandlerInterceptor {
             if (ignore != null) {
                 return true;
             }
-            Integer uid = (Integer) request.getAttribute(UserProperties.USER_ID);
+            Long uid = (Long) request.getAttribute(UserProperties.USER_ID);
             OperationPermission permission = method.getAnnotation(OperationPermission.class);
             if (permission == null) {
                 return true;

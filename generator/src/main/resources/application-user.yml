@@ -1,0 +1,5 @@
+db:
+  database: user
+  module: gill-user
+  base-package: com.gill.user
+  tables:

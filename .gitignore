@@ -36,3 +36,5 @@ build/
 **/*-self
 **.log
 **/gc.*
+**/output
+**/logs

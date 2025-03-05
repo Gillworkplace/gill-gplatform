@@ -1,6 +1,7 @@
 package com.gill.user.domain;
 
 import com.gill.api.model.Role;
+import com.gill.user.entity.RoleEntity;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import lombok.Setter;
 @Setter
 public class Roles {
 
-    private List<Role> roles = Collections.emptyList();
+    private List<RoleEntity> roles = Collections.emptyList();
 
     private List<Relation> roleRelations = Collections.emptyList();
 

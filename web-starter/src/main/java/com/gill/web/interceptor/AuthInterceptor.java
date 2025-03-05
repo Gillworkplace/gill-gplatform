@@ -2,6 +2,7 @@ package com.gill.web.interceptor;
 
 import com.gill.api.domain.UserProperties;
 import com.gill.api.service.user.IUserService;
+import com.gill.common.threadlocal.ThreadLocals;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.exception.WebException;
 import com.gill.web.util.RequestUtil;
@@ -41,9 +42,9 @@ public abstract class AuthInterceptor implements HandlerInterceptor {
             if (ignore != null) {
                 return true;
             }
-            Integer uid = Optional.ofNullable(
+            Long uid = Optional.ofNullable(
                     RequestUtil.getParamFromRequestParamOrCookie(request, UserProperties.USER_ID))
-                .map(Integer::parseInt)
+                .map(Long::parseLong)
                 .orElse(null);
             String token = RequestUtil.getParamFromRequestParamOrCookie(request,
                 UserProperties.TOKEN_ID);
@@ -51,9 +52,20 @@ public abstract class AuthInterceptor implements HandlerInterceptor {
                 throw new WebException(HttpStatus.UNAUTHORIZED, "unauthorized");
             }
             getUserService().checkToken(uid, token);
+
+            ThreadLocals.USER_ID.set(uid);
+            ThreadLocals.TOKEN.set(token);
+
             request.setAttribute(UserProperties.USER_ID, uid);
             request.setAttribute(UserProperties.TOKEN_ID, token);
         }
         return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
+        Object handler, Exception ex) throws Exception {
+        ThreadLocals.USER_ID.remove();
+        ThreadLocals.TOKEN.remove();
     }
 }

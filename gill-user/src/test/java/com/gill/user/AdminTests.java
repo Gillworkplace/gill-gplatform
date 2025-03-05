@@ -5,8 +5,8 @@ import cn.hutool.core.util.RandomUtil;
 import com.gill.api.common.SelectorData;
 import com.gill.api.model.Role;
 import com.gill.user.controller.ResourceController;
-import com.gill.user.dto.AdminRegisterParam;
-import com.gill.user.dto.LoginParam;
+import com.gill.user.dto.param.AdminRegisterParam;
+import com.gill.user.dto.param.LoginParam;
 import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response.ResultWrapper;
@@ -38,13 +38,12 @@ public class AdminTests extends AbstractTest {
     @Autowired
     private CaptchaService captchaService;
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
-    public AdminTests(ResourceController resourceController, UserService userService) {
+    public AdminTests(ResourceController resourceController) {
         super.resourceController = resourceController;
-        this.userService = userService;
-        userService.refreshRedisUserId();
     }
 
     @Order(0)
@@ -98,6 +97,7 @@ public class AdminTests extends AbstractTest {
         registerParam.setDescription(description);
         registerParam.setNickName(nickname);
         registerParam.setRole("role.normal");
+        registerParam.setInviteKey("12345678");
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/admin/register", registerParam, ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

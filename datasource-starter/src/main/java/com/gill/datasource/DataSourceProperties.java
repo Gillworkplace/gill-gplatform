@@ -1,6 +1,6 @@
 package com.gill.datasource;
 
-import com.alibaba.druid.pool.DruidDataSource;
+import com.gill.datasource.config.DruidConfig;
 import com.zaxxer.hikari.HikariConfig;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record DataSourceProperties(@DefaultValue("false") boolean isPrimary,
                                    @DefaultValue("true") boolean enabled, String driverClassName,
                                    String url, String username, String password, String pwdFile,
-                                   String decryptionName, DruidDataSource druid,
+                                   String decryptionName, DruidConfig druid,
                                    HikariConfig hikari) {
 
 }

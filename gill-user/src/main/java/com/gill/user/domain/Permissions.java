@@ -1,6 +1,6 @@
 package com.gill.user.domain;
 
-import com.gill.api.model.Permission;
+import com.gill.user.entity.PermissionEntity;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 public class Permissions {
 
-    private List<Permission> permissions = Collections.emptyList();
+    private List<PermissionEntity> permissions = Collections.emptyList();
 
     private List<Relation> relations = Collections.emptyList();
 }

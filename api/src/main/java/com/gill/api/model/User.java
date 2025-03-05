@@ -1,108 +1,50 @@
 package com.gill.api.model;
 
-import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
-public class User implements Serializable {
-    private Integer id;
+@Getter
+@Setter
+public class User {
 
+    /**
+     * 用户ID
+     */
+    private Long id;
+
+    /**
+     * 用户名
+     */
     private String username;
 
-    private String encryptPassword;
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
 
-    private String salt;
+    /**
+     * 登录时间
+     */
+    private LocalDateTime loginTime;
 
-    private Date createTime;
-
-    private Date loginTime;
-
+    /**
+     * 昵称
+     */
     private String nickName;
 
+    /**
+     * 头像
+     */
     private String avatar;
 
+    /**
+     * 个人简介
+     */
     private String description;
 
+    /**
+     * 首页地址
+     */
     private String home;
-
-    private static final long serialVersionUID = 1L;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username == null ? null : username.trim();
-    }
-
-    public String getEncryptPassword() {
-        return encryptPassword;
-    }
-
-    public void setEncryptPassword(String encryptPassword) {
-        this.encryptPassword = encryptPassword == null ? null : encryptPassword.trim();
-    }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt == null ? null : salt.trim();
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getLoginTime() {
-        return loginTime;
-    }
-
-    public void setLoginTime(Date loginTime) {
-        this.loginTime = loginTime;
-    }
-
-    public String getNickName() {
-        return nickName;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickName = nickName == null ? null : nickName.trim();
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar == null ? null : avatar.trim();
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description == null ? null : description.trim();
-    }
-
-    public String getHome() {
-        return home;
-    }
-
-    public void setHome(String home) {
-        this.home = home == null ? null : home.trim();
-    }
 }

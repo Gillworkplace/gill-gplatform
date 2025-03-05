@@ -43,7 +43,7 @@ public class UidTidCheckInterceptor implements WebSocketInterceptor {
                 return false;
             }
             attributes.put(UserProperties.USER_ID, uid);
-            userService.checkToken(Integer.valueOf(uid), tid);
+            userService.checkToken(Long.valueOf(uid), tid);
             return true;
         }
         return false;
