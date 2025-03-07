@@ -1,5 +1,5 @@
 # 改成云镜像文件路径或根据gill-image项目进行构建 https://github.com/Gillworkplace/gill-image
-FROM gill-java:1.17.0
+FROM registry.cn-guangzhou.aliyuncs.com/gill-gplatform/gill-java:1.17.0
 
 MAINTAINER gill<912343041@qq.com>
 

@@ -37,11 +37,6 @@
       <artifactId>datasource-starter</artifactId>
       <version>${module.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.gill</groupId>
-      <artifactId>api</artifactId>
-      <version>${module.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>com.googlecode.aviator</groupId>
