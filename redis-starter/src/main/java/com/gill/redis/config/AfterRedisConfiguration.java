@@ -38,7 +38,7 @@ public class AfterRedisConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = {"dLock"})
-    public DLock dLock(RedissonClient client, @Value("${spring.application.name}") String appName) {
+    public DLock dLock(RedissonClient client, @Value("${spring.application.name:default}") String appName) {
         return new RedissonDLockAdapter(client, appName);
     }
 }

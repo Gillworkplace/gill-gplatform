@@ -98,7 +98,16 @@ public interface Redis {
      * @param key key
      * @param map map
      */
-    void mset(@NonNull String key, Map<String, Object> map);
+    void hset(@NonNull String key, Map<String, Object> map);
+
+    /**
+     * mset
+     *
+     * @param key     key
+     * @param map     map
+     * @param expired 过期时间 毫秒
+     */
+    void hset(@NonNull String key, Map<String, Object> map, long expired);
 
     /**
      * 设置map
@@ -107,7 +116,7 @@ public interface Redis {
      * @param k   k
      * @param v   v
      */
-    void mset(@NonNull String key, String k, Object v);
+    void hset(@NonNull String key, String k, Object v);
 
     /**
      * 获取map
@@ -116,7 +125,7 @@ public interface Redis {
      * @return map
      */
     @NonNull
-    Map<String, Object> mget(@NonNull String key);
+    Map<String, Object> hget(@NonNull String key);
 
     /**
      * 获取map
@@ -127,7 +136,7 @@ public interface Redis {
      * @return map
      */
     @NonNull
-    <T> Map<String, T> mget(@NonNull String key, Class<T> clazz);
+    <T> Map<String, T> hget(@NonNull String key, Class<T> clazz);
 
     /**
      * 获取map
@@ -137,7 +146,7 @@ public interface Redis {
      * @return v
      */
     @NonNull
-    String mget(@NonNull String key, String k);
+    String hget(@NonNull String key, String k);
 
     /**
      * 获取map
@@ -149,7 +158,7 @@ public interface Redis {
      * @return v
      */
     @Nullable
-    <T> T mget(@NonNull String key, String k, Class<T> clazz);
+    <T> T hget(@NonNull String key, String k, Class<T> clazz);
 
     /**
      * 获取map
@@ -161,7 +170,7 @@ public interface Redis {
      * @return vs
      */
     @NonNull
-    <T> Map<String, T> mget(@NonNull String key, Set<String> ks, Class<T> clazz);
+    <T> Map<String, T> hget(@NonNull String key, Set<String> ks, Class<T> clazz);
 
     /**
      * 获取map
@@ -171,7 +180,7 @@ public interface Redis {
      * @return vs
      */
     @NonNull
-    Map<String, String> mget(@NonNull String key, Set<String> ks);
+    Map<String, String> hget(@NonNull String key, Set<String> ks);
 
     /**
      * 获取set
@@ -199,6 +208,26 @@ public interface Redis {
      * @return cnt
      */
     long sadd(@NonNull String key, Collection<String> vals);
+
+    /**
+     * set添加values
+     *
+     * @param key     key
+     * @param expired 过期时间 毫秒
+     * @param vals    values
+     * @return cnt
+     */
+    long sadd(@NonNull String key, long expired, String... vals);
+
+    /**
+     * set添加values
+     *
+     * @param key     key
+     * @param vals    values
+     * @param expired 过期时间 毫秒
+     * @return cnt
+     */
+    long sadd(@NonNull String key, Collection<String> vals, long expired);
 
     /**
      * set 删除values
@@ -402,4 +431,12 @@ public interface Redis {
      * @param <T>     type
      */
     <T> void lset(@NonNull String key, int index, T element, Class<T> clazz);
+
+    /**
+     * 获取key的剩余时间
+     *
+     * @param key key
+     * @return 剩余时间秒
+     */
+    long ttl(@NonNull String key);
 }

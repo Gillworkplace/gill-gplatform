@@ -4,8 +4,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.gill.common.exception.ExceptionUtil;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,8 +16,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.client.RedisException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.lang.NonNull;
 
 /**
@@ -52,8 +57,8 @@ public class RedisTemplateAdapter implements Redis {
             }
             return JSONUtil.toBean(jsonStr, clazz);
         } catch (Exception e) {
-            log.error("redis parse obj to {}, failed, element: {}", clazz.getCanonicalName(),
-                jsonStr);
+            log.error("redis parse obj to {}, failed, element: {}, ex: {}",
+                clazz.getCanonicalName(), jsonStr, ExceptionUtil.getAllMessage(e));
         }
         return null;
     }
@@ -63,6 +68,16 @@ public class RedisTemplateAdapter implements Redis {
             return Collections.emptyList();
         }
         return strings.stream().map(str -> cast(str, clazz)).toList();
+    }
+
+    private static String toStr(Object value) {
+        if (value == null) {
+            return "";
+        } else if (value instanceof String str) {
+            return str;
+        } else {
+            return JSONUtil.toJsonStr(value);
+        }
     }
 
     /**
@@ -126,6 +141,8 @@ public class RedisTemplateAdapter implements Redis {
         String valueStr;
         if (value instanceof String str) {
             valueStr = str;
+        } else if (value instanceof Number number) {
+            valueStr = String.valueOf(number);
         } else {
             valueStr = JSONUtil.toJsonStr(value);
         }
@@ -202,7 +219,7 @@ public class RedisTemplateAdapter implements Redis {
      * @param map map
      */
     @Override
-    public void mset(@NonNull String key, Map<String, Object> map) {
+    public void hset(@NonNull String key, Map<String, Object> map) {
         if (CollectionUtil.isEmpty(map)) {
             return;
         }
@@ -218,6 +235,49 @@ public class RedisTemplateAdapter implements Redis {
         redisTemplate.opsForHash().putAll(key, serializedMap);
     }
 
+    @Override
+    public void hset(@NonNull String key, Map<String, Object> map, long expired) {
+        if (CollectionUtil.isEmpty(map)) {
+            return;
+        }
+        DefaultRedisScript<String> script = new DefaultRedisScript<>("""
+            if #KEYS ~= 1 or #ARGV < 3 then
+               return "ERROR: Invalid number of arguments"
+            end
+            
+            local key = KEYS[1]
+            local expireTime = tonumber(ARGV[#ARGV])
+            
+            if expireTime == nil or expireTime <= 0 then
+               return "ERROR: Invalid expire time"
+            end
+            
+            local hsetArgs = {}
+            for i = 1, #ARGV - 1 do
+               table.insert(hsetArgs, ARGV[i])
+            end
+            
+            redis.call('HSET', key, unpack(hsetArgs))
+            redis.call('PEXPIRE', key, expireTime)
+            return "OK"
+            """, String.class);
+        List<String> values = new ArrayList<>(map.size() * 2 + 1);
+        for (Entry<String, Object> entry : map.entrySet()) {
+            String field = entry.getKey();
+            String value = toStr(entry.getValue());
+            values.add(field);
+            values.add(value);
+        }
+        values.add(String.valueOf(expired));
+        String ret = redisTemplate.execute(script, Collections.singletonList(key),
+            values.toArray());
+        if ("OK".equals(ret)) {
+            return;
+        }
+        throw new RedisException(ret);
+    }
+
+
     /**
      * 设置map
      *
@@ -226,7 +286,7 @@ public class RedisTemplateAdapter implements Redis {
      * @param v   v
      */
     @Override
-    public void mset(@NonNull String key, String k, Object v) {
+    public void hset(@NonNull String key, String k, Object v) {
         if (v == null) {
             redisTemplate.opsForHash().delete(key, k);
         }
@@ -247,7 +307,7 @@ public class RedisTemplateAdapter implements Redis {
      */
     @NonNull
     @Override
-    public Map<String, Object> mget(@NonNull String key) {
+    public Map<String, Object> hget(@NonNull String key) {
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         if (CollectionUtil.isEmpty(entries)) {
             return Collections.emptyMap();
@@ -269,7 +329,7 @@ public class RedisTemplateAdapter implements Redis {
      */
     @NonNull
     @Override
-    public <T> Map<String, T> mget(@NonNull String key, Class<T> clazz) {
+    public <T> Map<String, T> hget(@NonNull String key, Class<T> clazz) {
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         if (CollectionUtil.isEmpty(entries)) {
             return Collections.emptyMap();
@@ -292,7 +352,7 @@ public class RedisTemplateAdapter implements Redis {
      */
     @NonNull
     @Override
-    public String mget(@NonNull String key, String k) {
+    public String hget(@NonNull String key, String k) {
         return Optional.ofNullable(redisTemplate.opsForHash().get(key, k))
             .map(String::valueOf)
             .orElse("");
@@ -307,7 +367,7 @@ public class RedisTemplateAdapter implements Redis {
      * @return v
      */
     @Override
-    public <T> T mget(@NonNull String key, String k, Class<T> clazz) {
+    public <T> T hget(@NonNull String key, String k, Class<T> clazz) {
         Object val = redisTemplate.opsForHash().get(key, k);
         if (val == null) {
             return null;
@@ -324,7 +384,7 @@ public class RedisTemplateAdapter implements Redis {
      */
     @NonNull
     @Override
-    public <T> Map<String, T> mget(@NonNull String key, Set<String> ks, Class<T> clazz) {
+    public <T> Map<String, T> hget(@NonNull String key, Set<String> ks, Class<T> clazz) {
         List<Object> ksList = new ArrayList<>(ks);
         List<Object> values = redisTemplate.opsForHash().multiGet(key, ksList);
         Map<String, T> map = new HashMap<>(ksList.size());
@@ -345,7 +405,7 @@ public class RedisTemplateAdapter implements Redis {
      */
     @NonNull
     @Override
-    public Map<String, String> mget(@NonNull String key, Set<String> ks) {
+    public Map<String, String> hget(@NonNull String key, Set<String> ks) {
         List<Object> ksList = new ArrayList<>(ks);
         List<Object> values = redisTemplate.opsForHash().multiGet(key, ksList);
         Map<String, String> map = new HashMap<>(ksList.size());
@@ -401,6 +461,43 @@ public class RedisTemplateAdapter implements Redis {
         }
         Long add = redisTemplate.opsForSet().add(key, vals.toArray(new String[0]));
         return Optional.ofNullable(add).orElse(0L);
+    }
+
+    @Override
+    public long sadd(String key, long expired, String... vals) {
+        return sadd(key, Arrays.asList(vals), expired);
+    }
+
+    @Override
+    public long sadd(String key, Collection<String> vals, long expired) {
+        if (CollectionUtil.isEmpty(vals)) {
+            return 0;
+        }
+        List<String> values = new ArrayList<>(vals.size() + 1);
+        values.addAll(vals);
+        values.add(String.valueOf(expired));
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>("""
+            if #KEYS ~= 1 or #ARGV < 2 then
+               return -1
+            end
+            
+            local key = KEYS[1]
+            local expireTime = tonumber(ARGV[#ARGV])
+            
+            if expireTime == nil or expireTime <= 0 then
+               return -1
+            end
+            
+            local args = {}
+            for i = 1, #ARGV - 1 do
+               table.insert(args, ARGV[i])
+            end
+            
+            local ret = redis.call('SADD', key, unpack(args))
+            redis.call('PEXPIRE', key, expireTime)
+            return ret
+            """, Long.class);
+        return redisTemplate.execute(script, Collections.singletonList(key), values.toArray());
     }
 
     /**
@@ -682,5 +779,10 @@ public class RedisTemplateAdapter implements Redis {
     public <T> void lset(@NonNull String key, int index, T element, Class<T> clazz) {
         String str = JSONUtil.toJsonStr(element);
         lset(key, index, str);
+    }
+
+    @Override
+    public long ttl(@NonNull String key) {
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
     }
 }

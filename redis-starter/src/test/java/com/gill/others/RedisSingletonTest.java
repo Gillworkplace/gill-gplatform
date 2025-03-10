@@ -5,6 +5,7 @@ import com.gill.common.api.DLock;
 import com.gill.redis.core.Redis;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -134,74 +135,80 @@ public class RedisSingletonTest {
     }
 
     @Test
-    public void test_mset1() {
-        Assertions.assertDoesNotThrow(() -> redis.mset("map1", "key", "value"));
+    public void test_hset1() {
+        Assertions.assertDoesNotThrow(() -> redis.hset("map1", "key", "value"));
     }
 
     @Test
-    public void test_mset2() {
+    public void test_hset2() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
         Map<String, Object> map = new HashMap<>();
         map.put("k1", "v1");
         map.put("k2", bean);
-        Assertions.assertDoesNotThrow(() -> redis.mset("map2", map));
+        Assertions.assertDoesNotThrow(() -> redis.hset("map2", map));
     }
 
     @Test
-    public void test_mset3() {
-        Assertions.assertDoesNotThrow(() -> redis.mset("map3", new HashMap<>()));
+    public void test_hset3() {
+        Assertions.assertDoesNotThrow(() -> redis.hset("map3", new HashMap<>()));
     }
 
     @Test
-    public void test_mget1() {
-        redis.mset("map4", "key", "value");
-        Assertions.assertEquals("value", redis.mget("map4", "key"));
+    public void test_hget1() {
+        redis.hset("map4", "key", "value");
+        Assertions.assertEquals("value", redis.hget("map4", "key"));
     }
 
     @Test
-    public void test_mget2() {
+    public void test_hget2() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
-        redis.mset("map5", "key", bean);
-        Assertions.assertEquals(bean, redis.mget("map5", "key", Bean.class));
+        redis.hset("map5", "key", bean);
+        Assertions.assertEquals(bean, redis.hget("map5", "key", Bean.class));
     }
 
     @Test
-    public void test_mget3() {
-        redis.mset("map6", "key", "value");
-        Assertions.assertEquals(1, redis.mget("map6").size());
+    public void test_hget3() {
+        redis.hset("map6", "key", "value");
+        Assertions.assertEquals(1, redis.hget("map6").size());
     }
 
     @Test
-    public void test_mget4() {
+    public void test_hget4() {
         Bean bean = new Bean();
         bean.setName("zzy");
         bean.setAge(18);
-        redis.mset("map7", "key", bean);
-        Assertions.assertEquals(1, redis.mget("map7", Bean.class).size());
+        redis.hset("map7", "key", bean);
+        Assertions.assertEquals(1, redis.hget("map7", Bean.class).size());
     }
 
     @Test
-    public void test_mget5() {
-        redis.mset("map8", "k1", "v1");
-        redis.mset("map8", "k2", "v2");
-        Assertions.assertEquals(2, redis.mget("map8", Set.of("k1", "k2")).size());
+    public void test_hget5() {
+        redis.hset("map8", "k1", "v1");
+        redis.hset("map8", "k2", "v2");
+        Assertions.assertEquals(2, redis.hget("map8", Set.of("k1", "k2")).size());
     }
 
     @Test
-    public void test_mget6() {
+    public void test_hget6() {
         Bean bean1 = new Bean();
         bean1.setName("zzy");
         bean1.setAge(18);
         Bean bean2 = new Bean();
         bean2.setName("zzzy");
         bean2.setAge(19);
-        redis.mset("map9", "k1", bean1);
-        redis.mset("map9", "k2", bean2);
-        Assertions.assertEquals(2, redis.mget("map9", Set.of("k1", "k2"), Bean.class).size());
+        redis.hset("map9", "k1", bean1);
+        redis.hset("map9", "k2", bean2);
+        Assertions.assertEquals(2, redis.hget("map9", Set.of("k1", "k2"), Bean.class).size());
+    }
+
+    @Test
+    public void test_hsetEx() {
+        redis.hset("map10", Map.of("test", "test"), 10 * 1000L);
+        Assertions.assertTrue(redis.ttl("map10") > 0);
     }
 
     @Test
@@ -263,5 +270,11 @@ public class RedisSingletonTest {
     public void test_scount() {
         redis.sadd("set9", Arrays.asList("1", "2"));
         Assertions.assertEquals(2, redis.scount("set9"));
+    }
+
+    @Test
+    public void test_saddEx() {
+        redis.sadd("set10", List.of("test"), 10 * 1000L);
+        Assertions.assertTrue(redis.ttl("set10") > 0);
     }
 }

@@ -1,3 +1,7 @@
+spring:
+  application:
+    name: "test-redis-cluster"
+
 redis:
   nodes:
     - 127.0.0.1:11111
