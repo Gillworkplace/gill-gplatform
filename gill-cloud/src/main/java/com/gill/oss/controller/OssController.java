@@ -7,7 +7,7 @@ import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.sts20150401.models.AssumeRoleResponseBody.AssumeRoleResponseBodyCredentials;
 import com.gill.oss.config.OssConfig;
 import com.gill.oss.config.OssProperty;
-import com.gill.oss.service.OssService;
+import com.gill.oss.service.impl.OssService;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.api.Response;
 import java.util.List;
@@ -84,5 +84,15 @@ public class OssController {
     @GetMapping("/avatar/default")
     public Response<List<String>> getDefaultAvatarList() {
         return Response.success(ossService.getDefaultAvatarList()).build();
+    }
+
+    /**
+     * 获取25个随机头像
+     *
+     * @return 头像列表
+     */
+    @GetMapping("/avatar/random")
+    public Response<List<String>> getRandomDefaultAvatarList() {
+        return Response.success(ossService.getRandomAvatarList()).build();
     }
 }
