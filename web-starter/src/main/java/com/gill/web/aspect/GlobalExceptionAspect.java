@@ -1,5 +1,6 @@
 package com.gill.web.aspect;
 
+import com.gill.common.exception.BusinessException;
 import com.gill.common.exception.ExceptionUtil;
 import com.gill.dubbo.exception.ServiceException;
 import com.gill.web.api.Response;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.rpc.RpcException;
 import org.springframework.context.MessageSourceResolvable;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.method.ParameterValidationResult;
@@ -28,6 +30,12 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 @Slf4j
 public class GlobalExceptionAspect {
 
+    @ExceptionHandler(value = BusinessException.class)
+    public Response<Object> handleBusinessEx(BusinessException ex) {
+        log.error(ExceptionUtil.getAllMessage(ex));
+        return Response.failed(HttpStatus.BAD_REQUEST, ex.getMessage()).build();
+    }
+
     @ExceptionHandler(value = WebException.class)
     public Response<Object> handleWebEx(WebException ex) {
         if (ex.isInternalException()) {
@@ -35,7 +43,9 @@ public class GlobalExceptionAspect {
             return Response.failed().build();
         }
         if (ex.isUnauthorized()) {
-            return Response.unauthorized(ex.getMessage()).addHeader("WWW-Authenticate", "Basic realm=").build();
+            return Response.unauthorized(ex.getMessage())
+                .addHeader("WWW-Authenticate", "Basic realm=")
+                .build();
         }
         return Response.failed(ex.getStatus(), ex.getMessage()).build();
     }

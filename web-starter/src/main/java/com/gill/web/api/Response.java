@@ -1,11 +1,15 @@
 package com.gill.web.api;
 
+import cn.hutool.json.JSONUtil;
 import lombok.Getter;
 import lombok.ToString;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 
 /**
  * Result
@@ -14,7 +18,6 @@ import org.springframework.http.ResponseEntity;
  * @version 2024/01/22
  **/
 @Getter
-@ToString
 public class Response<T> extends ResponseEntity<Object> {
 
     private static final String SUCCESS = "success";
@@ -39,6 +42,33 @@ public class Response<T> extends ResponseEntity<Object> {
 
     private Response(HttpStatus code, String message, T data, HttpHeaders headers) {
         super(new ResultWrapper<>(message, data), headers, code);
+    }
+
+    @Override
+    @NonNull
+    public String toString() {
+        StringBuilder builder = new StringBuilder("<");
+        HttpStatusCode statusCode = getStatusCode();
+        builder.append(statusCode);
+        if (statusCode instanceof HttpStatus httpStatus) {
+            builder.append(' ');
+            builder.append(httpStatus.getReasonPhrase());
+        }
+        builder.append(',');
+        Object body = getBody();
+        HttpHeaders headers = getHeaders();
+        if (body instanceof String str) {
+            builder.append(str);
+            builder.append(',');
+        } else if (body instanceof InputStreamSource source) {
+            builder.append("source,");
+        } else if (body != null) {
+            builder.append(JSONUtil.toJsonStr(body));
+            builder.append(',');
+        }
+        builder.append(headers);
+        builder.append('>');
+        return builder.toString();
     }
 
     public static class ResponseBuilder<T> {

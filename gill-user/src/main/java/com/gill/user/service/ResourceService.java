@@ -47,6 +47,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ResourceService {
 
+    private static final long EXPIRED_TIME = 7L * 24 * 3600 * 1000;
+
     @Autowired
     private Redis redis;
 
@@ -294,7 +296,7 @@ public class ResourceService {
     public Set<String> refreshUserPermissions(long userId) {
         Set<String> permissions = resourceMapper.queryPermissionsByUserId(userId);
         redis.clear(UserProperties.getRedisUserResourceKey(userId));
-        redis.sadd(UserProperties.getRedisUserResourceKey(userId), permissions);
+        redis.sadd(UserProperties.getRedisUserResourceKey(userId), permissions, EXPIRED_TIME);
         return permissions;
     }
 

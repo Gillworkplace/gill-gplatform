@@ -19,4 +19,9 @@ public class OssServiceMock implements IOssService {
     public List<String> getDefaultAvatarList() {
         return List.of("/a.png");
     }
+
+    @Override
+    public List<String> getRandomAvatarList() {
+        return List.of("/a.png");
+    }
 }

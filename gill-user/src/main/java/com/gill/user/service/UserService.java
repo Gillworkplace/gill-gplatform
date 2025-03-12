@@ -8,7 +8,9 @@ import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ByteUtil;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.expression.ExpressionUtil;
 import com.gill.api.constant.AccountStatusEnum;
 import com.gill.api.domain.UserProperties;
@@ -17,11 +19,15 @@ import com.gill.api.service.oss.IOssService;
 import com.gill.common.api.DLock;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
+import com.gill.common.exception.BusinessException;
+import com.gill.common.util.DateUtil;
 import com.gill.dubbo.contant.Filters;
 import com.gill.redis.core.Redis;
 import com.gill.user.config.RoleMap;
 import com.gill.user.domain.UserDetail;
+import com.gill.user.dto.IndividualProfile;
 import com.gill.user.dto.UserInfo;
+import com.gill.user.dto.param.IndividualProfileParam;
 import com.gill.user.dto.param.RegisterParam;
 import com.gill.user.entity.UserAccountEntity;
 import com.gill.user.entity.UserBanEntity;
@@ -57,10 +63,12 @@ import org.springframework.transaction.annotation.Transactional;
  * @author gill
  * @version 2024/02/06
  **/
-@DubboService
+@DubboService(interfaceClass = com.gill.api.service.user.IUserService.class)
 @Component
 @Slf4j
 public class UserService implements IUserService, com.gill.api.service.user.IUserService {
+
+    private static final long EXPIRED_TIME = 7L * 24 * 3600 * 1000;
 
     @Autowired
     private Redis redis;
@@ -259,7 +267,9 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         user.setLoginTime(userAccount.getLoginTime());
         user.setCreateTime(userAccount.getCreateTime());
 
-        redis.mset(UserProperties.getRedisTokenKey(token), generateRedisUserInfo(username, user));
+        redis.set(UserProperties.getRedisTokenKey(token), user.getId(), EXPIRED_TIME);
+        redis.hset(UserProperties.getRedisUserInfoKey(userInfo.getUserId()),
+            generateRedisUserInfo(username, user), EXPIRED_TIME);
 
         // 存储用户权限缓存
         Set<String> permissions = resourceService.refreshUserPermissions(userId);
@@ -287,9 +297,13 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         return uuid.toString(true);
     }
 
-    private String digestPwd(String password, String salt) {
+    private static String digestPwd(String password, String salt) {
         CryptoStrategy sha256 = CryptoFactory.getStrategy("sha256");
         return sha256.encrypt(password + salt);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(digestPwd("!@#QWEasdzxc", "abcdefgh"));
     }
 
     /**
@@ -300,7 +314,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
      * @return 用户信息
      */
     public UserInfo getUserInfo(long userId, String token) {
-        Map<String, Object> map = redis.mget(UserProperties.getRedisTokenKey(token));
+        Map<String, Object> map = redis.hget(UserProperties.getRedisUserInfoKey(userId));
         UserInfo userInfo = BeanUtil.mapToBean(map, UserInfo.class, true,
             CopyOptions.create().ignoreError());
         if (userInfo.getUid() != userId) {
@@ -329,8 +343,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
      * @param token  token
      */
     public void checkToken(Long userId, String token) {
-        Long uid = redis.mget(UserProperties.getRedisTokenKey(token), UserProperties.USER_ID,
-            Long.class);
+        Long uid = redis.get(UserProperties.getRedisTokenKey(token), Long.class);
         if (uid == null || !uid.equals(userId)) {
             throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
         }
@@ -445,30 +458,6 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         return HexUtil.encodeHexStr(keyBytes);
     }
 
-    public static void main(String[] args) {
-        byte b1 = RandomUtil.randomBytes(1)[0];
-        byte b2 = RandomUtil.randomBytes(1)[0];
-
-        // 0b 0010 0011, 0b 00100100
-        System.out.println(b1 + ", " + b2);
-        System.out.println(byteToBits(b1) + ", " + byteToBits(b2));
-        byte[] merge = magicMerge(b1, b2);
-        System.out.println("merge: " + byteToBits(merge[0]) + ", " + byteToBits(merge[1]));
-        System.out.println("merge hex: " + HexUtil.encodeHexStr(merge));
-        merge = HexUtil.decodeHex(HexUtil.encodeHexStr(merge));
-        System.out.println("decode hex: " + byteToBits(merge[0]) + ", " + byteToBits(merge[1]));
-        byte[] split = magicSplit(merge[0], merge[1]);
-        System.out.println("split: " + byteToBits(split[0]) + ", " + byteToBits(split[1]));
-    }
-
-    private static String byteToBits(byte b) {
-        StringBuilder bits = new StringBuilder();
-        for (int i = 7; i >= 0; i--) {
-            bits.append((b >>> i) & 1); // 逐位提取
-        }
-        return bits.toString();
-    }
-
     private static byte[] magicMerge(byte b, byte salt) {
         byte r1 = 0;
         byte r2 = 0;
@@ -545,5 +534,55 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         if (!Arrays.equals(cp, acp)) {
             throw new WebException(HttpStatus.BAD_REQUEST, "无效邀请码");
         }
+    }
+
+    @Override
+    public IndividualProfile getProfile(long userId) {
+        UserAccountEntity userAccount = userAccountService.lambdaQuery()
+            .select(UserAccountEntity::getId, UserAccountEntity::getUsername)
+            .eq(UserAccountEntity::getId, userId)
+            .eq(UserAccountEntity::getDeleted, false)
+            .last("limit 1")
+            .one();
+        UserInfoEntity userInfo = userInfoService.lambdaQuery()
+            .select(UserInfoEntity::getNickName, UserInfoEntity::getAvatar, UserInfoEntity::getHome,
+                UserInfoEntity::getDescription, UserInfoEntity::getCreateTime)
+            .eq(UserInfoEntity::getUserId, userId)
+            .eq(UserInfoEntity::getDeleted, false)
+            .last("limit 1")
+            .one();
+        if (ObjectUtil.hasNull(userAccount, userInfo)) {
+            throw new BusinessException("没找到该用户信息");
+        }
+        IndividualProfile profile = new IndividualProfile();
+        profile.setUid(String.valueOf(userAccount.getId()));
+        profile.setUsername(userAccount.getUsername());
+        profile.setNickName(userInfo.getNickName());
+        profile.setAvatar(userInfo.getAvatar());
+        profile.setHome(userInfo.getHome());
+        profile.setDescription(userInfo.getDescription());
+        profile.setCreateTime(DateUtil.toTimestamp(userInfo.getCreateTime()));
+        return profile;
+    }
+
+    @Override
+    public void updateProfile(long userId, IndividualProfileParam params) {
+        String avatar = params.getAvatar();
+        if (StrUtil.isBlank(avatar)) {
+            avatar = randomDefaultAvatar();
+        }
+        String home = params.getHome();
+        if (StrUtil.isBlank(params.getHome())) {
+            home = "/home";
+        }
+
+        userInfoService.lambdaUpdate()
+            .set(UserInfoEntity::getNickName, params.getNickName())
+            .set(UserInfoEntity::getAvatar, avatar)
+            .set(UserInfoEntity::getHome, home)
+            .set(UserInfoEntity::getDescription, params.getDescription())
+            .eq(UserInfoEntity::getUserId, userId)
+            .eq(UserInfoEntity::getDeleted, false)
+            .update();
     }
 }

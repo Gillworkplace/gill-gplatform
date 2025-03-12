@@ -1,5 +1,8 @@
 package com.gill.user.service;
 
+import com.gill.user.dto.IndividualProfile;
+import com.gill.user.dto.param.IndividualProfileParam;
+
 /**
  * IUserService
  *
@@ -22,4 +25,20 @@ public interface IUserService {
      * @param userId 用户ID
      */
     void refreshInviteKey(long userId);
+
+    /**
+     * 获取个人资料
+     *
+     * @param userId 用户ID
+     * @return 个人资料
+     */
+    IndividualProfile getProfile(long userId);
+
+    /**
+     * 修改个人资料
+     *
+     * @param userId 用户ID
+     * @param params 参数
+     */
+    void updateProfile(long userId, IndividualProfileParam params);
 }

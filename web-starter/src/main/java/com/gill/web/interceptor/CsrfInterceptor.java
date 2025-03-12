@@ -37,10 +37,9 @@ public class CsrfInterceptor implements HandlerInterceptor {
 
             // 接口需要用户凭证信息的情况下必须通过csrf校验
             // crsf 校验：header 和 cookie中的 csrf参数需要一样
-            if (csrfTokenHeader == null || csrfTokenCookie == null) {
+            if (csrfTokenHeader == null || !csrfTokenHeader.equals(csrfTokenCookie)) {
                 throw new WebException(HttpStatus.FORBIDDEN, "forbidden");
             }
-            return csrfTokenHeader.equals(csrfTokenCookie);
         }
         return true;
     }

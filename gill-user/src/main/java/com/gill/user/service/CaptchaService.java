@@ -3,8 +3,6 @@ package com.gill.user.service;
 import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.GifCaptcha;
-import cn.hutool.captcha.ICaptcha;
-import cn.hutool.captcha.LineCaptcha;
 import com.gill.api.domain.UserProperties;
 import com.gill.redis.core.Redis;
 import com.gill.web.exception.WebException;
@@ -49,7 +47,9 @@ public class CaptchaService {
      */
     public void checkCaptchaCode(@Nonnull String randomCode, @Nonnull String captchaCode) {
         captchaCode = captchaCode.toLowerCase();
-        String target = redis.get(UserProperties.getRedisCaptchaKey(randomCode));
+        String key = UserProperties.getRedisCaptchaKey(randomCode);
+        String target = redis.get(key);
+        redis.clear(key);
         if (captchaCode.equals(target)) {
             return;
         }

@@ -5,8 +5,10 @@ import com.gill.api.domain.UserProperties;
 import com.gill.common.threadlocal.ThreadLocals;
 import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.CurrentUser;
+import com.gill.user.dto.IndividualProfile;
 import com.gill.user.dto.UserInfo;
 import com.gill.user.dto.param.AdminRegisterParam;
+import com.gill.user.dto.param.IndividualProfileParam;
 import com.gill.user.dto.param.LoginParam;
 import com.gill.user.dto.param.RegisterParam;
 import com.gill.user.service.CaptchaService;
@@ -180,18 +182,18 @@ public class UserController {
         return cookie;
     }
 
-    /**
-     * 邀请码登录
-     *
-     * @param inviteCode 邀请码
-     * @return 登录结果
-     */
-    @IgnoreAuth
-    @PostMapping("/invite/login")
-    public Response<String> inviteCodeLogin(@RequestParam("inviteCode") String inviteCode) {
-
-        return Response.success().build();
-    }
+//    /**
+//     * 邀请码登录
+//     *
+//     * @param inviteCode 邀请码
+//     * @return 登录结果
+//     */
+//    @IgnoreAuth
+//    @PostMapping("/invite/login")
+//    public Response<String> inviteCodeLogin(@RequestParam("inviteCode") String inviteCode) {
+//
+//        return Response.success().build();
+//    }
 
     /**
      * 获取登录用户信息
@@ -221,26 +223,51 @@ public class UserController {
         return Response.success(currentUser).build();
     }
 
+//    /**
+//     * 获取用户邀请码
+//     *
+//     * @return 邀请码
+//     */
+//    @GetMapping("/invite_key")
+//    public Response<String> inviteKey() {
+//        Long userId = ThreadLocals.USER_ID.get();
+//        return Response.success(userService.getInviteKey(userId)).build();
+//    }
+//
+//    /**
+//     * 刷新用户邀请码
+//     *
+//     * @return void
+//     */
+//    @PostMapping("/invite_key")
+//    public Response<String> refreshInviteKey() {
+//        Long userId = ThreadLocals.USER_ID.get();
+//        userService.refreshInviteKey(userId);
+//        return Response.success().build();
+//    }
+
     /**
-     * 获取用户邀请码
+     * 个人信息
      *
-     * @return 邀请码
+     * @return 个人信息
      */
-    @GetMapping("/invite_key")
-    public Response<String> inviteKey() {
+    @GetMapping("/profile")
+    public Response<IndividualProfile> getProfile() {
         Long userId = ThreadLocals.USER_ID.get();
-        return Response.success(userService.getInviteKey(userId)).build();
+        IndividualProfile profile = userService.getProfile(userId);
+        return Response.success(profile).build();
     }
 
     /**
-     * 刷新用户邀请码
+     * 修改个人信息
      *
-     * @return void
+     * @param params 参数
+     * @return OK
      */
-    @PostMapping("/invite_key")
-    public Response<String> refreshInviteKey() {
+    @PostMapping("/profile")
+    public Response<String> updateProfile(@RequestBody IndividualProfileParam params) {
         Long userId = ThreadLocals.USER_ID.get();
-        userService.refreshInviteKey(userId);
+        userService.updateProfile(userId, params);
         return Response.success().build();
     }
 }
