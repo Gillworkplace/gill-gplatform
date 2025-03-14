@@ -1,6 +1,7 @@
 package com.gill.dubbo.exception.handler;
 
-import com.gill.dubbo.exception.ServiceException;
+import com.gill.common.exception.BusinessCode;
+import com.gill.common.exception.BusinessException;
 import com.gill.dubbo.filter.ProviderExceptionFilter;
 import org.apache.dubbo.rpc.Result;
 
@@ -10,11 +11,11 @@ import org.apache.dubbo.rpc.Result;
  * @author gill
  * @version 2024/02/24
  **/
-public class ServiceExceptionHandler implements ExceptionHandler {
+public class BusinessExceptionHandler implements ExceptionHandler {
 
-    public static final ServiceExceptionHandler INSTANCE = new ServiceExceptionHandler();
+    public static final BusinessExceptionHandler INSTANCE = new BusinessExceptionHandler();
 
-    private ServiceExceptionHandler() {
+    private BusinessExceptionHandler() {
     }
 
     /**
@@ -25,7 +26,7 @@ public class ServiceExceptionHandler implements ExceptionHandler {
      */
     @Override
     public boolean supportResolveResult(Result result) {
-        return ServiceException.EXCEPTION_TYPE.equals(
+        return BusinessException.EXCEPTION_TYPE.equals(
             result.getAttachment(ProviderExceptionFilter.EXCEPTION_TYPE));
     }
 
@@ -36,12 +37,12 @@ public class ServiceExceptionHandler implements ExceptionHandler {
      */
     @Override
     public void resolveExceptionResult(Result result) {
-        int code = 500;
+        BusinessCode code = BusinessCode.SYSTEM_ERROR;
         try {
-            code = Integer.parseInt(result.getAttachment("code"));
+            code = BusinessCode.getByCode(Integer.parseInt(result.getAttachment("code")));
         } catch (NumberFormatException ignored) {
         }
         String message = result.getAttachment("message");
-        throw new ServiceException(code, message);
+        throw new BusinessException(code, message);
     }
 }

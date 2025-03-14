@@ -2,6 +2,7 @@ package com.gill.user.service;
 
 import com.gill.api.domain.UserProperties;
 import com.gill.api.model.Role;
+import com.gill.common.exception.BusinessException;
 import com.gill.redis.core.Redis;
 import com.gill.user.domain.Permissions;
 import com.gill.user.domain.Relation;
@@ -19,7 +20,6 @@ import com.gill.user.service.mapperservice.RolePermissionsService;
 import com.gill.user.service.mapperservice.RoleRelationshipsService;
 import com.gill.user.service.mapperservice.RoleService;
 import com.gill.user.service.mapperservice.UserRolesService;
-import com.gill.web.exception.WebException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -157,7 +156,7 @@ public class ResourceService {
     private List<RoleRelationshipsEntity> resolveRoleRelations(List<Relation> roleRelations) {
         Map<String, Set<String>> adjacencyMap = toAdjacencyMap(roleRelations);
         if (checkCircle(adjacencyMap)) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "角色发现环状关系");
+            throw new BusinessException("角色发现环状关系");
         }
         List<RoleRelationshipsEntity> roleRelationships = new ArrayList<>();
         for (Entry<String, Set<String>> entry : adjacencyMap.entrySet()) {
@@ -176,7 +175,7 @@ public class ResourceService {
         List<PermissionEntity> permissions, List<Relation> relations) {
         Map<String, Set<String>> adjacencyMap = toAdjacencyMap(relations);
         if (checkCircle(adjacencyMap)) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "权限发现环状关系");
+            throw new BusinessException("权限发现环状关系");
         }
         List<PermissionRelationshipsEntity> permissionRelationships = new ArrayList<>();
 

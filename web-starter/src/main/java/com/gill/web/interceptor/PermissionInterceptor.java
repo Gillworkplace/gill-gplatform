@@ -2,14 +2,17 @@ package com.gill.web.interceptor;
 
 import com.gill.api.domain.UserProperties;
 import com.gill.api.service.user.IUserService;
+import com.gill.common.exception.BusinessException;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.annotation.OperationPermission;
+import com.gill.web.exception.WebException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -43,8 +46,13 @@ public abstract class PermissionInterceptor implements HandlerInterceptor {
             if (permission == null) {
                 return true;
             }
-            getUserService().checkPermission(uid, permission.permissionExpression(),
-                permission.exceptionCode(), permission.exceptionMessage());
+            try {
+                getUserService().checkPermission(uid, permission.permissionExpression(),
+                    permission.exceptionCode(), permission.exceptionMessage());
+            } catch (BusinessException ex) {
+                throw new WebException(HttpStatus.FORBIDDEN, "forbidden");
+            }
+
         }
         return true;
     }

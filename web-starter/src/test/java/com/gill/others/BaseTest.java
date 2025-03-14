@@ -1,6 +1,7 @@
 package com.gill.others;
 
 import org.apache.curator.test.TestingServer;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -19,6 +20,7 @@ public class BaseTest {
 
     @AfterAll
     public static void stop() throws Exception {
+        DubboBootstrap.getInstance().destroy();
         server.stop();
     }
 }

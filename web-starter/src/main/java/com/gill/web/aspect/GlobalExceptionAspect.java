@@ -10,7 +10,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.rpc.RpcException;
 import org.springframework.context.MessageSourceResolvable;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.method.ParameterValidationResult;
@@ -33,21 +32,21 @@ public class GlobalExceptionAspect {
     @ExceptionHandler(value = BusinessException.class)
     public Response<Object> handleBusinessEx(BusinessException ex) {
         log.error(ExceptionUtil.getAllMessage(ex));
-        return Response.failed(HttpStatus.BAD_REQUEST, ex.getMessage()).build();
+        return Response.failed(ex.getCode(), ex.getMessage()).build();
     }
 
     @ExceptionHandler(value = WebException.class)
     public Response<Object> handleWebEx(WebException ex) {
         if (ex.isInternalException()) {
             log.error("occur internal web exception: {}", ExceptionUtil.getAllMessage(ex));
-            return Response.failed().build();
+            return Response.error().build();
         }
-        if (ex.isUnauthorized()) {
-            return Response.unauthorized(ex.getMessage())
-                .addHeader("WWW-Authenticate", "Basic realm=")
-                .build();
-        }
-        return Response.failed(ex.getStatus(), ex.getMessage()).build();
+//        if (ex.isUnauthorized()) {
+//            return Response.unauthorized(ex.getMessage())
+//                .addHeader("WWW-Authenticate", "Basic realm=")
+//                .build();
+//        }
+        return Response.error(ex.getStatus(), ex.getMessage()).build();
     }
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class, BindException.class})
@@ -83,11 +82,13 @@ public class GlobalExceptionAspect {
 
         // rpc exception -> execution exception -> service exception
         return Optional.of(ex).map(RpcException::getCause).map(Throwable::getCause).map(t -> {
-            if (t instanceof ServiceException se) {
-                return handleWebEx(new WebException(se));
+            if (t instanceof ServiceException e) {
+                return handleWebEx(new WebException(e));
+            } else if(t instanceof BusinessException e) {
+                return handleBusinessEx(e);
             }
             return null;
-        }).orElseGet(() -> Response.failed("通信错误").build());
+        }).orElseGet(() -> Response.failed().build());
     }
 
     @ExceptionHandler(value = Exception.class)

@@ -18,7 +18,7 @@ import org.apache.dubbo.rpc.RpcException;
  **/
 @Slf4j
 @Activate(group = CommonConstants.CONSUMER)
-public class ServiceFilter implements Filter, Filter.Listener {
+public class ConsumerExceptionFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

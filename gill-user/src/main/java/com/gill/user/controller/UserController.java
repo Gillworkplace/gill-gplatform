@@ -2,6 +2,7 @@ package com.gill.user.controller;
 
 import cn.hutool.core.lang.UUID;
 import com.gill.api.domain.UserProperties;
+import com.gill.common.exception.BusinessException;
 import com.gill.common.threadlocal.ThreadLocals;
 import com.gill.user.domain.UserDetail;
 import com.gill.user.dto.CurrentUser;
@@ -17,12 +18,10 @@ import com.gill.user.service.UserService;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.annotation.OperationPermission;
 import com.gill.web.api.Response;
-import com.gill.web.exception.WebException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -98,7 +97,7 @@ public class UserController {
 
         // 校验角色ID是否正确
         if (!resourceService.containsRole(param.getRole())) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "角色不存在");
+            throw new BusinessException("角色不存在");
         }
 
         // 验证码校验
@@ -268,6 +267,29 @@ public class UserController {
     public Response<String> updateProfile(@RequestBody IndividualProfileParam params) {
         Long userId = ThreadLocals.USER_ID.get();
         userService.updateProfile(userId, params);
+        return Response.success().build();
+    }
+
+    /**
+     * 获取邀请注册码
+     *
+     * @return 邀请注册码
+     */
+    @GetMapping("/invite_key")
+    public Response<String> getInviteKey() {
+        Long userId = ThreadLocals.USER_ID.get();
+        return Response.success(userService.getInviteKey(userId)).build();
+    }
+
+    /**
+     * 刷新邀请注册码
+     *
+     * @return OK
+     */
+    @PostMapping("/invite_key")
+    public Response<String> refreshInviteKey() {
+        Long userId = ThreadLocals.USER_ID.get();
+        userService.refreshInviteKey(userId);
         return Response.success().build();
     }
 }

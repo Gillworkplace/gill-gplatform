@@ -1,6 +1,7 @@
 package com.gill.others;
 
 import cn.hutool.json.JSONUtil;
+import com.gill.common.exception.BusinessCode;
 import com.gill.others.bean.Body;
 import com.gill.others.service.MockUserServiceImpl;
 import com.gill.web.api.Response;
@@ -60,11 +61,14 @@ public class WebTest extends BaseTest {
 
     @Test
     public void testAspect_ex_should_return500AndLogMessage() {
-        ResponseEntity<?> ret = restTemplate.getForEntity(urlPrefix() + "/rest/ex",
+        ResponseEntity<Response.ResultWrapper> ret = restTemplate.getForEntity(urlPrefix() + "/rest/ex",
             Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ret.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
+        Assertions.assertEquals(BusinessCode.SYSTEM_ERROR.getCode(), ret.getBody().getCode());
         ret = restTemplate.getForEntity(urlPrefix() + "/ex", Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ret.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
+        Assertions.assertEquals(BusinessCode.SYSTEM_ERROR.getCode(), ret.getBody().getCode());
+
     }
 
     @Test
@@ -89,12 +93,14 @@ public class WebTest extends BaseTest {
 
     @Test
     public void testAspect_validEx_should_returnAndLogMessage() {
-        ResponseEntity<?> ret = restTemplate.getForEntity(urlPrefix() + "/rest/validEx?number=-1",
+        ResponseEntity<Response.ResultWrapper> ret = restTemplate.getForEntity(urlPrefix() + "/rest/validEx?number=-1",
             Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, ret.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
+        Assertions.assertEquals(BusinessCode.BUSINESS_ERROR.getCode(), ret.getBody().getCode());
         ret = restTemplate.getForEntity(urlPrefix() + "/validEx?number=-1",
             Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, ret.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
+        Assertions.assertEquals(BusinessCode.BUSINESS_ERROR.getCode(), ret.getBody().getCode());
     }
 
     @Test
@@ -146,6 +152,15 @@ public class WebTest extends BaseTest {
             urlPrefix() + "/rest/auth", HttpMethod.GET, requestEntity,
             Response.ResultWrapper.class);
         Assertions.assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    public void test_business_exception() {
+        ResponseEntity<Response.ResultWrapper> ret = restTemplate.getForEntity(urlPrefix() + "/rest/businessEx",
+            Response.ResultWrapper.class);
+        Assertions.assertEquals(HttpStatus.OK, ret.getStatusCode());
+        Assertions.assertEquals(BusinessCode.BUSINESS_ERROR.getCode(), ret.getBody().getCode());
+        Assertions.assertEquals("business error", ret.getBody().getMessage());
     }
 
     private String urlPrefix() {

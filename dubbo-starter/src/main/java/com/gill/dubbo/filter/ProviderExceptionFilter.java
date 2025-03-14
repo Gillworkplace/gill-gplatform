@@ -1,5 +1,7 @@
 package com.gill.dubbo.filter;
 
+import com.gill.common.exception.BusinessCode;
+import com.gill.common.exception.BusinessException;
 import com.gill.dubbo.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -33,11 +35,17 @@ public class ProviderExceptionFilter implements Filter, Filter.Listener {
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         if (appResponse.hasException()) {
             if (appResponse.getException() instanceof ServiceException ex) {
-                appResponse.setAttachment(EXCEPTION_TYPE, ServiceException.TYPE);
-                appResponse.setAttachment(ServiceException.CODE, String.valueOf(ex.getCode()));
-                appResponse.setAttachment(ServiceException.MESSAGE, ex.getMessage());
+                appResponse.setAttachment("type", ServiceException.EXCEPTION_TYPE);
+                appResponse.setAttachment("code", String.valueOf(ex.getCode()));
+                appResponse.setAttachment("message", ex.getMessage());
+            } else if (appResponse.getException() instanceof BusinessException ex) {
+                appResponse.setAttachment("type", BusinessException.EXCEPTION_TYPE);
+                appResponse.setAttachment("code", String.valueOf(ex.getCode()));
+                appResponse.setAttachment("message", ex.getMessage());
             } else {
-                appResponse.setAttachment(EXCEPTION_TYPE, UNKNOWN_TYPE);
+                appResponse.setAttachment("type", BusinessException.EXCEPTION_TYPE);
+                appResponse.setAttachment("code",
+                    String.valueOf(BusinessCode.SYSTEM_ERROR.getCode()));
             }
         }
     }

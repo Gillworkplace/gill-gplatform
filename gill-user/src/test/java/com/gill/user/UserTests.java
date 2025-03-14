@@ -4,6 +4,8 @@ import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.gill.api.domain.UserProperties;
+import com.gill.common.exception.BusinessCode;
+import com.gill.common.exception.BusinessException;
 import com.gill.user.controller.ResourceController;
 import com.gill.user.dto.CurrentUser;
 import com.gill.user.dto.UserInfo;
@@ -14,7 +16,6 @@ import com.gill.user.service.CaptchaService;
 import com.gill.user.service.UserService;
 import com.gill.web.api.Response;
 import com.gill.web.api.Response.ResultWrapper;
-import com.gill.web.exception.WebException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -86,11 +87,13 @@ public class UserTests extends AbstractTest {
         registerParam.setInviteKey("8a288820");
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/register", registerParam, ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(BusinessCode.SUCCESS.getCode(), response.getBody().getCode());
         Assertions.assertNotNull(response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
         Assertions.assertEquals("/home", String.valueOf(response.getBody().getData()));
 
         // 登录
+        captcha = captchaService.generateCaptcha(randomCode);
+        captchaCode = captcha.getCode();
         LoginParam loginParam = new LoginParam();
         loginParam.setRandomCode(randomCode);
         loginParam.setCaptchaCode(captchaCode);
@@ -104,7 +107,7 @@ public class UserTests extends AbstractTest {
             .collect(
                 Collectors.toMap(cookie -> cookie.split("=")[0], cookie -> cookie.split("=")[1]));
 
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(BusinessCode.SUCCESS.getCode(), response.getBody().getCode());
         Assertions.assertTrue(cookies.containsKey(UserProperties.USER_ID));
         Assertions.assertTrue(cookies.containsKey(UserProperties.TOKEN_ID));
         Assertions.assertTrue(cookies.containsKey(UserProperties.CSRF_TOKEN));
@@ -133,7 +136,9 @@ public class UserTests extends AbstractTest {
         registerParam.setInviteKey("8a288820");
         ResponseEntity<ResultWrapper> response = restTemplate.postForEntity(
             urlPrefix() + "/register", registerParam, ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(BusinessCode.BUSINESS_ERROR.getCode(),
+            response.getBody().getCode());
     }
 
     @Test
@@ -183,7 +188,8 @@ public class UserTests extends AbstractTest {
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
         ResponseEntity<ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/current",
             HttpMethod.GET, requestEntity, ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(BusinessCode.UNAUTHORIZED.getCode(), response.getBody().getCode());
     }
 
     @Test
@@ -212,7 +218,8 @@ public class UserTests extends AbstractTest {
         HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
         ResponseEntity<ResultWrapper> response = restTemplate.exchange(urlPrefix() + "/info",
             HttpMethod.GET, requestEntity, ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(BusinessCode.UNAUTHORIZED.getCode(), response.getBody().getCode());
     }
 
     @Test
@@ -226,7 +233,8 @@ public class UserTests extends AbstractTest {
     @Order(11)
     public void test_precheck_existent_username_should_throw_exception() {
         final String username = "test";
-        Assertions.assertThrows(WebException.class, () -> userService.precheckUsername(username));
+        Assertions.assertThrows(BusinessException.class,
+            () -> userService.precheckUsername(username));
     }
 
     @Test
@@ -302,7 +310,8 @@ public class UserTests extends AbstractTest {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         ResponseEntity<ResultWrapper> response2 = restTemplate.getForEntity(
             urlPrefix() + "/resource/permissions", Response.ResultWrapper.class);
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response2.getStatusCode());
+        Assertions.assertEquals(BusinessCode.UNAUTHORIZED.getCode(), response2.getBody().getCode());
     }
 
     private String urlPrefix() {

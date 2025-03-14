@@ -1,6 +1,5 @@
 package com.gill.oss.service.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.ListObjectsRequest;
 import com.aliyun.oss.model.OSSObjectSummary;
@@ -43,7 +42,7 @@ public class OssService implements IOssService, com.gill.api.service.oss.IOssSer
         return objs.stream()
             .map(OSSObjectSummary::getKey)
             .map(key -> key.replace(ossProperty.getPublicResourcePath(), ""))
-            .filter(StrUtil::isNotBlank)
+            .filter(name -> !"/avatar/".equals(name))
             .toList();
     }
 
@@ -62,7 +61,7 @@ public class OssService implements IOssService, com.gill.api.service.oss.IOssSer
         return objs.stream()
             .map(OSSObjectSummary::getKey)
             .map(key -> key.replace(ossProperty.getPublicResourcePath(), ""))
-            .filter(StrUtil::isNotBlank)
+            .filter(name -> !"/avatar/".equals(name))
             .limit(25)
             .toList();
     }

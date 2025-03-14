@@ -1,5 +1,6 @@
 package com.gill.others.controller;
 
+import com.gill.common.exception.BusinessException;
 import com.gill.others.bean.Body;
 import com.gill.web.annotation.IgnoreAuth;
 import com.gill.web.annotation.OperationPermission;
@@ -65,5 +66,11 @@ public class RestController {
     @GetMapping("/auth")
     public Response<String> auth() {
         return Response.success().build();
+    }
+
+    @IgnoreAuth
+    @GetMapping("/businessEx")
+    public Response<String> businessEx() {
+        throw new BusinessException("business error");
     }
 }

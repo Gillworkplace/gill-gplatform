@@ -19,6 +19,7 @@ import com.gill.api.service.oss.IOssService;
 import com.gill.common.api.DLock;
 import com.gill.common.crypto.CryptoFactory;
 import com.gill.common.crypto.CryptoStrategy;
+import com.gill.common.exception.BusinessCode;
 import com.gill.common.exception.BusinessException;
 import com.gill.common.util.DateUtil;
 import com.gill.dubbo.contant.Filters;
@@ -43,7 +44,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -105,7 +105,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             .eq(UserAccountEntity::getDeleted, false)
             .exists();
         if (exists) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "账号已存在");
+            throw new BusinessException("账号已存在");
         }
     }
 
@@ -142,7 +142,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             UserInfoEntity userInfo = generateUserInfo(param, userId);
             userInfoService.save(userInfo);
         } catch (DuplicateKeyException e) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "账号已存在");
+            throw new BusinessException("账号已存在");
         }
 
         // 设置用户角色
@@ -193,13 +193,13 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             .one();
 
         if (userAccount == null) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "用户名不存在或密码错误");
+            throw new BusinessException("用户名不存在或密码错误");
         }
 
         String salt = userAccount.getSalt();
         String encryptPassword = userAccount.getEncryptPassword();
         if (!encryptPassword.equals(digestPwd(password, salt))) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "用户名不存在或密码错误");
+            throw new BusinessException("用户名不存在或密码错误");
         }
         return userAccount.getId();
     }
@@ -233,7 +233,10 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         // 更新登录时间
         userAccountService.lambdaUpdate()
             .set(UserAccountEntity::getLoginTime, LocalDateTime.now())
+            .set(UserAccountEntity::getAccountStatus, 1)
             .eq(UserAccountEntity::getId, userId)
+            .in(UserAccountEntity::getAccountStatus, AccountStatusEnum.UNUSED.getCode(),
+                AccountStatusEnum.NORMAL.getCode())
             .eq(UserAccountEntity::getDeleted, false)
             .update();
 
@@ -244,7 +247,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             .eq(UserAccountEntity::getDeleted, false)
             .one();
         if (userAccount == null) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "用户不存在");
+            throw new BusinessException("用户不存在");
         }
 
         String username = userAccount.getUsername();
@@ -318,7 +321,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         UserInfo userInfo = BeanUtil.mapToBean(map, UserInfo.class, true,
             CopyOptions.create().ignoreError());
         if (userInfo.getUid() != userId) {
-            throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
+            throw new BusinessException(BusinessCode.UNAUTHORIZED, "未授权登录");
         }
         return userInfo;
     }
@@ -345,7 +348,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
     public void checkToken(Long userId, String token) {
         Long uid = redis.get(UserProperties.getRedisTokenKey(token), Long.class);
         if (uid == null || !uid.equals(userId)) {
-            throw new WebException(HttpStatus.UNAUTHORIZED, "未授权登录");
+            throw new BusinessException(BusinessCode.UNAUTHORIZED, "未授权登录");
         }
     }
 
@@ -361,9 +364,8 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         String exceptionMessage) {
         Set<String> permissions = redis.sget(UserProperties.getRedisUserResourceKey(uid));
         if (!doCheckPermission(permissions, permissionExpression)) {
-            HttpStatus status = HttpStatus.resolve(exceptionCode);
-            throw new WebException(Objects.requireNonNullElse(status, HttpStatus.FORBIDDEN),
-                exceptionMessage);
+            BusinessCode code = BusinessCode.getByCode(exceptionCode);
+            throw new BusinessException(code, exceptionMessage);
         }
     }
 
@@ -437,7 +439,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             newKey.setInviteKey(inviteKey);
             userInviteKeyService.save(newKey);
         }, () -> {
-            throw new WebException(HttpStatus.TOO_MANY_REQUESTS);
+            throw new BusinessException(BusinessCode.TOO_MANY_REQUEST, "请勿频繁请求");
         });
     }
 
@@ -516,7 +518,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             .last("limit 1")
             .one();
         if (entity == null) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "无效邀请码");
+            throw new BusinessException("无效邀请码");
         }
         long userId = entity.getUserId();
         byte[] bs1 = ByteUtil.longToBytes(userId * 7);
@@ -532,7 +534,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
         acp[1] = split[0];
 
         if (!Arrays.equals(cp, acp)) {
-            throw new WebException(HttpStatus.BAD_REQUEST, "无效邀请码");
+            throw new BusinessException("无效邀请码");
         }
     }
 

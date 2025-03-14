@@ -4,12 +4,11 @@ import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.GifCaptcha;
 import com.gill.api.domain.UserProperties;
+import com.gill.common.exception.BusinessException;
 import com.gill.redis.core.Redis;
-import com.gill.web.exception.WebException;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -53,6 +52,6 @@ public class CaptchaService {
         if (captchaCode.equals(target)) {
             return;
         }
-        throw new WebException(HttpStatus.BAD_REQUEST, "验证码错误");
+        throw new BusinessException("验证码错误");
     }
 }

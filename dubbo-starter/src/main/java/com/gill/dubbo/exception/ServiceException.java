@@ -11,11 +11,7 @@ import lombok.Getter;
 @Getter
 public class ServiceException extends RuntimeException {
 
-    public static final String TYPE = "service-exception";
-
-    public static final String CODE = "code";
-
-    public static final String MESSAGE = "message";
+    public static final String EXCEPTION_TYPE = "service-exception";
 
     private final int code;
 
