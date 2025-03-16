@@ -16,7 +16,7 @@ public class IndividualProfile {
     /**
      * 用户ID
      */
-    private String uid;
+    private Long uid;
 
     /**
      * 账号名

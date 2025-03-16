@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserInfo {
 
-    private long uid;
+    private Long uid;
 
     private String username;
 

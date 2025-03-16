@@ -557,7 +557,7 @@ public class UserService implements IUserService, com.gill.api.service.user.IUse
             throw new BusinessException("没找到该用户信息");
         }
         IndividualProfile profile = new IndividualProfile();
-        profile.setUid(String.valueOf(userAccount.getId()));
+        profile.setUid(userAccount.getId());
         profile.setUsername(userAccount.getUsername());
         profile.setNickName(userInfo.getNickName());
         profile.setAvatar(userInfo.getAvatar());
